@@ -4,7 +4,7 @@ services:
         container_name: airshiny
         build: .
         ports: 
-            - "4242:80"
+            - "80:3838"
         volumes: 
             - /var/log/shiny /app:/logs
         restart: unless-stopped
