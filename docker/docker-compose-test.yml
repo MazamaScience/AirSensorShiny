@@ -1,11 +1,12 @@
 version: '3'
 services:
    shiny:
-        container_name: airshiny
+        container_name: airshinytest
         build: .
         ports: 
             - "8080:3838"
         volumes: 
             - ${PWD}/logs:/srv/shiny-server/logs
+            - /var/log/plot-service/test/app:/app/logs
         restart: unless-stopped
   

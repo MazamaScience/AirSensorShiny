@@ -1,11 +1,11 @@
 version: '3'
 services:
    shiny:
-        container_name: airshiny
+        container_name: airshinydesktop
         build: .
         ports: 
-            - "80:3838"
+            - "8080:3838"
         volumes: 
-            - /var/log/shiny /app:/logs
+            - ${PWD}/logs:/srv/shiny-server/logs
         restart: unless-stopped
   
