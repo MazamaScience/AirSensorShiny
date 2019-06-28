@@ -1,0 +1,12 @@
+version: '3'
+services:
+   shiny:
+      container_name: airsensor-shiny-desktop
+      image: airsensor-shiny-desktop
+      build: .
+      ports: 
+          - "8080:3838"
+      volumes: 
+          - ${PWD}/logs:/srv/shiny-server/logs
+      restart: unless-stopped
+  
