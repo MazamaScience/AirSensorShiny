@@ -1,12 +1,20 @@
 version: '3'
 services:
    shiny:
-        container_name: airsensorshinytest
-        build: .
-        ports: 
-            - "8080:3838"
-        volumes: 
-            - ${PWD}/logs:/srv/shiny-server/logs
-            - /var/log/plot-service/test/app:/app/logs
-        restart: unless-stopped
+      container_name: airsensor-shiny-test
+      image: airsensor-shiny-test
+      build: .
+      ports: 
+          - "6709:3838"
+      volumes: 
+          - /var/log/airsensor-shiny/test/app:/app/logs
+      restart: unless-stopped
   
+networks:
+  custom:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.67.09.0/24
+          gateway: 172.67.09.1

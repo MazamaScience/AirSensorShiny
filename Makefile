@@ -1,6 +1,24 @@
+################################################################################
 # Makefile for building and running docker containers for AirSensorShiny
+#
+# On joule, ProxypPass settings are defined in:
+#
+#   /etc/httpd/conf.d/tools.mazamascience.com.conf
+#
+# # 6700-6709 airsensor-shiny --------------------------------------------------
+# # 6701 -- v1 operational
+# # 6709 -- test (development)
+# ProxyPass /airsensor-shiny/v1 http://127.0.0.1:6701
+# ProxyPassReverse /airsensor-shiny/v1 http://127.0.0.1:6701
+# ProxyPass /airsensor-shiny/test http://127.0.0.1:6709
+# ProxyPassReverse /airsensor-shiny/test http://127.0.0.1:6709
+#
+# Test these settings with:    <CentOS equivalent of "sudo apache2ctl configtest">
+# Reload these settings with:  <CentOS equivalent of "sudo service apache2 reload">
 
-SERVICE_PATH_TEST=airsensorshiny/test
+# NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile-test
+SERVICE_PATH=airsensor-shiny/v1
+SERVICE_PATH_TEST=airsensor-shiny/test
 
 
 # first version . --- . working on a Mac
@@ -33,72 +51,36 @@ desktop_reboot: desktop_down desktop_build desktop_up
 
 # AirSensorShiny TEST version --------------------------------------------------
 
-# test_build:
-# 	-mkdir airsensorshiny/test
-# 	docker build -t mazamascience/airsensorshiny:$(VERSION) \
-# 		-t mazamascience/airsensorshiny:latest -f docker/Dockerfile-test .
-# 
-# test_up:
-# 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airsensorshinytest up -d
-# 
-# test_down:
-# 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airsensorshinytest down
-# 
-# test_container_logs:
-# 	docker-compose -f docker/docker-compose.yml \
-# 		-p airsensorshinytest logs
-# 
-# test_trace_log:
-# 	cat /var/log/$(SERVICE_PATH_TEST)/app/TRACE.log
-# 
-# test_debug_log:
-# 	cat /var/log/$(SERVICE_PATH_TEST)/app/DEBUG.log
-# 
-# test_info_log:
-# 	cat /var/log/$(SERVICE_PATH_TEST)/app/INFO.log
-# 
-# test_error_log:
-# 	cat /var/log/$(SERVICE_PATH_TEST)/app/ERROR.log
-# 
-# test_bounce: test_down test_up
-# 
-# test_reboot: test_down test_build test_up
+test_build:
+	-mkdir airsensorshiny/test
+	docker build -t airsensor-shiny-test:$(VERSION) \
+		-t airsensor-shiny-test:latest -f docker/Dockerfile-test .
 
+test_up:
+	docker-compose -f docker/docker-compose-test.yml \
+		-p airsensorshinytest up -d
 
-# PRODUCTION version -----------------------------------------------------------
+test_down:
+	docker-compose -f docker/docker-compose-test.yml \
+		-p airsensorshinytest down
 
-#production_build:
-#	-mkdir airsensorshiny/prod
-#	docker build -t mazamasciene/airsensorshiny:$(VERSION) \
-#		-t mazamascience/airsensorshiny:latest -f docker/Dockerfile .
-#
-#production_up:
-#	docker-compose -f docker/docker-compose.yml \
-#		-p airsensorshiny up -d
-#
-#production_down:
-#	docker-compose -f docker/docker-compose.yml \
-#		-p airsensorshiny down
-#
-#production_container_logs:
-#	docker-compose -f docker/docker-compose.yml \
-#		-p airsensorshiny logs
-#
-#production_trace_log:
-#	cat /var/log/$(SERVICE_PATH)/app/TRACE.log
-#
-#production_debug_log:
-#	cat /var/log/$(SERVICE_PATH)/app/DEBUG.log
-#
-#production_info_log:
-#	cat /var/log/$(SERVICE_PATH)/app/INFO.log
-#
-#production_error_log:
-#	cat /var/log/$(SERVICE_PATH)/app/ERROR.log
-#
-#production_bounce: production_down production_up
-#
-#production_reboot: production_down production_build production_up
-#
+test_container_logs:
+	docker-compose -f docker/docker-compose.yml \
+		-p airsensorshinytest logs
+
+test_trace_log:
+	cat /var/log/$(SERVICE_PATH_TEST)/app/TRACE.log
+
+test_debug_log:
+	cat /var/log/$(SERVICE_PATH_TEST)/app/DEBUG.log
+
+test_info_log:
+	cat /var/log/$(SERVICE_PATH_TEST)/app/INFO.log
+
+test_error_log:
+	cat /var/log/$(SERVICE_PATH_TEST)/app/ERROR.log
+
+test_bounce: test_down test_up
+
+test_reboot: test_down test_build test_up
+
