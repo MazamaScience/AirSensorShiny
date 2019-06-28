@@ -1,7 +1,7 @@
 version: '3'
 services:
    shiny:
-        container_name: airshinydesktop
+        container_name: airsensorshinydesktop
         build: .
         ports: 
             - "8080:3838"

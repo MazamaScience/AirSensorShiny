@@ -6,7 +6,7 @@ LABEL maintainer="hans@mazamascience.com" \
 LABEL build_date="2019-06-26"
 LABEL version="1.0"
 
-LABEL description="AirShiny Docker Image"
+LABEL description="AirSensorShiny Docker Image"
 
 # Copy app directory to image 
 COPY app /srv/shiny-server/

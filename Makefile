@@ -1,29 +1,30 @@
 # Makefile for building and running docker containers for AirSensorShiny
 
-SERVICE_PATH_TEST=airshiny/test
+SERVICE_PATH_TEST=airsensorshiny/test
 
 
-VERSION=1.0
+# first version . --- . working on a Mac
+VERSION=1.0.1
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
 
 desktop_build:
-	-mkdir airshiny/output
-	docker build -t mazamascience/airshiny:$(VERSION) \
-		-t mazamascience/airshiny:latest -f docker/Dockerfile-test .
+	-mkdir airsensorshiny/output
+	docker build -t airsensor-shiny-desktop:$(VERSION) \
+		-t airsensor-shiny-desktop:latest -f docker/Dockerfile-test .
 
 desktop_up:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airshinydesktop up -d
+		-p airsensorshinydesktop up -d
 
 desktop_down:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airshinydesktop down
+		-p airsensorshinydesktop down
 
 desktop_container_logs:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airshinydesktop logs -f
+		-p airsensorshinydesktop logs -f
 
 desktop_bounce: desktop_down desktop_up
 
@@ -33,21 +34,21 @@ desktop_reboot: desktop_down desktop_build desktop_up
 # AirSensorShiny TEST version --------------------------------------------------
 
 # test_build:
-# 	-mkdir airshiny/test
-# 	docker build -t mazamascience/airshiny:$(VERSION) \
-# 		-t mazamascience/airshiny:latest -f docker/Dockerfile-test .
+# 	-mkdir airsensorshiny/test
+# 	docker build -t mazamascience/airsensorshiny:$(VERSION) \
+# 		-t mazamascience/airsensorshiny:latest -f docker/Dockerfile-test .
 # 
 # test_up:
 # 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airshinytest up -d
+# 		-p airsensorshinytest up -d
 # 
 # test_down:
 # 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airshinytest down
+# 		-p airsensorshinytest down
 # 
 # test_container_logs:
 # 	docker-compose -f docker/docker-compose.yml \
-# 		-p airshinytest logs
+# 		-p airsensorshinytest logs
 # 
 # test_trace_log:
 # 	cat /var/log/$(SERVICE_PATH_TEST)/app/TRACE.log
@@ -69,21 +70,21 @@ desktop_reboot: desktop_down desktop_build desktop_up
 # PRODUCTION version -----------------------------------------------------------
 
 #production_build:
-#	-mkdir airshiny/prod
-#	docker build -t mazamasciene/airshiny:$(VERSION) \
-#		-t mazamascience/airshiny:latest -f docker/Dockerfile .
+#	-mkdir airsensorshiny/prod
+#	docker build -t mazamasciene/airsensorshiny:$(VERSION) \
+#		-t mazamascience/airsensorshiny:latest -f docker/Dockerfile .
 #
 #production_up:
 #	docker-compose -f docker/docker-compose.yml \
-#		-p airshiny up -d
+#		-p airsensorshiny up -d
 #
 #production_down:
 #	docker-compose -f docker/docker-compose.yml \
-#		-p airshiny down
+#		-p airsensorshiny down
 #
 #production_container_logs:
 #	docker-compose -f docker/docker-compose.yml \
-#		-p airshiny logs
+#		-p airsensorshiny logs
 #
 #production_trace_log:
 #	cat /var/log/$(SERVICE_PATH)/app/TRACE.log
