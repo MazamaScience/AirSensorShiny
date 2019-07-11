@@ -65,7 +65,7 @@ test_down:
 		-p airsensorshinytest down
 
 test_container_logs:
-	docker-compose -f docker/docker-compose.yml \
+	docker-compose -f docker/docker-compose-test.yml \
 		-p airsensorshinytest logs
 
 test_trace_log:

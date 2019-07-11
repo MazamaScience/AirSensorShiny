@@ -1,18 +1,20 @@
-FROM mazamascience/airsensor:0.3.7
+FROM mazamascience/airsensorshiny:1.2
 
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
  
-LABEL version="1.1"
+LABEL version="1.2"
 
 LABEL description="AirSensorShiny Docker Image"
 
-# Copy app directory to image 
-#COPY app /srv/shiny-server/
+# Remove sample apps
+RUN rm -rf /srv/shiny-server/
 
-RUN mkdir /airsensor
+# Copy app
+COPY app /srv/shiny-server/app
 
-COPY app /airsensor/
+# Copy index
+COPY src/index.html /srv/shiny-server/ 
 
 # Allow readable files
 RUN chmod -R 755 /srv/shiny-server/
