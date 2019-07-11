@@ -6,4 +6,4 @@ Logging works by mounting the following directories from the docker container:
 	
 	- /var/log/shiny-server/
 
-This writes time stammped logs to the directory with read-only permissions.
+This writes time stamped logs to the directory with read-only permissions.
