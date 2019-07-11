@@ -95,9 +95,11 @@ shiny::shinyServer(
 
                 pas <- get_pas()
 
-                # Remove Channel B thingspeak, and "Indoor" labeled PAS
+                # Use the defined pas_valid_choices to apply filters if needed
+                # i.e: remove any PAS that contains "Indoor" in its label
+
                 pas_valid_choices <-
-                    pas[which(!stringr::str_detect(pas$label, "[ B[Indoor]]")),]
+                    pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
 
                 AirSensor::AirShiny_leaflet(
                     pas = pas_valid_choices,
@@ -113,7 +115,7 @@ shiny::shinyServer(
             pas <- get_pas()
 
             pas_valid_choices <-
-                pas[which(!stringr::str_detect(pas$label, "[ B[Indoor]]")),]
+                pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
 
             shiny::updateSelectInput(
                 session,
