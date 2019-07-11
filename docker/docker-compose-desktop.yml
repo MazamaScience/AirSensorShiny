@@ -8,4 +8,5 @@ services:
           - "8080:3838"
       volumes: 
           - ${PWD}/logs:/srv/shiny-server/logs
+          - ${PWD}/logs:/var/log/shiny-server/
       restart: unless-stopped       
