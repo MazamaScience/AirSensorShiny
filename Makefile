@@ -49,6 +49,31 @@ desktop_bounce: desktop_down desktop_up
 desktop_reboot: desktop_down desktop_build desktop_up
 
 
+# AirSensorShiny DEFAULT version -----------------------------------------------
+
+
+default_build:
+	-mkdir airsensorshiny/output
+	docker build -t airsensor-shiny-default:$(VERSION) \
+		-t airsensor-shiny-default:latest -f docker/Dockerfile-default .
+
+default_up:
+	docker-compose -f docker/docker-compose-default.yml \
+		-p airsensorshinydefault up -d
+
+default_down:
+	docker-compose -f docker/docker-compose-default.yml \
+		-p airsensorshinydefault down
+
+default_container_logs:
+	docker-compose -f docker/docker-compose-default.yml \
+		-p airsensorshinydefault logs -f
+
+default_bounce: default_down default_up
+
+default_reboot: default_down default_build default_up
+
+
 # AirSensorShiny TEST version --------------------------------------------------
 
 test_build:

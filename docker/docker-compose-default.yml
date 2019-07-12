@@ -1,0 +1,9 @@
+version: '3'
+services:
+   shiny:
+      container_name: airsensor-shiny-default
+      image: airsensor-shiny-default
+      ports: 
+          - "6709:3838"
+      restart: unless-stopped
+  

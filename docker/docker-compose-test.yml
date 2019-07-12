@@ -1,8 +1,8 @@
 version: '3'
 services:
    shiny:
-      container_name: airsensor-shiny-test
-      image: airsensor-shiny-test
+      container_name: airsensor-shiny-default
+      image: airsensor-shiny-default
       build: .
       ports: 
           - "6709:3838"
