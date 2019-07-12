@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 services:
    shiny:
       container_name: airsensor-shiny-test
@@ -7,7 +7,8 @@ services:
       ports: 
           - "6709:3838"
       volumes: 
-          - /var/log/airsensor-shiny/test/app:/app/logs
+          - /var/log/airsensor-shiny/test/app:/srv/shiny-server/logs
+          - /var/log/airsensor-shiny/test/app:/var/log/shiny-server/
       restart: unless-stopped
   
 networks:

@@ -13,8 +13,8 @@
 # ProxyPass /airsensor-shiny/test http://127.0.0.1:6709
 # ProxyPassReverse /airsensor-shiny/test http://127.0.0.1:6709
 #
-# Test these settings with:    <CentOS equivalent of "sudo apache2ctl configtest">
-# Reload these settings with:  <CentOS equivalent of "sudo service apache2 reload">
+# Test these settings on CentOS with:    "sudo apachectl configtest"
+# Reload these settings on CentOS with:  "sudo apachectl graceful"
 
 # NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile-test
 SERVICE_PATH=airsensor-shiny/v1
