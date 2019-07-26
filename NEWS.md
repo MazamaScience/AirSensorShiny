@@ -1,3 +1,7 @@
+# AirSensorShiny 1.0.2 
+
+* Create URL freindly website, where queries can be passed in via URL
+
 # AirSensorShiny 1.0.1
  
 * Modified Makefile and docker files to get things working on
