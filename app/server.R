@@ -20,13 +20,15 @@ shiny::shinyServer(
         get_dates <- function() {
 
             sd <- lubridate::ymd(input$date_selection) -
-                  lubridate::ddays(as.numeric(input$lookback_days))
+                lubridate::ddays(as.numeric(input$lookback_days))
 
             ed <- lubridate::ymd(input$date_selection)
 
             return(c(sd, ed))
 
         }
+
+        # ----- Functions -----
 
         # Capture PAT selection from leaflet(?)
         get_pat <- function(selector = FALSE) {
@@ -88,6 +90,71 @@ shiny::shinyServer(
 
         }
 
+        # (f)unction query the url
+        fquery <-
+            function() {
+
+                # -- Query list based on url
+                query <-
+                    parseQueryString(session$clientData$url_search)
+
+                # -- Define updates based on query
+                # Update community selection based on query
+                shiny::updateSelectInput(
+                    session,
+                    inputId = "comm_select",
+                    selected = query[["communityId"]] )
+
+            }
+
+        # Create a (n)ew query string
+        nquery <-
+            function() {
+
+                # -- Substitute spaces if true
+                comm <-
+                    ifelse(
+                        grepl("\\s", input$comm_select ),
+                        gsub("\\s","\\+", input$comm_select),
+                        input$comm_select
+                    )
+
+                # -- Define queries to update based on input
+                # Update the community string
+                shiny::updateQueryString(
+                    paste0(
+                        "?communityId=",
+                        comm)
+                )
+
+
+            }
+
+        # ----- Observations to update -----
+
+        # Update based on URL
+        shiny::observeEvent( session$clientData$url_search, fquery() )
+
+        # Update URL based on community selection
+        shiny::observeEvent( input$comm_select, nquery() )
+
+        # Global observations
+        shiny::observe({
+
+            # Update selected pas based on leaflet selection
+            pas <- get_pas()
+
+            pas_valid_choices <-
+                pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
+
+            shiny::updateSelectInput(
+                session,
+                inputId = "pas_select",
+                selected = input$leaflet_marker_click[1],
+                choices = pas_valid_choices$label
+            )
+
+        })
 
         # Leaflet render
         output$leaflet <-
@@ -109,54 +176,7 @@ shiny::shinyServer(
 
             })
 
-
-        shiny::observe({
-
-            # ----- Update based on URL
-            # example: tools.mazamascience.com/airsensor-test/app/?communityId=Seal+Beach
-            # commUrl := Seal+Beach
-
-            commUrlId <-
-                sub("communityId=", "",
-                    regmatches(
-                        session$clientData$url_search,
-                        regexpr(
-                            "communityId=(.+)",
-                            session$clientData$url_search
-                        )
-                    )
-                )
-
-            if ( length(commUrlId) != 0 && grepl("\\+", commUrlId) ) {
-
-                commUrlId <- gsub("\\+"," ",commUrlId)
-
-            } else {
-
-                commUrlId <- "all"
-
-            }
-
-            shiny::updateSelectInput(
-                session,
-                inputId = "comm_select",
-                selected = commUrlId
-                )
-
-            # ----- Update Selected pas based on leaflet selection
-            pas <- get_pas()
-
-            pas_valid_choices <-
-                pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
-
-            shiny::updateSelectInput(
-                session,
-                inputId = "pas_select",
-                selected = input$leaflet_marker_click[1],
-                choices = pas_valid_choices$label
-            )
-
-        })
+        # ----- Outputs -----
 
         # Standard Plot output
         output$selected_plot <-
@@ -238,8 +258,8 @@ shiny::shinyServer(
                     need(
                         pat,
                         "An Error has occured. Please select another sensor."
-                        )
                     )
+                )
 
                 data <- pat$data
 
