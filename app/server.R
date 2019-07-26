@@ -109,9 +109,41 @@ shiny::shinyServer(
 
             })
 
-        # Update Selected pas based on leaflet selection
+
         shiny::observe({
 
+            # ----- Update based on URL
+            # example: tools.mazamascience.com/airsensor-test/app/?communityId=Seal+Beach
+            # commUrl := Seal+Beach
+
+            commUrlId <-
+                sub("communityId=", "",
+                    regmatches(
+                        session$clientData$url_search,
+                        regexpr(
+                            "communityId=(.+)",
+                            session$clientData$url_search
+                        )
+                    )
+                )
+
+            if ( length(commUrlId) != 0 && grepl("\\+", commUrlId) ) {
+
+                commUrlId <- gsub("\\+"," ",commUrlId)
+
+            } else {
+
+                commUrlId <- "all"
+
+            }
+
+            shiny::updateSelectInput(
+                session,
+                inputId = "comm_select",
+                selected = commUrlId
+                )
+
+            # ----- Update Selected pas based on leaflet selection
             pas <- get_pas()
 
             pas_valid_choices <-
