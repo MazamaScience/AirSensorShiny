@@ -130,6 +130,134 @@ shiny::shinyServer(
 
             }
 
+        # Render Bar Plot
+        renderBarPlot <-
+            function(plotType) {
+
+                shiny::renderPlot({
+
+                    # NOTE: The current method is not filtering ANY outliers for
+                    # NOTE: ANY of the plots - may be prone to change.
+                    pat <- try(get_pat())
+                    dates <- get_dates()
+
+                    # Validate a pas selection has been made.
+                    validate(
+                        need(
+                            input$leaflet_marker_click != "",
+                            "Select a Purple Air Sensor"
+                        )
+                    )
+
+                    # Validate that pat is returned.
+                    validate(
+                        need(
+                            pat,
+                            "An Error has occured. Please select another sensor."
+                        )
+                    )
+
+                    # Validate that pat has enough rows for aggregation.
+                    validate(
+                        need(
+                            nrow(pat$data) > 60,
+                            "An Error has occured. Please a different date."
+                        )
+                    )
+
+                    if ( plotType == "daily_plot" ) {
+
+                        AirSensor::AirShiny_barplot(
+                            pat,
+                            period = "1 day",
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
+
+                    } else if ( plotType == "multi_plot" ) {
+
+                        AirSensor::pat_multiplot(pat)
+
+                    }  else if ( plotType == "hourly_plot" ) {
+
+                        AirSensor::AirShiny_barplot(
+                            pat,
+                            period = "1 hour",
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
+
+                    }
+
+                })
+
+            }
+
+        # Render Multiplot
+        renderMultiplot <-
+            function() {
+
+                shiny::renderPlot({
+
+                    # NOTE: The current method is not filtering ANY outliers for
+                    # NOTE: ANY of the plots - may be prone to change.
+                    pat <- try(get_pat())
+                    dates <- get_dates()
+
+                    # Validate a pas selection has been made.
+                    validate(
+                        need(
+                            input$leaflet_marker_click != "",
+                            "Select a Purple Air Sensor"
+                        )
+                    )
+
+                    # Validate that pat is returned.
+                    validate(
+                        need(
+                            pat,
+                            "An Error has occured. Please select another sensor."
+                        )
+                    )
+
+                    # Validate that pat has enough rows for aggregation.
+                    validate(
+                        need(
+                            nrow(pat$data) > 60,
+                            "An Error has occured. Please a different date."
+                        )
+                    )
+
+                    AirSensor::pat_multiplot(pat)
+
+                })
+
+            }
+
+        # Render Map
+        renderMap <-
+            function() {
+
+                leaflet::renderLeaflet({
+
+                    pas <- get_pas()
+
+                    # Use the defined pas_valid_choices to apply filters if needed
+                    # i.e: remove any PAS that contains "Indoor" in its label
+
+                    pas_valid_choices <-
+                        pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
+
+                    AirSensor::AirShiny_leaflet(
+                        pas = pas_valid_choices,
+                        parameter = "pm25_current",
+                        paletteName = "Purple"
+                    )
+
+                })
+
+            }
+
         # ----- Observations to update -----
 
         # Update based on URL
@@ -137,6 +265,15 @@ shiny::shinyServer(
 
         # Update URL based on community selection
         shiny::observeEvent( input$comm_select, nquery() )
+
+        # Standard Plot output based on plot selection
+        shiny::observeEvent(
+            input$plot_type_select,
+            {
+                output$selected_plot <-
+                    renderBarPlot(plotType = input$plot_type_select)
+            }
+        )
 
         # Global observations
         shiny::observe({
@@ -156,86 +293,14 @@ shiny::shinyServer(
 
         })
 
-        # Leaflet render
-        output$leaflet <-
-            leaflet::renderLeaflet({
-
-                pas <- get_pas()
-
-                # Use the defined pas_valid_choices to apply filters if needed
-                # i.e: remove any PAS that contains "Indoor" in its label
-
-                pas_valid_choices <-
-                    pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
-
-                AirSensor::AirShiny_leaflet(
-                    pas = pas_valid_choices,
-                    parameter = "pm25_current",
-                    paletteName = "Purple"
-                )
-
-            })
-
         # ----- Outputs -----
 
-        # Standard Plot output
-        output$selected_plot <-
-            shiny::renderPlot({
+        # Leaflet render
+        output$leaflet <- renderMap()
 
-                # NOTE: The current method is not filtering ANY outliers for
-                # NOTE: ANY of the plots - may be prone to change.
-                pat <- try(get_pat())
-                dates <- get_dates()
+        # Summary plot
 
-                # Validate a pas selection has been made.
-                validate(
-                    need(
-                        input$leaflet_marker_click != "",
-                        "Select a Purple Air Sensor"
-                    )
-                )
-
-                # Validate that pat is returned.
-                validate(
-                    need(
-                        pat,
-                        "An Error has occured. Please select another sensor."
-                    )
-                )
-
-                # Validate that pat has enough rows for aggregation.
-                validate(
-                    need(
-                        nrow(pat$data) > 60,
-                        "An Error has occured. Please a different date."
-                    )
-                )
-
-                if ( input$plot_type_select == "daily_plot" ) {
-
-                    AirSensor::AirShiny_barplot(
-                        pat,
-                        period = "1 day",
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
-
-                } else if ( input$plot_type_select == "multi_plot" ) {
-
-                    AirSensor::pat_multiplot(pat)
-
-                }  else if ( input$plot_type_select == "hourly_plot" ) {
-
-                    AirSensor::AirShiny_barplot(
-                        pat,
-                        period = "1 hour",
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
-
-                }
-
-            })
+        output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
 
         # TODO: HANDLE SPECIAL DYGRAPH CASE
 
