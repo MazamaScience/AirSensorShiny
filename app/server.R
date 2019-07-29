@@ -31,7 +31,7 @@ shiny::shinyServer(
         # ----- Functions -----
 
         # Capture PAT selection from leaflet(?)
-        get_pat <- function(selector = FALSE) {
+        get_pat <- function(selector = FALSE, de_selector = FALSE) {
 
             logger.debug(" # get_pat #")
 
@@ -42,6 +42,14 @@ shiny::shinyServer(
                 pat <-
                     AirSensor::pat_load(
                         label = input$pas_select,
+                        startdate = dates[1],
+                        enddate = dates[2]
+                    )
+
+            } else if ( de_selector ) {
+                pat <-
+                    AirSensor::pat_load(
+                        label = input$de_pas_select,
                         startdate = dates[1],
                         enddate = dates[2]
                     )
@@ -258,54 +266,65 @@ shiny::shinyServer(
 
             }
 
-        # Fly to selected PAS
-        fly2 <-
+        # On-Selected function for selected pas, or map click
+        onSelect <-
             function() {
-                # Get coords
-                    lab <- input$pas_select
-                    ind <- which(PAS$label == lab)
+                # Get data
+                lab <- input$pas_select
+                ind <- which(PAS$label == lab)
+                lng = PAS$longitude[ind]
+                lat =  PAS$latitude[ind]
 
-                    data <-
-                        list(
-                    "seen" = PAS$lastSeenDate[ind],
-                    "pm" = paste0("PM2.5:  ", PAS$pm25[ind], "  ug/m3"),
-                    "temp" = paste("Temperature:", PAS$temperature[ind], "F"),
-                    "rh" = paste("Humidity:", PAS$humidity[ind], "%"),
-                    "lng" = PAS$longitude[ind],
-                    "lat" =  PAS$latitude[ind]
+                # Create popup HTML
+                html <-
+                    list(
+                        "lab" = paste("<b><a>",lab,"</a></b>"),
+                        "seen" = PAS$statsLastModifiedDate[ind],
+                        "pm" = paste("PM2.5:",
+                                     round(PAS$pm25[ind], 1),
+                                     "\U00B5g/m3"),
+                        "temp" = paste("Temperature:",
+                                       round(PAS$temperature[ind], 0),
+                                       "F"),
+                        "rh" = paste("Humidity:",
+                                     round(PAS$humidity[ind], 0),
+                                     "%"),
+                        "lng" = PAS$longitude[ind],
+                        "lat" =  PAS$latitude[ind]
                     )
 
-                    # Make popup
-                    content <-
-                        paste(sep = "<br/>",
-                                    "<b><font size = 3",lab,"</font></b>",
-                                    data$seen,
-                                    data$pm,
-                                    data$temp,
-                              data$rh
+                # Make popup
+                content <-
+                    paste(
+                        html$lab,
+                        html$seen,
+                        html$pm,
+                        html$temp,
+                        html$rh,
+                        sep = "<br/>"
+                    )
 
-                        )
-
-                     leaflet::leafletProxy("leaflet") %>%
-                         leaflet::clearPopups() %>%
-                        leaflet::flyTo(
-                            data$lng,
-                            data$lat,
-                            zoom = input$leaflet_zoom
-                            ) %>%
-                        # Add a selected PAS marker
-                        # NOTE: Marker given tmp layerId for hacky temp
-                        # visual workaround. Interactive is false for hacky
-                        # workaround to "send to back" to avoid popup conflict.
-                        leaflet::addCircleMarkers(
-                            data$lng,
-                            data$lat,
-                            radius = 11,
-                            fillOpacity = 0,
-                            layerId = "selectTmp",
-                            options = leaflet::pathOptions(interactive = F)
-                            ) %>%
-                         leaflet::addPopups(data$lng, data$lat, popup = content)
+                # Interact with proxy leaflet to avoid redraw
+                leaflet::leafletProxy("leaflet") %>%
+                    leaflet::clearPopups() %>%
+                    leaflet::flyTo(
+                        lng,
+                        lat,
+                        zoom = input$leaflet_zoom
+                    ) %>%
+                    # Add a selected PAS marker
+                    # NOTE: Marker given tmp layerId for hacky temp
+                    # visual workaround. Interactive is false for hacky
+                    # workaround to "send to back" to avoid popup conflict.
+                    leaflet::addCircleMarkers(
+                        lng,
+                        lat,
+                        radius = 11,
+                        fillOpacity = 0,
+                        layerId = "selectTmp",
+                        options = leaflet::pathOptions(interactive = F)
+                    ) %>%
+                    leaflet::addPopups(lng, lat, popup = content)
 
             }
 
@@ -329,7 +348,7 @@ shiny::shinyServer(
         # Update based on PAS select
         shiny::observeEvent(
             input$pas_select,
-            fly2()
+            onSelect()
         )
 
         # Global observations
@@ -348,6 +367,13 @@ shiny::shinyServer(
                 choices = pas_valid_choices$label
             )
 
+            shiny::updateSelectInput(
+                session,
+                inputId = "de_pas_select",
+                selected = input$pas_select,
+                choices = pas_valid_choices$label
+            )
+
         })
 
         # ----- Outputs -----
@@ -356,7 +382,6 @@ shiny::shinyServer(
         output$leaflet <- renderLeaf()
 
         # Summary plot
-
         output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
 
         # TODO: HANDLE SPECIAL DYGRAPH CASE
@@ -365,12 +390,12 @@ shiny::shinyServer(
         output$data_explorer <-
             shiny::renderDataTable({
 
-                pat <- try(get_pat(selector = TRUE))
+                pat <- try(get_pat(de_selector = TRUE))
 
                 # Validate a pas selection has been made
                 validate(
                     need(
-                        input$pas_select != "",
+                        input$de_pas_select != "",
                         "Select a Sensor"
                     )
                 )
@@ -393,9 +418,9 @@ shiny::shinyServer(
         output$meta_explorer <-
             shiny::renderTable({
 
-                validate(need(input$pas_select != "", ""))
+                validate(need(input$de_pas_select != "", ""))
 
-                pat <- try(get_pat(selector = TRUE))
+                pat <- try(get_pat(de_selector = TRUE))
 
                 pas <- get_pas()
 
@@ -411,7 +436,7 @@ shiny::shinyServer(
                     pas$communityRegion[which(pas$label == pat$meta$label)][1]
 
                 meta <-
-                    dplyr::tibble(
+                    data.frame(
                         "Community" = community,
                         "Sensor Type" = pat$meta$sensorType,
                         "Longitude" = pat$meta$longitude,
@@ -431,7 +456,7 @@ shiny::shinyServer(
                 filename = function() {
 
                     dates <- get_dates()
-                    pat <- get_pat(selector = TRUE)
+                    pat <- get_pat(de_selector = TRUE)
 
                     paste0(
                         pat$meta$label,

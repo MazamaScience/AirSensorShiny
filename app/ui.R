@@ -129,8 +129,8 @@ shiny::shinyUI(
             shiny::column(
                 width = 2,
                 shiny::selectInput(
-                    inputId = "pas_select_de",
-                    label = "Purple Air Sensor:",
+                    inputId = "de_pas_select",
+                    label = "Sensor",
                     choices = ""
                 )
             ),
