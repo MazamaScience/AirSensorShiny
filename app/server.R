@@ -235,7 +235,7 @@ shiny::shinyServer(
             }
 
         # Render Map
-        renderMap <-
+        renderLeaf <-
             function() {
 
                 leaflet::renderLeaflet({
@@ -258,6 +258,57 @@ shiny::shinyServer(
 
             }
 
+        # Fly to selected PAS
+        fly2 <-
+            function() {
+                # Get coords
+                    lab <- input$pas_select
+                    ind <- which(PAS$label == lab)
+
+                    data <-
+                        list(
+                    "seen" = PAS$lastSeenDate[ind],
+                    "pm" = paste0("PM2.5:  ", PAS$pm25[ind], "  ug/m3"),
+                    "temp" = paste("Temperature:", PAS$temperature[ind], "F"),
+                    "rh" = paste("Humidity:", PAS$humidity[ind], "%"),
+                    "lng" = PAS$longitude[ind],
+                    "lat" =  PAS$latitude[ind]
+                    )
+
+                    # Make popup
+                    content <-
+                        paste(sep = "<br/>",
+                                    "<b><font size = 3",lab,"</font></b>",
+                                    data$seen,
+                                    data$pm,
+                                    data$temp,
+                              data$rh
+
+                        )
+
+                     leaflet::leafletProxy("leaflet") %>%
+                         leaflet::clearPopups() %>%
+                        leaflet::flyTo(
+                            data$lng,
+                            data$lat,
+                            zoom = input$leaflet_zoom
+                            ) %>%
+                        # Add a selected PAS marker
+                        # NOTE: Marker given tmp layerId for hacky temp
+                        # visual workaround. Interactive is false for hacky
+                        # workaround to "send to back" to avoid popup conflict.
+                        leaflet::addCircleMarkers(
+                            data$lng,
+                            data$lat,
+                            radius = 11,
+                            fillOpacity = 0,
+                            layerId = "selectTmp",
+                            options = leaflet::pathOptions(interactive = F)
+                            ) %>%
+                         leaflet::addPopups(data$lng, data$lat, popup = content)
+
+            }
+
         # ----- Observations to update -----
 
         # Update based on URL
@@ -273,6 +324,12 @@ shiny::shinyServer(
                 output$selected_plot <-
                     renderBarPlot(plotType = input$plot_type_select)
             }
+        )
+
+        # Update based on PAS select
+        shiny::observeEvent(
+            input$pas_select,
+            fly2()
         )
 
         # Global observations
@@ -296,7 +353,7 @@ shiny::shinyServer(
         # ----- Outputs -----
 
         # Leaflet render
-        output$leaflet <- renderMap()
+        output$leaflet <- renderLeaf()
 
         # Summary plot
 
