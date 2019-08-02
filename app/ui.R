@@ -9,7 +9,7 @@
 # - Mazama Science
 #
 
-logger.debug("----- ui() -----")
+MazamaCoreUtils::logger.debug("----- ui() -----")
 
 # ----- Define UI --------------------------------------------------------------
 shiny::shinyUI(
@@ -23,7 +23,7 @@ shiny::shinyUI(
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
 
-            title = "Interactive Map",
+            title = "Explorer",
 
             shiny::fluidRow(
 
@@ -123,7 +123,7 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
-            title = "Data Explorer",
+            title = "Data Viewer",
 
             # PAS selection input
             shiny::column(
