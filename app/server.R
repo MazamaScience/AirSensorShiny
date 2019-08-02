@@ -9,7 +9,7 @@
 # - Mazama Science
 #
 
-logger.debug("----- server() -----")
+MazamaCoreUtils::logger.debug("----- server() -----")
 
 # ----- Define Server Logic ----------------------------------------------------
 
@@ -17,86 +17,89 @@ shiny::shinyServer(
     function(input, output, session) {
 
         # Capture date inputs
-        get_dates <- function() {
+        get_dates <-
+            function() {
 
-            sd <- lubridate::ymd(input$date_selection) -
-                lubridate::ddays(as.numeric(input$lookback_days))
+                sd <- lubridate::ymd(input$date_selection) -
+                    lubridate::ddays(as.numeric(input$lookback_days))
 
-            ed <- lubridate::ymd(input$date_selection)
+                ed <- lubridate::ymd(input$date_selection)
 
-            return(c(sd, ed))
+                return(c(sd, ed))
 
-        }
+            }
 
         # ----- Functions -----
 
-        # Capture PAT selection from leaflet(?)
-        get_pat <- function(selector = FALSE, de_selector = FALSE) {
+        # Capture PAT selection
+        get_pat <-
+            function(selector = FALSE, de_selector = FALSE) {
 
-            logger.debug(" # get_pat #")
+                MazamaCoreUtils::logger.debug(" # get_pat #")
 
-            dates <- get_dates()
+                dates <- get_dates()
 
-            if ( selector ) {
+                if ( selector ) {
 
-                pat <-
-                    AirSensor::pat_load(
-                        label = input$pas_select,
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
+                    pat <-
+                        AirSensor::pat_load(
+                            label = input$pas_select,
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
 
-            } else if ( de_selector ) {
-                pat <-
-                    AirSensor::pat_load(
-                        label = input$de_pas_select,
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
+                } else if ( de_selector ) {
+                    pat <-
+                        AirSensor::pat_load(
+                            label = input$de_pas_select,
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
 
-            } else {
+                } else {
 
-                pat <-
-                    AirSensor::pat_load(
-                        label = input$leaflet_marker_click[1],
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
+                    pat <-
+                        AirSensor::pat_load(
+                            label = input$leaflet_marker_click[1],
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
+
+                }
+
+                return(pat)
 
             }
-
-            return(pat)
-
-        }
 
         # Capture selected PAS based on community selection
-        get_pas <- function() {
+        get_pas <-
+            function() {
 
-            if ( input$comm_select == "all" )  {
+                if ( input$comm_select == "all" )  {
 
-                pas <- PAS[which(!is.na(PAS$communityRegion)),]
+                    pas <- PAS[which(!is.na(PAS$communityRegion)),]
 
-            } else {
+                } else {
 
-                pas <-
-                    PAS[which(
-                        stringr::str_detect(
-                            PAS$communityRegion,
-                            input$comm_select)
-                    ),]
+                    pas <-
+                        PAS[which(
+                            stringr::str_detect(
+                                PAS$communityRegion,
+                                input$comm_select)
+                        ),]
+
+                }
+
+                pas$label <-
+                    stringr::str_split(
+                        string = pas$label,
+                        pattern = " ",
+                        simplify = TRUE
+                    )[,1]
+
+                return(pas)
 
             }
-
-            pas$label <-
-                stringr::str_split(
-                    string = pas$label,
-                    pattern = " ",
-                    simplify = TRUE
-                )[,1]
-
-            return(pas)
-
-        }
 
         # (f)unction query the url
         fquery <-
@@ -146,16 +149,10 @@ shiny::shinyServer(
 
                     # NOTE: The current method is not filtering ANY outliers for
                     # NOTE: ANY of the plots - may be prone to change.
-                    pat <- try(get_pat())
-                    dates <- get_dates()
 
-                    # Validate a pas selection has been made.
-                    validate(
-                        need(
-                            input$leaflet_marker_click != "",
-                            "Select a Purple Air Sensor"
-                        )
-                    )
+                    # get pat based on pas selection
+                    pat <- try(get_pat(selector = TRUE))
+                    dates <- get_dates()
 
                     # Validate that pat is returned.
                     validate(
@@ -175,7 +172,7 @@ shiny::shinyServer(
 
                     if ( plotType == "daily_plot" ) {
 
-                        AirSensor::AirShiny_barplot(
+                        utils_barplot(
                             pat,
                             period = "1 day",
                             startdate = dates[1],
@@ -188,7 +185,7 @@ shiny::shinyServer(
 
                     }  else if ( plotType == "hourly_plot" ) {
 
-                        AirSensor::AirShiny_barplot(
+                        utils_barplot(
                             pat,
                             period = "1 hour",
                             startdate = dates[1],
@@ -256,7 +253,7 @@ shiny::shinyServer(
                     pas_valid_choices <-
                         pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
 
-                    AirSensor::AirShiny_leaflet(
+                    utils_leaflet(
                         pas = pas_valid_choices,
                         parameter = "pm25_current",
                         paletteName = "Purple"
@@ -266,9 +263,160 @@ shiny::shinyServer(
 
             }
 
-        # On-Selected function for selected pas, or map click
-        onSelect <-
+        # Render Selected label meta table
+        renderSelectedLabel <-
             function() {
+
+                shiny::renderTable({
+
+                    validate(need(input$pas_select != "", ""))
+
+                    # Get data
+                    lab <- input$pas_select
+                    ind <- which(PAS$label == lab)
+                    lng = PAS$longitude[ind]
+                    lat =  PAS$latitude[ind]
+
+                    dplyr::tibble(
+                        "Sensor" = lab,
+                        "Latitude" = lat,
+                        "Longitude" = lng
+                    )
+
+                })
+
+            }
+
+        # Render Meta table explorer
+        renderMetaExplorer <-
+            function() {
+
+                shiny::renderTable({
+
+                    validate(need(input$de_pas_select != "", ""))
+
+                    pat <- try(get_pat(de_selector = TRUE))
+
+                    pas <- get_pas()
+
+                    # Validate that pat is returned if not display
+                    validate(
+                        need(
+                            pat,
+                            ""
+                        )
+                    )
+
+                    community <-
+                        pas$communityRegion[which(pas$label == pat$meta$label)][1]
+
+                    meta <-
+                        data.frame(
+                            "Community" = community,
+                            "Sensor Type" = pat$meta$sensorType,
+                            "Longitude" = pat$meta$longitude,
+                            "Latitude" = pat$meta$latitude,
+                            "State" = pat$meta$stateCode,
+                            "Country" = pat$meta$countryCode,
+                            "Timezone" = pat$meta$timezone
+                        )
+
+                    return(meta)
+
+                })
+
+            }
+
+        # Render Data Table Explorer
+        renderDataExplorer <-
+            function() {
+
+                shiny::renderDataTable({
+
+                    pat <- try(get_pat(de_selector = TRUE))
+
+                    # Validate a pas selection has been made
+                    validate(
+                        need(
+                            input$de_pas_select != "",
+                            "Select a Sensor"
+                        )
+                    )
+
+                    # Validate that pat is returned
+                    validate(
+                        need(
+                            pat,
+                            "An Error has occured. Please select another sensor."
+                        )
+                    )
+
+                    data <- pat$data
+
+                    return(data)
+
+                })
+
+            }
+
+        # Handle download button
+        downloadButton <-
+            function() {
+
+                shiny::downloadHandler(
+                    filename = function() {
+
+                        dates <- get_dates()
+                        pat <- get_pat(de_selector = TRUE)
+
+                        paste0(
+                            pat$meta$label,
+                            "_",
+                            dates[1],
+                            "_",
+                            dates[2],
+                            ".csv"
+                        )
+
+                    },
+
+                    content = function(file) {
+
+                        pat <- get_pat(selector = TRUE)
+                        write.csv(pat$data, file = file)
+
+                    }
+
+                )
+
+            }
+
+        # Update pas selections from map click
+        updateSelect <-
+            function() {
+
+                # Update selected pas based on leaflet selection
+                pas <- get_pas()
+
+                pas_valid_choices <-
+                    pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
+
+                shiny::updateSelectInput(
+                    session,
+                    inputId = "pas_select",
+                    selected = input$leaflet_marker_click[1],
+                    choices = pas_valid_choices$label
+                )
+
+                # Update URL communityId
+                nquery()
+
+            }
+
+        # Update leaflet function for selected pas, or map click
+        updateLeaf <-
+            function() {
+
                 # Get data
                 lab <- input$pas_select
                 ind <- which(PAS$label == lab)
@@ -328,44 +476,55 @@ shiny::shinyServer(
 
             }
 
+        # Update bar plot from plot type selection
+        updateBarPlot <-
+            function() {
+
+                output$selected_plot <-
+                    renderBarPlot(plotType = input$plot_type_select)
+
+            }
+
         # ----- Observations to update -----
 
         # Update based on URL
-        shiny::observeEvent( session$clientData$url_search, fquery() )
-
-        # Update URL based on community selection
-        shiny::observeEvent( input$comm_select, nquery() )
-
-        # Standard Plot output based on plot selection
         shiny::observeEvent(
-            input$plot_type_select,
-            {
-                output$selected_plot <-
-                    renderBarPlot(plotType = input$plot_type_select)
-            }
+            session$clientData$url_search,
+            fquery()
         )
 
-        # Update based on PAS select
+        # Update URL and selectable PAS based on community selection
+        shiny::observeEvent(
+            input$comm_select,
+            updateSelect()
+        )
+
+        # Update bar plot output based on plot type selection
+        shiny::observeEvent(
+            input$plot_type_select,
+            updateBarPlot()
+        )
+
+        # Update leaflet based on PAS select
         shiny::observeEvent(
             input$pas_select,
-            onSelect()
+            updateLeaf()
+        )
+
+        # Update PAS select based on leaflet
+        shiny::observeEvent(
+            input$leaflet_marker_click,
+            updateSelect()
         )
 
         # Global observations
         shiny::observe({
 
-            # Update selected pas based on leaflet selection
+            # Update selected data explorer pas based on leaflet selection
             pas <- get_pas()
 
             pas_valid_choices <-
                 pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
-
-            shiny::updateSelectInput(
-                session,
-                inputId = "pas_select",
-                selected = input$leaflet_marker_click[1],
-                choices = pas_valid_choices$label
-            )
 
             shiny::updateSelectInput(
                 session,
@@ -378,120 +537,23 @@ shiny::shinyServer(
 
         # ----- Outputs -----
 
-        # Leaflet render
+        # Leaflet Map
         output$leaflet <- renderLeaf()
 
-        # Summary plot
+        # Summary plot (below map)
         output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
 
-        # TODO: HANDLE SPECIAL DYGRAPH CASE
-
         # Data Table
-        output$data_explorer <-
-            shiny::renderDataTable({
-
-                pat <- try(get_pat(de_selector = TRUE))
-
-                # Validate a pas selection has been made
-                validate(
-                    need(
-                        input$de_pas_select != "",
-                        "Select a Sensor"
-                    )
-                )
-
-                # Validate that pat is returned
-                validate(
-                    need(
-                        pat,
-                        "An Error has occured. Please select another sensor."
-                    )
-                )
-
-                data <- pat$data
-
-                return(data)
-
-            })
+        output$data_explorer <- renderDataExplorer()
 
         # Meta Table
-        output$meta_explorer <-
-            shiny::renderTable({
-
-                validate(need(input$de_pas_select != "", ""))
-
-                pat <- try(get_pat(de_selector = TRUE))
-
-                pas <- get_pas()
-
-                # Validate that pat is returned if not display
-                validate(
-                    need(
-                        pat,
-                        ""
-                    )
-                )
-
-                community <-
-                    pas$communityRegion[which(pas$label == pat$meta$label)][1]
-
-                meta <-
-                    data.frame(
-                        "Community" = community,
-                        "Sensor Type" = pat$meta$sensorType,
-                        "Longitude" = pat$meta$longitude,
-                        "Latitude" = pat$meta$latitude,
-                        "State" = pat$meta$stateCode,
-                        "Country" = pat$meta$countryCode,
-                        "Timezone" = pat$meta$timezone
-                    )
-
-                return(meta)
-
-            })
+        output$meta_explorer <- renderMetaExplorer()
 
         # Download button
-        output$download_data <-
-            shiny::downloadHandler(
-                filename = function() {
-
-                    dates <- get_dates()
-                    pat <- get_pat(de_selector = TRUE)
-
-                    paste0(
-                        pat$meta$label,
-                        "_",
-                        dates[1],
-                        "_",
-                        dates[2],
-                        ".csv"
-
-                    )
-
-                },
-
-                content = function(file) {
-
-                    pat <- get_pat(selector = TRUE)
-                    write.csv(pat$data, file = file)
-
-                }
-
-            )
+        output$download_data <- downloadButton()
 
         # Leaflet selection label
-        output$selected_label <-
-            shiny::renderTable({
-
-                validate(need(input$leaflet_marker_click != "", ""))
-
-                dplyr::tibble(
-                    "Sensor" = input$leaflet_marker_click[1],
-                    "Latitude" = input$leaflet_marker_click[3],
-                    "Longitude" = input$leaflet_marker_click[4]
-                )
-
-            })
+        output$selected_label <- renderSelectedLabel()
 
     }
 
