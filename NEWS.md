@@ -1,6 +1,9 @@
 # AirSensorShiny 1.0.2 
 
 * Create URL freindly website, where queries can be passed in via URL
+* Updated UI to support new features, such as tabs and more functionality
+* Added internal `utils.R` script to support features
+* Refactored `server.R` to add functionality
 
 # AirSensorShiny 1.0.1
  
