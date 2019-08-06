@@ -55,7 +55,7 @@ utils_leaflet <- function(
     pas,
     paletteName = paletteName,
     parameter = parameter,
-    reverse=TRUE
+    reverse= TRUE
   )
 
   cols <- colorInfo$colors
@@ -210,7 +210,7 @@ utils_barplot <-
       ggplot2::xlab("Datetime") +
       ggplot2::ylab("\u03bcg / m\u00b3") +
       ggplot2::theme_minimal() +
-      ggplot2::scale_fill_gradientn(colors = palette(100), limits = c(0, 200)) +
+      ggplot2::scale_fill_viridis_c(begin = 0.15) +
       ggplot2::scale_x_datetime(date_breaks = "1 day") +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(

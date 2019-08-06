@@ -79,7 +79,10 @@ shiny::shinyUI(
                         # --- Leaflet Tab ---
                         shiny::tabPanel(
 
-                            title = "Map",
+                            title = "Overview",
+
+                            shiny::column(
+                                width = 10,
                             # Plot outputs
                             leaflet::leafletOutput(
                                 outputId = "leaflet", height = 600
@@ -88,6 +91,12 @@ shiny::shinyUI(
                             shiny::plotOutput(
                                 outputId = "summary_plot", height = 200
                             )
+                            ),
+                            shiny::column(
+                                width = 2, style = "margin-top: 0px;",
+                                shiny::plotOutput(
+                                    outputId = "cal_plot", height = 800
+                                ))
 
                         ),
 
@@ -109,6 +118,22 @@ shiny::shinyUI(
                             shiny::plotOutput(
                                 outputId = "selected_plot", height = 500
                             )
+                        ),
+
+                        # --- Video tab ---
+                        shiny::tabPanel(
+                            title = "Animation" ,
+                            tags$video(
+                                id="video2",
+                                type = "video/mp4",
+                                src = "",
+                                controls = "controls"
+                                )
+                        ),
+
+                        # --- Compare tab ---
+                        shiny::tabPanel(
+                            title = "Compare"
                         )
 
                     )

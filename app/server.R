@@ -198,6 +198,35 @@ shiny::shinyServer(
 
             }
 
+        # Render calendar plot
+        renderCalPlot <-
+            function() {
+
+                shiny::renderPlot({
+
+                    # Validate that pas is selected.
+                    validate(
+                        need(
+                            input$pas_select,
+                            ""
+                        )
+                    )
+
+                    # Create start of year date
+                    sd <- paste0(strftime(input$date_selection, "%Y"), "0101")
+
+                    label <- input$pas_select
+
+                    # Load annual pat to now
+                    pat <- pat_load(label, startdate = sd, enddate = Sys.Date())
+
+                    # Calendar plot
+                    AirSensor::pat_calendarPlot(pat)
+
+                })
+
+            }
+
         # Render Multiplot
         renderMultiplot <-
             function() {
@@ -256,7 +285,7 @@ shiny::shinyServer(
                     utils_leaflet(
                         pas = pas_valid_choices,
                         parameter = "pm25_current",
-                        paletteName = "Purple"
+                        paletteName = "Spectral" #"Purple"
                     )
 
                 })
@@ -542,6 +571,8 @@ shiny::shinyServer(
 
         # Summary plot (below map)
         output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
+
+        output$cal_plot <- renderCalPlot()
 
         # Data Table
         output$data_explorer <- renderDataExplorer()
