@@ -16,6 +16,8 @@ MazamaCoreUtils::logger.debug("----- server() -----")
 shiny::shinyServer(
     function(input, output, session) {
 
+        # ----- Functions -----
+
         # Capture date inputs
         get_dates <-
             function() {
@@ -28,8 +30,6 @@ shiny::shinyServer(
                 return(c(sd, ed))
 
             }
-
-        # ----- Functions -----
 
         # Capture PAT selection
         get_pat <-
@@ -114,7 +114,22 @@ shiny::shinyServer(
                 shiny::updateSelectInput(
                     session,
                     inputId = "comm_select",
-                    selected = query[["communityId"]] )
+                    selected = query[["communityId"]]
+                )
+
+                # Update selected tab based on query
+                shiny::updateTabsetPanel(
+                    session,
+                    inputId = "tab_select",
+                    selected = query[["tb"]]
+                )
+
+                # Update selected pas based on query
+                shiny::updateSelectInput(
+                    session,
+                    inputId = "pas_select",
+                    selected = query[["sensorId"]]
+                )
 
             }
 
@@ -122,20 +137,34 @@ shiny::shinyServer(
         nquery <-
             function() {
 
+                # Community
                 # -- Substitute spaces if true
-                comm <-
+                cComm <-
                     ifelse(
                         grepl("\\s", input$comm_select ),
                         gsub("\\s","\\+", input$comm_select),
                         input$comm_select
                     )
+                # Current tab
+                cTab <-
+                    input$tab_select
+
+                # Current pas select
+                cPas <- input$pas_select
 
                 # -- Define queries to update based on input
                 # Update the community string
                 shiny::updateQueryString(
                     paste0(
+                        "?tb=",
+                        cTab,
+                        "&",
                         "?communityId=",
-                        comm)
+                        cComm,
+                        "&",
+                        "?sensorId=",
+                        cPas
+                    )
                 )
 
 
@@ -235,13 +264,13 @@ shiny::shinyServer(
 
                     # NOTE: The current method is not filtering ANY outliers for
                     # NOTE: ANY of the plots - may be prone to change.
-                    pat <- try(get_pat())
+                    pat <- try(get_pat(selector = TRUE))
                     dates <- get_dates()
 
                     # Validate a pas selection has been made.
                     validate(
                         need(
-                            input$leaflet_marker_click != "",
+                            input$pas_select != "",
                             "Select a Purple Air Sensor"
                         )
                     )
@@ -251,14 +280,6 @@ shiny::shinyServer(
                         need(
                             pat,
                             "An Error has occured. Please select another sensor."
-                        )
-                    )
-
-                    # Validate that pat has enough rows for aggregation.
-                    validate(
-                        need(
-                            nrow(pat$data) > 60,
-                            "An Error has occured. Please a different date."
                         )
                     )
 
@@ -311,6 +332,101 @@ shiny::shinyServer(
                         "Latitude" = lat,
                         "Longitude" = lng
                     )
+
+                })
+
+            }
+
+        # Render the monitor comparison plot
+        renderMonitorComp <-
+            function() {
+
+                shiny::renderPlot({
+
+                    pat <- try(get_pat(selector = TRUE))
+                    dates <- get_dates()
+
+                    AirSensor::pat_monitorComparison(pat)
+
+                })
+
+            }
+
+        # Render monitor & pas external fit plot
+        renderExtFit <-
+            function() {
+
+                shiny::renderPlot({
+
+                    pat <- try(get_pat(selector = TRUE))
+                    dates <- get_dates()
+
+                    utils_externalFit(pat)
+
+                })
+
+            }
+
+        # Render video
+        renderVideo <-
+            function() {
+
+                shiny::renderUI({
+
+                    baseUrl <-
+                        "http://smoke.mazamascience.com/data/PurpleAir/videos/"
+                    year <-
+                        strftime(input$date_selection, "%Y")
+                    mm <-
+                        strftime(input$date_selection, "%m")
+                    dd <-
+                        strftime(input$date_selection, "%d")
+                    hh <- "11"
+                    comm <- input$comm_select
+
+                    url <-
+                        paste0(
+                            baseUrl,
+                            year,
+                            "/",
+                            comm,
+                            "_",
+                            year,
+                            mm,
+                            dd,
+                            hh,
+                            ".mp4"
+                        )
+
+
+                    tags$video(
+                        id="video2",
+                        type = "video/mp4",
+                        src = url,
+                        controls = "controls"
+                    )
+                })
+
+            }
+        # Render rose plot
+        renderRose <-
+            function() {
+
+                shiny::renderPlot({
+
+                    dates <- get_dates()
+
+                    sensor <- sensor_load(
+                        startdate = dates[1],
+                        enddate = dates[2]
+                    )
+
+                    sensor <- sensor_filterMeta(
+                        sensor,
+                        monitorID == input$pas_select
+                    )
+
+                    AirSensor::sensor_pollutionRose(sensor)
 
                 })
 
@@ -422,7 +538,7 @@ shiny::shinyServer(
 
         # Update pas selections from map click
         updateSelect <-
-            function() {
+            function(look = "leaflet") {
 
                 # Update selected pas based on leaflet selection
                 pas <- get_pas()
@@ -430,12 +546,25 @@ shiny::shinyServer(
                 pas_valid_choices <-
                     pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
 
-                shiny::updateSelectInput(
-                    session,
-                    inputId = "pas_select",
-                    selected = input$leaflet_marker_click[1],
-                    choices = pas_valid_choices$label
-                )
+                if ( look == "leaflet" ) {
+
+                    shiny::updateSelectInput(
+                        session,
+                        inputId = "pas_select",
+                        selected = input$leaflet_marker_click[1],
+                        choices = pas_valid_choices$label
+                    )
+
+                } else if ( look == "comp" ) {
+
+                    shiny::updateSelectInput(
+                        session,
+                        inputId = "pas_select",
+                        selected = input$comp_leaflet_marker_click[1],
+                        choices = pas_valid_choices$label
+                    )
+
+                }
 
                 # Update URL communityId
                 nquery()
@@ -505,6 +634,87 @@ shiny::shinyServer(
 
             }
 
+        # Update the comparison leaflet
+        updateCompLeaf <-
+            function() {
+
+                validate(need(input$pas_select != "", ""))
+                pas <- get_pas()
+                dates <- get_dates()
+
+                # Use the defined pas_valid_choices to apply filters if needed
+                # i.e: remove any PAS that contains "Indoor" in its label
+
+                closeId <-
+                    PAS$pwfsl_closestMonitorID[
+                        which(PAS$label==input$pas_select)
+                    ]
+
+                close_ws <-
+                    PWFSLSmoke::monitor_load(
+                        dates[1],
+                        dates[2],
+                        monitorIDs = closeId
+                    )
+
+                # Get data
+                lab_pas <- input$pas_select
+                ind <- which(PAS$label == lab_pas)
+                lng_pas = PAS$longitude[ind]
+                lat_pas =  PAS$latitude[ind]
+
+                lab_ws <- close_ws$meta$monitorID
+                lat_ws <- close_ws$meta$latitude
+                lng_ws <- close_ws$meta$longitude
+
+                lat <- mean(lat_pas, lat_ws)
+                lng <- mean(lng_pas, lng_ws)
+
+                # Interact with proxy comparison leaflet to avoid redraw
+                leaflet::leafletProxy("comp_leaflet") %>%
+                    leaflet::clearGroup("ws_markers") %>%
+                    leaflet::clearGroup("pas_markers") %>%
+                    leaflet::flyTo(
+                        lng,
+                        lat,
+                        zoom = input$comp_leaflet_zoom
+                    ) %>%
+                    # Selected pas markers
+                    leaflet::addCircleMarkers(
+                        lng = lng_pas,
+                        lat = lat_pas,
+                        radius = 11,
+                        fillOpacity = 0,
+                        group = "pas_markers",
+                        options = leaflet::pathOptions(interactive = F),
+                        label = lab_pas,
+                        labelOptions = leaflet::labelOptions(
+                            noHide = TRUE,
+                            direction = "top"
+                        )
+                    ) %>%
+                    # Nearest monitor markers
+                    leaflet::addAwesomeMarkers(
+                        lng = lng_ws,
+                        lat = lat_ws,
+                        group = "ws_markers",
+                        label = lab_ws,
+                        labelOptions = leaflet::labelOptions(
+                            noHide = TRUE,
+                            direction = "bottom"
+                        ),
+                        icon = leaflet::makeAwesomeIcon(
+                            icon="asterisk",
+                            library="fa",
+                            markerColor = "lightred",
+                            iconColor = "black",
+                            spin = T
+                        )
+
+                    )
+
+            }
+
         # Update bar plot from plot type selection
         updateBarPlot <-
             function() {
@@ -539,11 +749,22 @@ shiny::shinyServer(
             input$pas_select,
             updateLeaf()
         )
+        # Update comparison leaflet based on PAS select
+        shiny::observeEvent(
+            input$pas_select,
+            updateCompLeaf()
+        )
 
         # Update PAS select based on leaflet
         shiny::observeEvent(
             input$leaflet_marker_click,
             updateSelect()
+        )
+
+        # Update PAS select based on comparison leaflet \
+        shiny::observeEvent(
+            input$comp_leaflet_marker_click,
+            updateSelect("comp")
         )
 
         # Global observations
@@ -562,6 +783,9 @@ shiny::shinyServer(
                 choices = pas_valid_choices$label
             )
 
+            # Follow and update the url
+            nquery()
+
         })
 
         # ----- Outputs -----
@@ -572,7 +796,17 @@ shiny::shinyServer(
         # Summary plot (below map)
         output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
 
+        # Calendar plot
         output$cal_plot <- renderCalPlot()
+
+        # Comparison map
+        output$comp_leaflet <- renderLeaf()
+
+        # Monitor comparison
+        output$ws_comp <- renderMonitorComp()
+
+        # Monitor external fit
+        output$ws_ext <- renderExtFit()
 
         # Data Table
         output$data_explorer <- renderDataExplorer()
@@ -585,6 +819,15 @@ shiny::shinyServer(
 
         # Leaflet selection label
         output$selected_label <- renderSelectedLabel()
+
+        # Video
+        output$video_out <- renderVideo()
+
+        # Raw output
+        output$raw_plot <- renderMultiplot()
+
+        # Rose plot output
+        output$rose_plot <- renderRose()
 
     }
 

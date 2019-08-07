@@ -80,6 +80,7 @@ shiny::shinyUI(
                         shiny::tabPanel(
 
                             title = "Overview",
+                            value = "main",
 
                             shiny::column(
                                 width = 10,
@@ -103,6 +104,7 @@ shiny::shinyUI(
                         # --- Plots tab ---
                         shiny::tabPanel(
                             title = "Plots(?)",
+                            value = "po",
 
                             # Plot type selection
                             shiny::selectInput(
@@ -122,18 +124,59 @@ shiny::shinyUI(
 
                         # --- Video tab ---
                         shiny::tabPanel(
-                            title = "Animation" ,
-                            tags$video(
-                                id="video2",
-                                type = "video/mp4",
-                                src = "",
-                                controls = "controls"
-                                )
+                            title = "Animation",
+                            value = "anim",
+                            shiny::uiOutput(
+                                outputId = "video_out"
+                            )
                         ),
 
                         # --- Compare tab ---
                         shiny::tabPanel(
-                            title = "Compare"
+                            title = "Compare",
+                            value = "comp",
+                            # Comparison Leaflet
+                            leaflet::leafletOutput(
+                                outputId = "comp_leaflet"
+                            ),
+                            shiny::column(
+                                width = 8,
+                                # Monitor comparison plot
+                                shiny::plotOutput(
+                                    outputId = "ws_comp"
+                                )
+                            ),
+                            shiny::column(
+                                width = 4,
+                                # External fit plot
+                                shiny::plotOutput(
+                                    outputId = "ws_ext"
+                                )
+                            )
+
+                        ),
+
+                        shiny::tabPanel(
+                            title = "Daily Patterns",
+                            value = "dp",
+                            shiny::plotOutput(
+                                outputId = "dailypat_plot"
+                            )
+                        ),
+
+                        # --- Raw & Weather data tab ---
+                        shiny::tabPanel(
+                            title = "Raw Data",
+                            value = "raw",
+                            shiny::plotOutput(
+                                outputId = "raw_plot"
+                            ),
+                            shiny::column(
+                                width = 6,
+                                shiny::plotOutput(
+                                    outputId = "rose_plot"
+                                )
+                            )
                         )
 
                     )
