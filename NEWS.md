@@ -1,3 +1,12 @@
+# AirSensorShiny 1.0.3
+
+* Added more URL queries
+* Added new tabs: overview, animation, compare, patterns, and raw. 
+* Added linear fit to `utils.R`.
+* New colors 
+* Added calendar plot 
+* Added more reactive framework
+
 # AirSensorShiny 1.0.2 
 
 * Create URL freindly website, where queries can be passed in via URL
