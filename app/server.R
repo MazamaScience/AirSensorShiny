@@ -16,6 +16,14 @@ MazamaCoreUtils::logger.debug("----- server() -----")
 shiny::shinyServer(
     function(input, output, session) {
 
+        output$activeTab <- reactive({
+
+            return(input$tab_select)
+
+        })
+
+        shiny::outputOptions(output, "activeTab", suspendWhenHidden = FALSE)
+
         # ----- Functions -----
 
         # Capture date inputs
@@ -107,7 +115,7 @@ shiny::shinyServer(
 
                 # -- Query list based on url
                 query <-
-                    parseQueryString(session$clientData$url_search)
+                    shiny::parseQueryString(session$clientData$url_search)
 
                 # -- Define updates based on query
                 # Update community selection based on query
@@ -131,6 +139,12 @@ shiny::shinyServer(
                     selected = query[["sensorId"]]
                 )
 
+                shiny::updateNavbarPage(
+                    session,
+                    inputId = "navbar",
+                    selected = query[["nav"]]
+                )
+
             }
 
         # Create a (n)ew query string
@@ -145,6 +159,7 @@ shiny::shinyServer(
                         gsub("\\s","\\+", input$comm_select),
                         input$comm_select
                     )
+                cNav <- input$navbar
                 # Current tab
                 cTab <-
                     input$tab_select
@@ -156,6 +171,9 @@ shiny::shinyServer(
                 # Update the community string
                 shiny::updateQueryString(
                     paste0(
+                        "?nav=",
+                        cNav,
+                        "&",
                         "?tb=",
                         cTab,
                         "&",
@@ -167,6 +185,20 @@ shiny::shinyServer(
                     )
                 )
 
+            }
+
+        # Show loading widget
+        showLoad <-
+            function(FUN) {
+
+                shiny::withProgress(
+                    expr = FUN,
+                    value = 0.3,
+                    message = "Loading...",
+                    detail = "Please Wait."
+                )
+
+                return(FUN)
 
             }
 
@@ -246,11 +278,20 @@ shiny::shinyServer(
 
                     label <- input$pas_select
 
-                    # Load annual pat to now
-                    pat <- pat_load(label, startdate = sd, enddate = Sys.Date())
+                    showLoad({
+                        # Load annual pat to now
+                        pat <-
+                            pat_load(
+                                label,
+                                startdate = sd,
+                                enddate = Sys.Date()
+                            )
 
-                    # Calendar plot
-                    AirSensor::pat_calendarPlot(pat)
+                        shiny::incProgress(0.65)
+
+                        # Calendar plot
+                        AirSensor::pat_calendarPlot(pat)
+                    })
 
                 })
 
@@ -343,10 +384,16 @@ shiny::shinyServer(
 
                 shiny::renderPlot({
 
-                    pat <- try(get_pat(selector = TRUE))
-                    dates <- get_dates()
+                    showLoad({
 
-                    AirSensor::pat_monitorComparison(pat)
+                        pat <- try(get_pat(selector = TRUE))
+                        dates <- get_dates()
+
+                        shiny::incProgress(0.66)
+
+                        AirSensor::pat_monitorComparison(pat)
+
+                    })
 
                 })
 
@@ -381,7 +428,7 @@ shiny::shinyServer(
                         strftime(input$date_selection, "%m")
                     dd <-
                         strftime(input$date_selection, "%d")
-                    hh <- "11"
+                    hh <- "09"
                     comm <- input$comm_select
 
                     url <-
@@ -401,9 +448,9 @@ shiny::shinyServer(
 
                     tags$video(
                         id="video2",
-                        type = "video/mp4",
+                        type = "video/webm",
                         src = url,
-                        controls = "controls"
+                        controls = "controls", loop = TRUE
                     )
                 })
 
@@ -413,20 +460,23 @@ shiny::shinyServer(
             function() {
 
                 shiny::renderPlot({
+                    showLoad({
+                        dates <- get_dates()
 
-                    dates <- get_dates()
+                        sensor <- sensor_load(
+                            startdate = dates[1],
+                            enddate = dates[2]
+                        )
 
-                    sensor <- sensor_load(
-                        startdate = dates[1],
-                        enddate = dates[2]
-                    )
+                        sensor <- sensor_filterMeta(
+                            sensor,
+                            monitorID == input$pas_select
+                        )
 
-                    sensor <- sensor_filterMeta(
-                        sensor,
-                        monitorID == input$pas_select
-                    )
+                        shiny::incProgress(0.44)
 
-                    AirSensor::sensor_pollutionRose(sensor)
+                        AirSensor::sensor_pollutionRose(sensor)
+                    })
 
                 })
 
@@ -478,25 +528,30 @@ shiny::shinyServer(
 
                 shiny::renderDataTable({
 
-                    pat <- try(get_pat(de_selector = TRUE))
+                    showLoad({
 
-                    # Validate a pas selection has been made
-                    validate(
-                        need(
-                            input$de_pas_select != "",
-                            "Select a Sensor"
+                        pat <- try(get_pat(de_selector = TRUE))
+
+                        shiny::incProgress(0.6)
+
+                        # Validate a pas selection has been made
+                        validate(
+                            need(
+                                input$de_pas_select != "",
+                                "Select a Sensor"
+                            )
                         )
-                    )
 
-                    # Validate that pat is returned
-                    validate(
-                        need(
-                            pat,
-                            "An Error has occured. Please select another sensor."
+                        # Validate that pat is returned
+                        validate(
+                            need(
+                                pat,
+                                "An Error has occured. Please select another sensor."
+                            )
                         )
-                    )
 
-                    data <- pat$data
+                        data <- pat$data
+                    })
 
                     return(data)
 
@@ -578,8 +633,8 @@ shiny::shinyServer(
                 # Get data
                 lab <- input$pas_select
                 ind <- which(PAS$label == lab)
-                lng = PAS$longitude[ind]
-                lat =  PAS$latitude[ind]
+                lng <- PAS$longitude[ind]
+                lat <-  PAS$latitude[ind]
 
                 # Create popup HTML
                 html <-
@@ -660,8 +715,8 @@ shiny::shinyServer(
                 # Get data
                 lab_pas <- input$pas_select
                 ind <- which(PAS$label == lab_pas)
-                lng_pas = PAS$longitude[ind]
-                lat_pas =  PAS$latitude[ind]
+                lng_pas <- PAS$longitude[ind]
+                lat_pas <-  PAS$latitude[ind]
 
                 lab_ws <- close_ws$meta$monitorID
                 lat_ws <- close_ws$meta$latitude

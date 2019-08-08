@@ -19,11 +19,13 @@ shiny::shinyUI(
         title = "AirShiny (Beta)",
         theme = shinythemes::shinytheme("lumen"),
         inverse = TRUE,
+        id = "navbar",
 
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
 
             title = "Explorer",
+            value = "explore",
 
             shiny::fluidRow(
 
@@ -192,6 +194,7 @@ shiny::shinyUI(
         shiny::tabPanel(
 
             title = "Data Viewer",
+            value = "dataview",
 
             # PAS selection input
             shiny::column(
@@ -230,7 +233,8 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
-            title = "About"
+            title = "About",
+            value = "about"
 
             # TODO: Get an about section.
 
