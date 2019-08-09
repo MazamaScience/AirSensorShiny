@@ -694,7 +694,7 @@ shiny::shinyServer(
             function() {
 
                 validate(need(input$pas_select != "", ""))
-                pas <- get_pas()
+                #pas <- get_pas()
                 dates <- get_dates()
 
                 # Use the defined pas_valid_choices to apply filters if needed
@@ -804,9 +804,22 @@ shiny::shinyServer(
             input$pas_select,
             updateLeaf()
         )
+
+        # Update leaflet based on if tab select on main tab
+        shiny::observeEvent(
+            input$tab_select == "main",
+            updateLeaf()
+        )
+
         # Update comparison leaflet based on PAS select
         shiny::observeEvent(
             input$pas_select,
+            updateCompLeaf()
+        )
+
+        # Update comparison leaflet if tab select on compare tab
+        shiny::observeEvent(
+            input$tab_select == "comp",
             updateCompLeaf()
         )
 
