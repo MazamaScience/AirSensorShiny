@@ -19,7 +19,7 @@ shiny::shinyUI(
         title = "AirShiny (Beta)",
         theme = shinythemes::shinytheme("lumen"),
         inverse = TRUE,
-        id = "navbar",
+        id = "navtab",
 
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
@@ -64,8 +64,8 @@ shiny::shinyUI(
                                     "30 Days" = 30)
                     ),
 
-                    # Display leaflet selection
-                    shiny::tableOutput(outputId = "selected_label"),
+                    # Display selection mini table
+                    shiny::tableOutput(outputId = "mini_table"),
 
                     shiny::tableOutput("debug")
 
