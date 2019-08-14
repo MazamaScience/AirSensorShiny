@@ -18,7 +18,8 @@ shiny::shinyServer(
         marker = NULL,
         compmarker = NULL,
         tab = NULL,
-        navtab = NULL
+        navtab = NULL,
+        dexp = NULL
       )
 
     # Update the active variable with an input variable
@@ -79,6 +80,12 @@ shiny::shinyServer(
       label = "nav tab update",
       input$navtab,
       updateActive("navtab", "navtab")
+    )
+
+    shiny::observeEvent(
+      label = "data explorer pas select update",
+      input$de_pas_select,
+      updateActive("dexp", "de_pas_select")
     )
 
     # ----- Reactive Functions -------------------------------------------------
@@ -261,7 +268,7 @@ shiny::shinyServer(
 
           showLoad({
 
-            pat <- active$pat#try(loadPat())#get_pat(selector = TRUE))
+            pat <- active$pat
             dates <- getDates()
 
             shiny::incProgress(0.66)
@@ -393,17 +400,100 @@ shiny::shinyServer(
 
       }
 
+    # Render Meta table explorer
+    renderMetaExplorer <-
+      function() {
+
+        shiny::renderTable({
+
+          pat <- active$pat
+
+          community <-
+            PAS$communityRegion[which(PAS$label == pat$meta$label)][1]
+
+          meta <-
+            data.frame(
+              "Community" = community,
+              "Sensor Type" = pat$meta$sensorType,
+              "Longitude" = pat$meta$longitude,
+              "Latitude" = pat$meta$latitude,
+              "State" = pat$meta$stateCode,
+              "Country" = pat$meta$countryCode,
+              "Timezone" = pat$meta$timezone
+            )
+
+          return(meta)
+
+        })
+
+      }
+
+    # Render Data Table Explorer
+    renderDataExplorer <-
+      function() {
+
+        shiny::renderDataTable({
+
+          showLoad({
+
+            pat <- active$pat
+
+            shiny::incProgress(0.6)
+
+
+            data <- pat$data
+          })
+
+          return(data)
+
+        })
+
+      }
+
     # ----- Helper functions ---------------------------------------------------
+
+    # Handle download button
+    downloadButton <-
+      function() {
+
+        shiny::downloadHandler(
+          filename = function() {
+
+            dates <- getDates()
+            pat <- active$pat#get_pat(de_selector = TRUE)
+
+            paste0(
+              pat$meta$label,
+              "_",
+              dates[1],
+              "_",
+              dates[2],
+              ".csv"
+            )
+
+          },
+
+          content = function(file) {
+
+            pat <- active$pat#get_pat(selector = TRUE)
+            write.csv(pat$data, file = file)
+
+          }
+
+        )
+
+      }
 
     # Load the pat into the active pat (reactive expr only)
     loadPat <-
       function() {
-
+        if ( active$navtab == "explore" ) label <- active$pas
+        if ( active$navtab == "dataview" ) label <- active$dexp
         dates <- getDates()
         active$pat <-
           try(
             AirSensor::pat_load(
-              active$pas,
+              label,
               dates[1],
               dates[2]
             )
@@ -640,9 +730,11 @@ shiny::shinyServer(
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
-
-    # Trigger active pat update based on pas selection
-    shiny::observeEvent(active$pas, loadPat())
+    # Trigger active pat update based on pas selection, lookback, enddate, dexp
+    shiny::observeEvent(
+      c(active$pas, active$lookback, active$enddate, active$dexp),
+      loadPat()
+    )
 
     # Global observations
     shiny::observe({
@@ -662,6 +754,28 @@ shiny::shinyServer(
         selected = selected
 
       )
+
+      if ( active$navtab == "dataview" ) {
+
+        shiny::updateSelectInput(
+          session,
+          inputId = "de_pas_select",
+          selected = active$dexp,
+          choices = c("Select Sensor...",
+                      PAS$label[!is.na(PAS$communityRegion) &
+                                  !grepl("(<?\\sB)$", PAS$label) &
+                                  PAS$DEVICE_LOCATIONTYPE != "inside"])
+        )
+        # Update the pas selector on main??
+        shiny::updateSelectInput(
+          session,
+          inputId = "pas_select",
+          selected = active$dexp
+
+        )
+
+      }
+
       # Watch the active variables to update the URL
       nquery()
 
@@ -695,6 +809,12 @@ shiny::shinyServer(
 
     # - Animation tab -
     output$video_out <- renderVideo()
+
+    # - Data Explorer -
+    output$data_explorer <- renderDataExplorer()
+    output$meta_explorer <- renderMetaExplorer()
+    output$download_data <- downloadButton()
+
   }
 
 )
