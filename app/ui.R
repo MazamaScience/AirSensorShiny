@@ -51,13 +51,13 @@ shiny::shinyUI(
 
                     # End Date input
                     shiny::dateInput(
-                        inputId = "date_selection",
+                        inputId = "date_select",
                         label = "Date"
                     ),
 
                     # Lookback interval
                     shiny::radioButtons(
-                        inputId = "lookback_days",
+                        inputId = "lookback_select",
                         label = "Look back",
                         choices = c("3 Days" = 3,
                                     "7 Days" = 7,
@@ -65,7 +65,9 @@ shiny::shinyUI(
                     ),
 
                     # Display leaflet selection
-                    shiny::tableOutput(outputId = "selected_label")
+                    shiny::tableOutput(outputId = "selected_label"),
+
+                    shiny::tableOutput("debug")
 
                 ),
 
@@ -101,27 +103,6 @@ shiny::shinyUI(
                                     outputId = "cal_plot", height = 800
                                 ))
 
-                        ),
-
-                        # --- Plots tab ---
-                        shiny::tabPanel(
-                            title = "Plots(?)",
-                            value = "po",
-
-                            # Plot type selection
-                            shiny::selectInput(
-                                inputId = "plot_type_select",
-                                label = "Plot Selection:",
-                                choices =
-                                    c( "Hourly Average" = "hourly_plot",
-                                       "Daily Average" = "daily_plot",
-                                       "Multi-sensor Raw Data" = "multi_plot" )
-                            ),
-
-                            # Selected plot
-                            shiny::plotOutput(
-                                outputId = "selected_plot", height = 500
-                            )
                         ),
 
                         # --- Video tab ---

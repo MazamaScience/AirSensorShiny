@@ -520,3 +520,18 @@ utils_externalFit <- function(
   return(plot)
 
 }
+
+# Show progress function
+showLoad <-
+  function(FUN) {
+
+    shiny::withProgress(
+      expr = FUN,
+      value = 0.3,
+      message = "Loading...",
+      detail = "Please Wait."
+    )
+
+    return(FUN)
+
+  }
