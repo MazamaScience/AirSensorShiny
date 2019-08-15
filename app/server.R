@@ -82,6 +82,7 @@ shiny::shinyServer(
       updateActive("navtab", "navtab")
     )
 
+    # Update data explorer pas selection
     shiny::observeEvent(
       label = "data explorer pas select update",
       input$de_pas_select,
@@ -181,6 +182,12 @@ shiny::shinyServer(
       function(plotType) {
 
         shiny::renderPlot({
+
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please Select a Sensor."
+          )
+
           pat <- active$pat
           dates <- getDates()
           if ( plotType == "daily_plot" ) {
@@ -213,6 +220,8 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
+          handleError(active$pas != "Select Sensor...", "")
+
           # Create start of year date
           sd <- paste0(strftime(active$enddate, "%Y"), "0101")
 
@@ -230,7 +239,7 @@ shiny::shinyServer(
             shiny::incProgress(0.65)
 
             # Calendar plot
-            AirSensor::pat_calendarPlot(pat)
+           try(AirSensor::pat_calendarPlot(pat))
 
           })
 
@@ -610,7 +619,7 @@ shiny::shinyServer(
             leaflet::flyTo(
               lng,
               lat,
-              zoom = input$comp_leaflet_zoom
+              zoom = input$leaflet_zoom
             ) %>%
             # Selected pas markers
             leaflet::addCircleMarkers(
@@ -818,3 +827,10 @@ shiny::shinyServer(
   }
 
 )
+
+# CURRENT ISSUES:
+# - Selecting a pas from selection box while in view of comparison or main leaflet is buggy
+# - Updating the pas selection from data explorer. Keep consistent.
+# - Errors...errors everywhere
+# - No daily patterns plot
+

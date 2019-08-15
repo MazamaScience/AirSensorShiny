@@ -535,3 +535,14 @@ showLoad <-
     return(FUN)
 
   }
+
+# Error message handling
+handleError <-
+  function(expr, msg) {
+
+    shiny::validate(
+      shiny::need(expr, msg)
+    )
+
+  }
+

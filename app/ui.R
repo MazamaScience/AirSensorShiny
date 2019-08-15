@@ -214,6 +214,17 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
+            title = "Latest Data",
+            value = "latest"
+
+            # TODO: Get an about section.
+
+        ),
+
+        # ----- NavTab 4 -------------------------------------------------------
+
+        shiny::tabPanel(
+
             title = "About",
             value = "about"
 
