@@ -33,7 +33,7 @@ shiny::shinyServer(
       input$pas_select,
       {
         updateActive("label", "pas_select")
-        active$pas <- PAS[grepl(active$label,PAS$label),][1,]
+        active$pas <- PAS[grepl(active$label, PAS$label),][1,]
       }
     )
 
@@ -163,16 +163,16 @@ shiny::shinyServer(
 
         leaflet::renderLeaflet({
 
-          pas <- getCommunitySensors()
+          sensors <- getCommunitySensors()
 
           # Use the defined pas_valid_choices to apply filters if needed
           # i.e: remove any PAS that contains "Indoor" in its label
 
-          pas_valid_choices <-
-            pas[which(!stringr::str_detect(pas$label, "[Indoor]")),]
+          valid_sensors <-
+            sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
 
           utils_leaflet(
-            pas = pas_valid_choices,
+            pas = valid_sensors,
             parameter = "pm25_current",
             paletteName = "Spectral" #"Purple"
           )
@@ -224,19 +224,17 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          handleError(active$label != "Select Sensor...", "")
-
+          # Require active label before loading
+          shiny::req(active$label)
 
           # Create start of year date
           sd <- paste0(strftime(active$enddate, "%Y"), "0101")
-
-          label <- active$label
 
           showLoad({
             # Load annual pat to now
             pat <-
               AirSensor::pat_load(
-                label,
+                active$label,
                 startdate = sd,
                 enddate = Sys.Date()
               )
@@ -258,16 +256,12 @@ shiny::shinyServer(
 
         shiny::renderTable({
 
-          # Get data
-          lab <- active$label
-          ind <- which(PAS$label == lab)
-          lng = PAS$longitude[ind]
-          lat =  PAS$latitude[ind]
+          req(active$label, active$pas)
 
           dplyr::tibble(
-            "Sensor" = lab,
-            "Latitude" = lat,
-            "Longitude" = lng
+            "Sensor" = active$label,
+            "Latitude" = active$pas$latitude,
+            "Longitude" = active$pas$longitude
           )
 
         })
@@ -280,14 +274,18 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          showLoad({
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please select a sensor to compare with the nearest monitor."
+          )
 
-            pat <- active$pat
-            dates <- getDates()
+          req(active$pat)
+
+          showLoad({
 
             shiny::incProgress(0.66)
 
-            AirSensor::pat_monitorComparison(pat)
+            AirSensor::pat_monitorComparison(active$pat)
 
           })
 
@@ -301,10 +299,9 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          pat <- active$pat#try(loadPat())
-          dates <- getDates()
+          req(active$pat)
 
-          utils_externalFit(pat)
+          utils_externalFit(active$pat)
 
         })
 
@@ -316,28 +313,7 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          # NOTE: The current method is not filtering ANY outliers for
-          # NOTE: ANY of the plots - may be prone to change.
-          pat <- active$pat#try(loadPat())
-          dates <- getDates()
-
-          # Validate a pas selection has been made.
-          validate(
-            need(
-              active$label != "Select Sensor...",
-              "Select a Purple Air Sensor"
-            )
-          )
-
-          # Validate that pat is returned.
-          validate(
-            need(
-              pat,
-              "An Error has occured. Please select another sensor."
-            )
-          )
-
-          AirSensor::pat_multiplot(pat)
+          AirSensor::pat_multiplot(active$pat)
 
         })
 
@@ -348,19 +324,19 @@ shiny::shinyServer(
       function() {
 
         shiny::renderPlot({
+
           showLoad({
+
             dates <- getDates()
 
             sensor <-
               AirSensor::sensor_filterMeta(
-                AirSensor::sensor_load(startdate = dates[1],enddate = dates[2]),
-                monitorID == active$label
+                monitorID == active$label,
+                sensor = AirSensor::sensor_load(
+                  startdate = dates[1],
+                  enddate = dates[2]
+                )
               )
-
-            # sensor <- AirSensor::sensor_filterMeta(
-            #   sensor,
-            #   monitorID == active$label
-            # )
 
             shiny::incProgress(0.44)
 
@@ -421,10 +397,11 @@ shiny::shinyServer(
 
         shiny::renderTable({
 
+          req(active$pat)
+
           pat <- active$pat
 
           community <- active$pas$communityRegion
-            #PAS$communityRegion[which(PAS$label == pat$meta$label)][1]
 
           meta <-
             data.frame(
@@ -467,10 +444,9 @@ shiny::shinyServer(
           filename = function() {
 
             dates <- getDates()
-            pat <- active$pat#get_pat(de_selector = TRUE)
 
             paste0(
-              pat$meta$label,
+              active$pat$meta$label,
               "_",
               dates[1],
               "_",
@@ -482,7 +458,7 @@ shiny::shinyServer(
 
           content = function(file) {
 
-            pat <- active$pat#get_pat(selector = TRUE)
+            pat <- active$pat
             write.csv(pat$data, file = file)
 
           }
@@ -494,8 +470,10 @@ shiny::shinyServer(
     # Load the pat into the active pat (reactive expr only)
     loadPat <-
       function() {
+
         if ( active$navtab == "explore" ) label <- active$label
         if ( active$navtab == "dataview" ) label <- active$dexp
+
         dates <- getDates()
         active$pat <-
           try(
@@ -512,7 +490,7 @@ shiny::shinyServer(
     updateLeaf <-
       function(label = NULL) {
 
-        # If on main tab
+        # If on main tab -> update main leaflet
         if ( active$tab == "main" ) {
 
           # Get data
@@ -575,7 +553,7 @@ shiny::shinyServer(
 
         }
 
-        # If on the comparison tab
+        # If on the comparison tab -> update the comparison leaflet
         if ( active$tab == "comp" ) {
 
           dates <- getDates()
@@ -610,9 +588,11 @@ shiny::shinyServer(
               )
             )
 
-          nearestMonitor_Id <- #shiny::isolate(active$pas$pwfsl_closestMonitorID)
-            PAS$pwfsl_closestMonitorID[grepl(active$label, PAS$label)][1]
+          # Get nearest monitor ID
+          nearestMonitor_Id <-
+            shiny::isolate(active$pas$pwfsl_closestMonitorID)
 
+          # Try loading nearest monitor
           nearestMonitor <-
             try(
               AirSensor::pwfsl_load(
@@ -622,8 +602,8 @@ shiny::shinyServer(
               )
             )
 
+          # If load is successful -> add monitor to map
           if ( class(nearestMonitor) != "try-error" ) {
-
 
             lab_ws <-  nearestMonitor$meta$monitorID
             lat_ws <-  nearestMonitor$meta$latitude
@@ -650,6 +630,7 @@ shiny::shinyServer(
 
               )
 
+          # If unsuccessful, add error label
           } else {
 
             leaflet::leafletProxy("comp_leaflet") %>%
@@ -756,22 +737,25 @@ shiny::shinyServer(
       loadPat()
     )
 
+    # Trigger update selected pas on marker click
+    shiny::observeEvent(
+      active$marker,
+      shiny::updateSelectInput(
+        session,
+        inputId = "pas_select",
+        selected = active$marker
+      )
+    )
+
     # Global observations
     shiny::observe({
 
-      # BUGGY
-      if ( active$tab == "main" || active$tab == "comp" ) {
-        selected <- active$marker
-      } else {
-        selected <- active$marker <- active$label
-      }
-
-      # Watch the pas_select based on the current active marker and community
+      # Watch the pas_select based on the current active label and community
       shiny::updateSelectInput(
         session,
         inputId = "pas_select",
         choices = c("Select Sensor...", getPasLabels()),
-        selected = selected
+        selected = active$label
 
       )
 
@@ -786,6 +770,7 @@ shiny::shinyServer(
                                   !grepl("(<?\\sB)$", PAS$label) &
                                   PAS$DEVICE_LOCATIONTYPE != "inside"])
         )
+
         # Update the pas selector on main??
         shiny::updateSelectInput(
           session,
@@ -802,7 +787,7 @@ shiny::shinyServer(
     })
 
     # Trigger leaflet update based on marker and pas selections
-    shiny::observeEvent(c(active$marker,active$tab), updateLeaf())
+    shiny::observeEvent(c(active$marker, active$tab), updateLeaf())
     shiny::observeEvent(c(active$label, active$tab), updateLeaf(label = active$label))
 
     # ----- Outputs ------------------------------------------------------------
@@ -840,7 +825,7 @@ shiny::shinyServer(
 )
 
 # CURRENT ISSUES:
-# - Selecting a pas from selection box while in view of comparison or main leaflet is buggy
+
 # - Updating the pas selection from data explorer. Keep consistent.
 # - Errors...errors everywhere
 # - No daily patterns plot
