@@ -143,8 +143,9 @@ shiny::shinyUI(
                             title = "Daily Patterns",
                             value = "dp",
                             shiny::plotOutput(
-                                outputId = "dailypat_plot"
+                                outputId = "pattern_plot"
                             )
+
                         ),
 
                         # --- Raw & Weather data tab ---

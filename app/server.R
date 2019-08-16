@@ -231,13 +231,19 @@ shiny::shinyServer(
           sd <- paste0(strftime(active$enddate, "%Y"), "0101")
 
           showLoad({
+
             # Load annual pat to now
             pat <-
-              AirSensor::pat_load(
-                active$label,
-                startdate = sd,
-                enddate = Sys.Date()
+              try(
+                AirSensor::pat_load(
+                  active$label,
+                  startdate = sd,
+                  enddate = Sys.Date()
+                )
               )
+
+            if ( class(pat) == "try-error" )
+              handleError("", "Error: Please select a different sensor.")
 
             shiny::incProgress(0.65)
 
@@ -406,7 +412,7 @@ shiny::shinyServer(
 
         shiny::renderTable({
 
-          req(active$pat)
+          req(active$pas, active$label)
 
           pat <- active$pat
 
@@ -415,12 +421,12 @@ shiny::shinyServer(
           meta <-
             data.frame(
               "Community" = community,
-              "Sensor Type" = pat$meta$sensorType,
-              "Longitude" = pat$meta$longitude,
-              "Latitude" = pat$meta$latitude,
-              "State" = pat$meta$stateCode,
-              "Country" = pat$meta$countryCode,
-              "Timezone" = pat$meta$timezone
+              "Sensor Type" = active$pas$sensorType, #pat$meta$sensorType,
+              "Longitude" = active$pas$longitude,#pat$meta$longitude,
+              "Latitude" = active$pas$latitude, #pat$meta$latitude,
+              "State" = active$pas$stateCode,#pat$meta$stateCode,
+              "Country" = active$pas$countryCode, #pat$meta$countryCode,
+              "Timezone" = active$pas$timezone#pat$meta$timezone
             )
 
           return(meta)
@@ -435,9 +441,39 @@ shiny::shinyServer(
 
         shiny::renderDataTable({
 
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please select a sensor."
+          )
+
+          req(active$pat)
+
           showLoad(shiny::incProgress(0.7))
 
           return(active$pat$data)
+
+        })
+
+      }
+
+    renderPatternPlot <-
+      function() {
+
+        shiny::renderPlot({
+
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please select a sensor."
+          )
+          req(active$pat)
+
+          showLoad({
+
+            shiny::incProgress(0.7)
+
+            utils_patternPlot(active$pat)
+
+          })
 
         })
 
@@ -792,8 +828,14 @@ shiny::shinyServer(
     })
 
     # Trigger leaflet update based on marker and pas selections, and tab change
-    shiny::observeEvent(c(active$marker, active$tab), updateLeaf())
-    shiny::observeEvent(c(active$label, active$tab), updateLeaf(label = active$label))
+    shiny::observeEvent(
+      c(active$marker, active$tab, active$navtab),
+      updateLeaf()
+      )
+    shiny::observeEvent(
+      c(active$label, active$tab, active$navtab),
+      updateLeaf(label = active$label)
+      )
 
     # ----- Outputs ------------------------------------------------------------
 
@@ -820,6 +862,9 @@ shiny::shinyServer(
     # - Animation tab -
     output$video_out <- renderVideo()
 
+    # - Daily patterns tab -
+    output$pattern_plot <- renderPatternPlot()
+
     # - Data Explorer -
     output$data_explorer <- renderDataExplorer()
     output$meta_explorer <- renderMetaExplorer()
@@ -831,7 +876,5 @@ shiny::shinyServer(
 
 # CURRENT ISSUES:
 
-# - Updating the pas selection from data explorer. Keep consistent.
-# - Errors...errors everywhere
-# - No daily patterns plot
+# - URL querying
 

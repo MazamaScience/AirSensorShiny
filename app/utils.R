@@ -546,3 +546,19 @@ handleError <-
 
   }
 
+# Daily patterns
+
+utils_patternPlot <-
+  function(pat) {
+
+    sensor <- AirSensor::pat_createAirSensor(pat)
+
+   p1<- AirMonitorPlots::ggplot_pm25Diurnal(ws_data = sensor, offsetBreaks = TRUE) +
+      AirMonitorPlots::stat_meanByHour() +
+      ggplot2::facet_grid(rows = vars(monitorID))
+
+   p2 <- AirMonitorPlots::monitor_ggClockPlot(sensor)
+
+   AirSensor::multi_ggplot(plotList = list(p1, p2),cols = 2)
+  }
+
