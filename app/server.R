@@ -12,6 +12,7 @@ shiny::shinyServer(
       shiny::reactiveValues(
         pas = NULL,
         pat = NULL,
+        label = NULL,
         enddate = NULL,
         community = NULL,
         lookback = NULL,
@@ -26,11 +27,14 @@ shiny::shinyServer(
     updateActive <-
       function(update, with) active[[update]] <- input[[with]][1]
 
-    # Update active pas
+    # Update active pas and label
     shiny::observeEvent(
       label = "pas update",
       input$pas_select,
-      updateActive("pas", "pas_select")
+      {
+        updateActive("label", "pas_select")
+        active$pas <- PAS[grepl(active$label,PAS$label),][1,]
+      }
     )
 
     # Update active community
@@ -220,12 +224,13 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          handleError(active$pas != "Select Sensor...", "")
+          handleError(active$label != "Select Sensor...", "")
+
 
           # Create start of year date
           sd <- paste0(strftime(active$enddate, "%Y"), "0101")
 
-          label <- active$pas
+          label <- active$label
 
           showLoad({
             # Load annual pat to now
@@ -254,7 +259,7 @@ shiny::shinyServer(
         shiny::renderTable({
 
           # Get data
-          lab <- active$pas
+          lab <- active$label
           ind <- which(PAS$label == lab)
           lng = PAS$longitude[ind]
           lat =  PAS$latitude[ind]
@@ -319,7 +324,7 @@ shiny::shinyServer(
           # Validate a pas selection has been made.
           validate(
             need(
-              active$pas != "Select Sensor...",
+              active$label != "Select Sensor...",
               "Select a Purple Air Sensor"
             )
           )
@@ -346,15 +351,16 @@ shiny::shinyServer(
           showLoad({
             dates <- getDates()
 
-            sensor <- AirSensor::sensor_load(
-              startdate = dates[1],
-              enddate = dates[2]
-            )
+            sensor <-
+              AirSensor::sensor_filterMeta(
+                AirSensor::sensor_load(startdate = dates[1],enddate = dates[2]),
+                monitorID == active$label
+              )
 
-            sensor <- AirSensor::sensor_filterMeta(
-              sensor,
-              monitorID == active$pas
-            )
+            # sensor <- AirSensor::sensor_filterMeta(
+            #   sensor,
+            #   monitorID == active$label
+            # )
 
             shiny::incProgress(0.44)
 
@@ -417,8 +423,8 @@ shiny::shinyServer(
 
           pat <- active$pat
 
-          community <-
-            PAS$communityRegion[which(PAS$label == pat$meta$label)][1]
+          community <- active$pas$communityRegion
+            #PAS$communityRegion[which(PAS$label == pat$meta$label)][1]
 
           meta <-
             data.frame(
@@ -443,17 +449,9 @@ shiny::shinyServer(
 
         shiny::renderDataTable({
 
-          showLoad({
+          showLoad(shiny::incProgress(0.7))
 
-            pat <- active$pat
-
-            shiny::incProgress(0.6)
-
-
-            data <- pat$data
-          })
-
-          return(data)
+          return(active$pat$data)
 
         })
 
@@ -496,7 +494,7 @@ shiny::shinyServer(
     # Load the pat into the active pat (reactive expr only)
     loadPat <-
       function() {
-        if ( active$navtab == "explore" ) label <- active$pas
+        if ( active$navtab == "explore" ) label <- active$label
         if ( active$navtab == "dataview" ) label <- active$dexp
         dates <- getDates()
         active$pat <-
@@ -580,46 +578,22 @@ shiny::shinyServer(
         # If on the comparison tab
         if ( active$tab == "comp" ) {
 
-          shiny::validate(need(active$pas != "Select Sensor...", "Please"))
-
           dates <- getDates()
 
-          # Use the defined pas_valid_choices to apply filters if needed
-          # i.e: remove any PAS that contains "Indoor" in its label
-
-          closeId <-
-            PAS$pwfsl_closestMonitorID[
-              which(PAS$label==active$pas)
-            ]
-
-          close_ws <-
-            PWFSLSmoke::monitor_load(
-              dates[1],
-              dates[2],
-              monitorIDs = closeId
-            )
-
           # Get data
-          lab_pas <- active$pas
+          lab_pas <- active$label
           ind <- which(PAS$label == lab_pas)
           lng_pas <- PAS$longitude[ind]
           lat_pas <-  PAS$latitude[ind]
-
-          lab_ws <- close_ws$meta$monitorID
-          lat_ws <- close_ws$meta$latitude
-          lng_ws <- close_ws$meta$longitude
-
-          lat <- mean(lat_pas, lat_ws)
-          lng <- mean(lng_pas, lng_ws)
 
           # Interact with proxy comparison leaflet to avoid redraw
           leaflet::leafletProxy("comp_leaflet") %>%
             leaflet::clearGroup("ws_markers") %>%
             leaflet::clearGroup("pas_markers") %>%
             leaflet::flyTo(
-              lng,
-              lat,
-              zoom = input$leaflet_zoom
+              lng_pas,
+              lat_pas,
+              zoom = input$comp_leaflet_zoom #Problem
             ) %>%
             # Selected pas markers
             leaflet::addCircleMarkers(
@@ -628,32 +602,69 @@ shiny::shinyServer(
               radius = 11,
               fillOpacity = 0,
               group = "pas_markers",
-              options = leaflet::pathOptions(interactive = F),
+              options = leaflet::pathOptions(interactive = FALSE),
               label = lab_pas,
               labelOptions = leaflet::labelOptions(
                 noHide = TRUE,
                 direction = "top"
               )
-            ) %>%
+            )
+
+          nearestMonitor_Id <- #shiny::isolate(active$pas$pwfsl_closestMonitorID)
+            PAS$pwfsl_closestMonitorID[grepl(active$label, PAS$label)][1]
+
+          nearestMonitor <-
+            try(
+              AirSensor::pwfsl_load(
+                monitorIDs = nearestMonitor_Id,
+                startdate = dates[1],
+                enddate = dates[2]
+              )
+            )
+
+          if ( class(nearestMonitor) != "try-error" ) {
+
+
+            lab_ws <-  nearestMonitor$meta$monitorID
+            lat_ws <-  nearestMonitor$meta$latitude
+            lng_ws <-  nearestMonitor$meta$longitude
+
             # Nearest monitor markers
-            leaflet::addAwesomeMarkers(
-              lng = lng_ws,
-              lat = lat_ws,
-              group = "ws_markers",
-              label = lab_ws,
-              labelOptions = leaflet::labelOptions(
-                noHide = TRUE,
-                direction = "bottom"
-              ),
-              icon = leaflet::makeAwesomeIcon(
-                icon="asterisk",
-                library="fa",
-                markerColor = "lightred",
-                iconColor = "black",
-                spin = T
+            leaflet::leafletProxy("comp_leaflet") %>%
+              leaflet::addAwesomeMarkers(
+                lng = lng_ws,
+                lat = lat_ws,
+                group = "ws_markers",
+                label = lab_ws,
+                labelOptions = leaflet::labelOptions(
+                  noHide = TRUE,
+                  direction = "bottom"
+                ),
+                icon = leaflet::makeAwesomeIcon(
+                  icon="asterisk",
+                  library="fa",
+                  markerColor = "lightred",
+                  iconColor = "black",
+                  spin = T
+                )
+
               )
 
-            )
+          } else {
+
+            leaflet::leafletProxy("comp_leaflet") %>%
+              leaflet::addAwesomeMarkers(
+                lng = lng_pas,
+                lat = lat_pas,
+                group = "ws_markers",
+                label = "Error: Cannot load nearest monitor location",
+                labelOptions = leaflet::labelOptions(
+                  noHide = TRUE,
+                  direction = "bottom"
+                )
+              )
+
+          }
 
         }
 
@@ -714,7 +725,7 @@ shiny::shinyServer(
         cTab <- active$tab
 
         # Current pas select
-        cPas <- active$pas
+        cPas <- active$label
 
         # -- Define queries to update based on input
         # Update the community string
@@ -741,7 +752,7 @@ shiny::shinyServer(
 
     # Trigger active pat update based on pas selection, lookback, enddate, dexp
     shiny::observeEvent(
-      c(active$pas, active$lookback, active$enddate, active$dexp),
+      c(active$label, active$lookback, active$enddate, active$dexp),
       loadPat()
     )
 
@@ -752,7 +763,7 @@ shiny::shinyServer(
       if ( active$tab == "main" || active$tab == "comp" ) {
         selected <- active$marker
       } else {
-        selected <- active$marker <- active$pas
+        selected <- active$marker <- active$label
       }
 
       # Watch the pas_select based on the current active marker and community
@@ -792,7 +803,7 @@ shiny::shinyServer(
 
     # Trigger leaflet update based on marker and pas selections
     shiny::observeEvent(c(active$marker,active$tab), updateLeaf())
-    shiny::observeEvent(c(active$pas, active$tab), updateLeaf(label = active$pas))
+    shiny::observeEvent(c(active$label, active$tab), updateLeaf(label = active$label))
 
     # ----- Outputs ------------------------------------------------------------
 
