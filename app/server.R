@@ -479,6 +479,35 @@ shiny::shinyServer(
 
       }
 
+    renderDygraphPlot <-
+      function() {
+
+      dygraphs::renderDygraph({
+
+        AirSensor::pat_dygraph(
+          pat = active$pat,
+          sampleSize = NULL
+        )
+
+      })
+
+      }
+
+    renderAuxPlot <-
+      function() {
+
+        shiny::renderPlot({
+
+          AirSensor::pat_multiplot(
+            pat = active$pat,
+            plottype = "aux",
+            sampleSize = NULL
+          )
+
+        })
+
+      }
+
     # ----- Helper functions ---------------------------------------------------
 
     # Handle download button
@@ -869,6 +898,11 @@ shiny::shinyServer(
     output$data_explorer <- renderDataExplorer()
     output$meta_explorer <- renderMetaExplorer()
     output$download_data <- downloadButton()
+
+    # - Latest Data -
+    output$dygraph_plot <- renderDygraphPlot()
+    output$aux_plot <- renderMultiplot()#renderAuxPlot()
+    output$latest_leaflet <- renderLeaf()
 
   }
 

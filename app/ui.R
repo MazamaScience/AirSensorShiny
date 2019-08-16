@@ -88,20 +88,21 @@ shiny::shinyUI(
 
                             shiny::column(
                                 width = 10,
-                            # Plot outputs
-                            leaflet::leafletOutput(
-                                outputId = "leaflet", height = 600
-                            ),
-                            # Summary Plot
-                            shiny::plotOutput(
-                                outputId = "summary_plot", height = 200
-                            )
+                                # Plot outputs
+                                leaflet::leafletOutput(
+                                    outputId = "leaflet", height = 600
+                                ),
+                                # Summary Plot
+                                shiny::plotOutput(
+                                    outputId = "summary_plot", height = 200
+                                )
                             ),
                             shiny::column(
                                 width = 2, style = "margin-top: 0px;",
                                 shiny::plotOutput(
                                     outputId = "cal_plot", height = 800
-                                ))
+                                )
+                            )
 
                         ),
 
@@ -216,9 +217,55 @@ shiny::shinyUI(
         shiny::tabPanel(
 
             title = "Latest Data",
-            value = "latest"
+            value = "latest",
 
-            # TODO: Get an about section.
+            shiny::column(
+
+                width = 2,
+
+                # Community Selection input
+                shiny::selectInput(
+                    inputId = "latest_comm_select",
+                    label = "Community",
+                    choices = c("All..." = "all",
+                                PAS_COMM)
+                ),
+
+                # PAS selection input
+                shiny::selectInput(
+                    inputId = "latest_pas_select",
+                    label = "Sensor",
+                    choices = ""
+                ),
+
+                # Lookback interval
+                # shiny::radioButtons(
+                #     inputId = "latest_hours_select",
+                #     label = "Look back",
+                #     choices = c("Last Hour" = 1,
+                #                 "Last" = 7,
+                #                 "30 Days" = 30)
+                # ),
+
+                # Display selection mini table
+                shiny::tableOutput(outputId = "Latest_mini_table")
+            ),
+
+            shiny::column(
+                width = 10,
+
+                leaflet::leafletOutput(
+                    outputId = "latest_leaflet", height = 300
+                ),
+
+                # dygraphs::dygraphOutput(
+                #     outputId = "dygraph_plot"
+                # ),
+
+                shiny::plotOutput(
+                    outputId = "aux_plot"
+                )
+            )
 
         ),
 
