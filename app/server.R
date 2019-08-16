@@ -313,6 +313,13 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please select a sensor."
+          )
+
+          shiny::req(active$pat)
+
           AirSensor::pat_multiplot(active$pat)
 
         })
@@ -324,6 +331,8 @@ shiny::shinyServer(
       function() {
 
         shiny::renderPlot({
+
+          shiny::req(active$label)
 
           showLoad({
 
@@ -747,6 +756,12 @@ shiny::shinyServer(
       )
     )
 
+    # Trigger update selected pas on data explorer pas select
+    shiny::observeEvent(
+      active$dexp,
+      { active$label <- active$dexp }
+    )
+
     # Global observations
     shiny::observe({
 
@@ -759,34 +774,24 @@ shiny::shinyServer(
 
       )
 
-      if ( active$navtab == "dataview" ) {
+      # Update the data explorer selection based on active label
+      shiny::updateSelectInput(
+        session,
+        inputId = "de_pas_select",
+        selected = active$label,
+        choices = c("Select Sensor...",
+                    PAS$label[!is.na(PAS$communityRegion) &
+                                !grepl("(<?\\sB)$", PAS$label) &
+                                PAS$DEVICE_LOCATIONTYPE != "inside"])
+      )
 
-        shiny::updateSelectInput(
-          session,
-          inputId = "de_pas_select",
-          selected = active$dexp,
-          choices = c("Select Sensor...",
-                      PAS$label[!is.na(PAS$communityRegion) &
-                                  !grepl("(<?\\sB)$", PAS$label) &
-                                  PAS$DEVICE_LOCATIONTYPE != "inside"])
-        )
-
-        # Update the pas selector on main??
-        shiny::updateSelectInput(
-          session,
-          inputId = "pas_select",
-          selected = active$dexp
-
-        )
-
-      }
 
       # Watch the active variables to update the URL
       nquery()
 
     })
 
-    # Trigger leaflet update based on marker and pas selections
+    # Trigger leaflet update based on marker and pas selections, and tab change
     shiny::observeEvent(c(active$marker, active$tab), updateLeaf())
     shiny::observeEvent(c(active$label, active$tab), updateLeaf(label = active$label))
 
