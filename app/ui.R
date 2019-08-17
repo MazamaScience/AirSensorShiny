@@ -223,6 +223,11 @@ shiny::shinyUI(
 
                 width = 2,
 
+
+                leaflet::leafletOutput(
+                    outputId = "latest_leaflet", height = 400
+                ),
+
                 # Community Selection input
                 shiny::selectInput(
                     inputId = "latest_comm_select",
@@ -248,22 +253,24 @@ shiny::shinyUI(
                 # ),
 
                 # Display selection mini table
-                shiny::tableOutput(outputId = "Latest_mini_table")
+                shiny::tableOutput(outputId = "Latest_mini_table"),
+                shiny::actionButton(
+                    inputId = "loadButton",
+                    label = "Load Latest"
+                )
             ),
 
             shiny::column(
                 width = 10,
 
-                leaflet::leafletOutput(
-                    outputId = "latest_leaflet", height = 300
-                ),
 
                 # dygraphs::dygraphOutput(
                 #     outputId = "dygraph_plot"
                 # ),
+                #
 
                 shiny::plotOutput(
-                    outputId = "aux_plot"
+                    outputId = "aux_plot", height = 850
                 )
             )
 

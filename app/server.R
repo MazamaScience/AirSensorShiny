@@ -20,7 +20,8 @@ shiny::shinyServer(
         compmarker = NULL,
         tab = NULL,
         navtab = NULL,
-        dexp = NULL
+        dexp = NULL,
+        latestload = NULL
       )
 
     # Update the active variable with an input variable
@@ -93,6 +94,13 @@ shiny::shinyServer(
       updateActive("dexp", "de_pas_select")
     )
 
+    # Update active marker with latest leaflet marker click
+    shiny::observeEvent(
+      label = "latest map marker update",
+      input$latest_leaflet_marker_click,
+      updateActive("marker", "latest_leaflet_marker_click")
+    )
+
     # ----- Reactive Functions -------------------------------------------------
 
     # Get the dates
@@ -154,6 +162,27 @@ shiny::shinyServer(
         return(pas)
 
       }, label = "get community sensors")
+
+    # Load latest data of the past day from thingspeak on load button press
+    thingspeakLatest <-
+      shiny::eventReactive(
+        input$loadButton,
+        {
+          sd <- lubridate::ymd(Sys.Date())
+
+          ed <- lubridate::ymd(Sys.Date()) + lubridate::ddays(1)
+
+          # Get both channels from global pas
+          pas <- PAS[grepl(active$label, PAS$label),]
+
+          latest <-
+            AirSensor::pat_createNew(
+              pas=pas,
+              label=active$label,
+              startdate=sd,
+              enddate=ed
+            )
+        }, label = "load latest data from thingspeak")
 
     # ----- Render Handling ----------------------------------------------------
 
@@ -482,14 +511,14 @@ shiny::shinyServer(
     renderDygraphPlot <-
       function() {
 
-      dygraphs::renderDygraph({
+        dygraphs::renderDygraph({
 
-        AirSensor::pat_dygraph(
-          pat = active$pat,
-          sampleSize = NULL
-        )
+          AirSensor::pat_dygraph(
+            pat = active$pat,
+            sampleSize = NULL
+          )
 
-      })
+        })
 
       }
 
@@ -498,11 +527,21 @@ shiny::shinyServer(
 
         shiny::renderPlot({
 
-          AirSensor::pat_multiplot(
-            pat = active$pat,
-            plottype = "aux",
-            sampleSize = NULL
-          )
+          showLoad({
+
+            latest <- thingspeakLatest()
+
+            shiny::incProgress(0.666)
+
+            AirSensor::pat_multiplot(
+              pat = latest,
+              plottype = "all", #"aux",
+              sampleSize = NULL,
+              columns = 1
+            )
+
+
+          })
 
         })
 
@@ -565,7 +604,7 @@ shiny::shinyServer(
       function(label = NULL) {
 
         # If on main tab -> update main leaflet
-        if ( active$tab == "main" ) {
+        if ( active$tab == "main" || active$navtab == "latest") {
 
           # Get data
           if ( is.null(label) ) ( label <- active$marker )
@@ -602,9 +641,12 @@ shiny::shinyServer(
               sep = "<br/>"
             )
 
+          # Check which to draw on
+          if( active$tab == "main" ) proxy <- "leaflet"
+          if( active$navtab == "latest" ) proxy <- "latest_leaflet"
 
           # Interact with proxy leaflet to avoid redraw
-          leaflet::leafletProxy("leaflet") %>%
+          leaflet::leafletProxy(proxy) %>%
             leaflet::clearPopups() %>%
             leaflet::flyTo(
               lng,
@@ -850,6 +892,12 @@ shiny::shinyServer(
                                 PAS$DEVICE_LOCATIONTYPE != "inside"])
       )
 
+      shiny::updateActionButton(
+        session,
+        inputId = "loadButton",
+        label = paste0("Load Latest:", active$label)
+      )
+
 
       # Watch the active variables to update the URL
       nquery()
@@ -900,8 +948,8 @@ shiny::shinyServer(
     output$download_data <- downloadButton()
 
     # - Latest Data -
-    output$dygraph_plot <- renderDygraphPlot()
-    output$aux_plot <- renderMultiplot()#renderAuxPlot()
+    #output$dygraph_plot <- renderDygraphPlot()
+    output$aux_plot <- renderAuxPlot()
     output$latest_leaflet <- renderLeaf()
 
   }
