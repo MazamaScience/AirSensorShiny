@@ -67,7 +67,12 @@ shiny::shinyUI(
                     # Display selection mini table
                     shiny::tableOutput(outputId = "mini_table"),
 
-                    shiny::tableOutput("debug")
+                    shiny::tableOutput("debug"),
+
+                    shiny::icon("question-circle"),
+
+                    shiny::textOutput(
+                        outputId = "help_text")
 
                 ),
 

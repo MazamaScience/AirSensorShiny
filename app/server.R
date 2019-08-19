@@ -271,15 +271,31 @@ shiny::shinyServer(
                 )
               )
 
-            if ( class(pat) == "try-error" )
+            if ( class(pat) == "try-error" ) {
               handleError("", "Error: Please select a different sensor.")
+              shiny::showNotification("HEY")
+            }
 
             shiny::incProgress(0.65)
 
             # Calendar plot
-           try(AirSensor::pat_calendarPlot(pat))
+            calendar <- try(AirSensor::pat_calendarPlot(pat))
+
+            if ( class(calendar)  == "try-error" ) {
+
+              shiny::showNotification(
+                type = "warning",
+                HTML("<b> Calendar Creation Failed</b> <br>
+                     Please select a different sensor.")
+                )
+
+              handleError("", paste0(active$label, ": Calendar Unavailable"))
+
+            }
 
           })
+
+          return(calendar)
 
         })
 
@@ -844,6 +860,45 @@ shiny::shinyServer(
 
       }
 
+    helpText <-
+      function() {
+
+        textdb <-
+          c(
+            "See the skipping of the man,
+            I think he's angry at the lifespan.",
+
+            "He finds it hard to see the deer,
+            Overshadowed by the charming yesteryear.",
+
+            "Who is that waddling near the eagle?
+            I think she'd like to eat the illegal.",
+
+            "Her goofy car is just a cheese,
+            It needs no gas, it runs on munchies.",
+
+            "She's not alone she brings a camel,
+            a pet octopus, and lots of nail enamel.",
+
+            "The octopus likes to chase a salt,
+            Especially one that's in the renault.",
+
+            "The man shudders at the amazing deer
+            He want to leave but she wants the stratosphere."
+          )
+
+        ### EXAMPLE
+
+        return(
+          HTML(
+            "EXAMPLE HELP TEXT: ",
+            sample(textdb, 1)
+          )
+          )
+
+
+      }
+
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
@@ -859,6 +914,15 @@ shiny::shinyServer(
       shiny::updateSelectInput(
         session,
         inputId = "pas_select",
+        selected = active$marker
+      )
+    )
+
+    shiny::observeEvent(
+      active$marker,
+      shiny::updateSelectInput(
+        session,
+        inputId = "latest_pas_select",
         selected = active$marker
       )
     )
@@ -892,11 +956,20 @@ shiny::shinyServer(
                                 PAS$DEVICE_LOCATIONTYPE != "inside"])
       )
 
+      shiny::updateSelectInput(
+        session,
+        inputId = "latest_pas_select",
+        choices = c("Select Sensor...", getPasLabels()),
+        selected = active$label
+      )
+
+
       shiny::updateActionButton(
         session,
         inputId = "loadButton",
         label = paste0("Load Latest:", active$label)
       )
+
 
 
       # Watch the active variables to update the URL
@@ -951,6 +1024,10 @@ shiny::shinyServer(
     #output$dygraph_plot <- renderDygraphPlot()
     output$aux_plot <- renderAuxPlot()
     output$latest_leaflet <- renderLeaf()
+
+    # - Help text -
+    output$help_text <- shiny::renderText(helpText())
+
 
   }
 

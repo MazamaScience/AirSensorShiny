@@ -555,7 +555,7 @@ utils_patternPlot <-
 
    p1<- AirMonitorPlots::ggplot_pm25Diurnal(ws_data = sensor, offsetBreaks = TRUE) +
       AirMonitorPlots::stat_meanByHour() +
-      ggplot2::facet_grid(rows = vars(monitorID))
+      ggplot2::facet_grid(rows = ggplot2::vars(monitorID))
 
    p2 <- AirMonitorPlots::monitor_ggClockPlot(sensor)
 
