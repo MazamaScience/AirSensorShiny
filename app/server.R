@@ -865,36 +865,12 @@ shiny::shinyServer(
 
         textdb <-
           c(
-            "See the skipping of the man,
-            I think he's angry at the lifespan.",
-
-            "He finds it hard to see the deer,
-            Overshadowed by the charming yesteryear.",
-
-            "Who is that waddling near the eagle?
-            I think she'd like to eat the illegal.",
-
-            "Her goofy car is just a cheese,
-            It needs no gas, it runs on munchies.",
-
-            "She's not alone she brings a camel,
-            a pet octopus, and lots of nail enamel.",
-
-            "The octopus likes to chase a salt,
-            Especially one that's in the renault.",
-
-            "The man shudders at the amazing deer
-            He want to leave but she wants the stratosphere."
+            "This is example help info."
           )
 
         ### EXAMPLE
 
-        return(
-          HTML(
-            "EXAMPLE HELP TEXT: ",
-            sample(textdb, 1)
-          )
-          )
+        return(HTML("Example Help Text: ", sample(textdb, 1)))
 
 
       }
@@ -1026,7 +1002,7 @@ shiny::shinyServer(
     output$latest_leaflet <- renderLeaf()
 
     # - Help text -
-    output$help_text <- shiny::renderText(helpText())
+    output$help_text <- shiny::renderText( helpText())
 
 
   }
