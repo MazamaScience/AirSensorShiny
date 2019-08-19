@@ -12,6 +12,9 @@
 library(AirSensor)
 library(MazamaCoreUtils)
 
+# Set the archive base url
+AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+
 # Define global pas object
 PAS <- AirSensor::pas_load()
 
@@ -20,3 +23,4 @@ PAS_COMM <- na.omit(unique(PAS$communityRegion))
 
 # Source the internal Utils for shiny
 source(paste0(getwd(),"/utils.R"))
+
