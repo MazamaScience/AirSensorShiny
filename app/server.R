@@ -21,7 +21,9 @@ shiny::shinyServer(
         tab = NULL,
         navtab = NULL,
         dexp = NULL,
-        latestload = NULL
+        latest_load = NULL,
+        latest_community = NULL,
+        latest_label = NULL
       )
 
     # Update the active variable with an input variable
@@ -101,6 +103,20 @@ shiny::shinyServer(
       updateActive("marker", "latest_leaflet_marker_click")
     )
 
+    # update active latest data community selection
+    shiny::observeEvent(
+      label = "latest community update",
+      input$latest_comm_select,
+      updateActive("latest_community", "latest_comm_select")
+    )
+
+    # update active latest data pas selection
+    shiny::observeEvent(
+      label = "latest pas select update",
+      input$latest_pas_select,
+      updateActive("latest_label", "latest_pas_select")
+    )
+
     # ----- Reactive Functions -------------------------------------------------
 
     # Get the dates
@@ -120,8 +136,14 @@ shiny::shinyServer(
     getPasLabels <-
       shiny::reactive({
 
+        if ( active$navtab == "latest" ) {
+          community <- active$latest_community
+        } else {
+          community <- active$community
+        }
+
         # NOTE: Remove any pas with no def community & contains B & inside
-        if ( active$community == "all" ) {
+        if ( community == "all" ) {
           return(PAS$label[!is.na(PAS$communityRegion) &
                              !grepl("(<?\\sB)$", PAS$label) &
                              PAS$DEVICE_LOCATIONTYPE != "inside"])
@@ -137,7 +159,12 @@ shiny::shinyServer(
     getCommunitySensors <-
       shiny::reactive({
 
-        if ( active$community == "all" )  {
+        if ( active$navtab == "latest" ) {
+          community <- active$latest_community
+        } else {
+          community <- active$community
+        }
+        if ( community == "all" )  {
 
           pas <- PAS[which(!is.na(PAS$communityRegion)),]
 
@@ -147,7 +174,7 @@ shiny::shinyServer(
             PAS[which(
               stringr::str_detect(
                 PAS$communityRegion,
-                active$community)
+                community)
             ),]
 
         }
@@ -279,7 +306,7 @@ shiny::shinyServer(
             shiny::incProgress(0.65)
 
             # Calendar plot
-            calendar <- try(AirSensor::pat_calendarPlot(pat))
+            calendar <- try(AirSensor::pat_calendarPlot(pat, ncol = 2))
 
             if ( class(calendar)  == "try-error" ) {
 
@@ -388,7 +415,7 @@ shiny::shinyServer(
           showLoad({
 
             dates <- getDates()
-
+            AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
             sensor <-
               AirSensor::sensor_filterMeta(
                 monitorID == active$label,
@@ -400,7 +427,7 @@ shiny::shinyServer(
 
             shiny::incProgress(0.44)
 
-            AirSensor::sensor_pollutionRose(sensor)
+            try(AirSensor::sensor_pollutionRose(sensor))
 
           })
 
@@ -894,6 +921,7 @@ shiny::shinyServer(
       )
     )
 
+    # Trigger update to latest pas on marker click
     shiny::observeEvent(
       active$marker,
       shiny::updateSelectInput(
@@ -906,7 +934,13 @@ shiny::shinyServer(
     # Trigger update selected pas on data explorer pas select
     shiny::observeEvent(
       active$dexp,
-      { active$label <- active$dexp }
+      { active$label <- active$latest_label <- active$dexp }
+    )
+
+    # Trigger update when latest pas is selected in latest view
+    shiny::observeEvent(
+      active$latest_label,
+      { active$label <- active$latest_label}
     )
 
     # Global observations
@@ -932,6 +966,7 @@ shiny::shinyServer(
                                 PAS$DEVICE_LOCATIONTYPE != "inside"])
       )
 
+      # Update latest pas with label
       shiny::updateSelectInput(
         session,
         inputId = "latest_pas_select",
@@ -939,14 +974,12 @@ shiny::shinyServer(
         selected = active$label
       )
 
-
+      # Update the load button
       shiny::updateActionButton(
         session,
         inputId = "loadButton",
         label = paste0("Load Latest:", active$label)
       )
-
-
 
       # Watch the active variables to update the URL
       nquery()
