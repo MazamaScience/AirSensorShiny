@@ -697,17 +697,18 @@ shiny::shinyServer(
             )
 
           # Check which to draw on
-          if( active$tab == "main" ) proxy <- "leaflet"
-          if( active$navtab == "latest" ) proxy <- "latest_leaflet"
+          if( active$tab == "main" ) proxy <- "leaflet"; zoom <- input$leaflet_zoom
+          if( active$navtab == "latest" ) proxy <- "latest_leaflet"; zoom <- input$latest_leaflet_zoom
 
           # Interact with proxy leaflet to avoid redraw
           leaflet::leafletProxy(proxy) %>%
             leaflet::clearPopups() %>%
-            leaflet::flyTo(
-              lng,
-              lat,
-              zoom = input$leaflet_zoom
-            ) %>%
+            # leaflet::setView(#flyTo(
+            #   lng,
+            #   lat,
+            #   zoom = ifelse(is.null(input$leaflet_zoom), 12, input$leaflet_zoom),
+            #   options = list(animate=FALSE)
+            # ) %>%
             # Add a selected PAS marker
             # NOTE: Marker given tmp layerId for hacky temp
             # visual workaround. Interactive is false for hacky
@@ -739,11 +740,12 @@ shiny::shinyServer(
           leaflet::leafletProxy("comp_leaflet") %>%
             leaflet::clearGroup("ws_markers") %>%
             leaflet::clearGroup("pas_markers") %>%
-            leaflet::flyTo(
-              lng_pas,
-              lat_pas,
-              zoom = input$comp_leaflet_zoom #Problem
-            ) %>%
+            # leaflet::flyTo(
+            #   lng_pas,
+            #   lat_pas,
+            #   zoom = 12,
+            #   option = list(animate=FALSE) #Problem
+            # ) %>%
             # Selected pas markers
             leaflet::addCircleMarkers(
               lng = lng_pas,
@@ -984,7 +986,7 @@ shiny::shinyServer(
       )
 
       # Watch the active variables to update the URL
-      #nquery()
+      nquery()
 
     })
 
@@ -1048,5 +1050,4 @@ shiny::shinyServer(
 
 # - URL querying/Bookmarking
 # - Color breaks
-# - Rose Plot???
 

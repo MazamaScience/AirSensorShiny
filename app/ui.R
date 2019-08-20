@@ -525,10 +525,10 @@ shiny::shinyUI(
 
                 width = 2,
 
-
-                leaflet::leafletOutput(
-                    outputId = "latest_leaflet", height = 400
-                ),
+                # Latest leaflet display
+                # leaflet::leafletOutput(
+                #     outputId = "latest_leaflet", height = 400
+                # ),
 
                 # Community Selection input
                 shiny::selectInput(

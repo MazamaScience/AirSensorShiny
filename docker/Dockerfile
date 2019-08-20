@@ -6,8 +6,8 @@ FROM rocker/shiny:3.6.0
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
  
-LABEL build_date="2019-07-10"
-LABEL version="1.2"
+LABEL build_date="2019-08-20"
+LABEL version="1.3"
 
 LABEL description="AirShiny Docker Image"
 
@@ -59,7 +59,8 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	countrycode \ 
 	dplyr \ 
 	dygraphs \ 
-	geosphere \ 
+	geosphere \
+	geodist \ 
 	GGally \ 
 	ggmap \ 
 	ggplot2 \
@@ -80,12 +81,13 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	magrittr \ 
 	xts \ 
 	zoo \ 
-	shinythemes
+	shinythemes \
+	worldmet
 
 # Copy the AirSensor package to image
-COPY /src/AirSensor_0.3.8.tar.gz /
+COPY /src/AirSensor_0.4.0.tar.gz /
 
 # Install the AirSensor package
-RUN R CMD INSTALL AirSensor_0.3.8.tar.gz
+RUN R CMD INSTALL AirSensor_0.4.0.tar.gz
 
 
