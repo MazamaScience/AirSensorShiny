@@ -20,7 +20,7 @@ shiny::shinyServer(
         compmarker = NULL,
         tab = NULL,
         navtab = NULL,
-        dexp = NULL,
+        exp_label = NULL,
         latest_load = NULL,
         latest_community = NULL,
         latest_label = NULL
@@ -93,7 +93,7 @@ shiny::shinyServer(
     shiny::observeEvent(
       label = "data explorer pas select update",
       input$de_pas_select,
-      updateActive("dexp", "de_pas_select")
+      updateActive("exp_label", "de_pas_select")
     )
 
     # Update active marker with latest leaflet marker click
@@ -148,7 +148,7 @@ shiny::shinyServer(
                              !grepl("(<?\\sB)$", PAS$label) &
                              PAS$DEVICE_LOCATIONTYPE != "inside"])
         } else {
-          return(PAS$label[grepl(active$community, PAS$communityRegion) &
+          return(PAS$label[grepl(community, PAS$communityRegion) &
                              !grepl("(<?\\sB)$", PAS$label) &
                              PAS$DEVICE_LOCATIONTYPE != "inside"])
         }
@@ -164,19 +164,16 @@ shiny::shinyServer(
         } else {
           community <- active$community
         }
+
         if ( community == "all" )  {
-
           pas <- PAS[which(!is.na(PAS$communityRegion)),]
-
         } else {
-
           pas <-
             PAS[which(
               stringr::str_detect(
                 PAS$communityRegion,
                 community)
             ),]
-
         }
 
         pas$label <-
@@ -300,7 +297,7 @@ shiny::shinyServer(
 
             if ( class(pat) == "try-error" ) {
               handleError("", "Error: Please select a different sensor.")
-              shiny::showNotification("HEY")
+              shiny::showNotification("Data loading failed.")
             }
 
             shiny::incProgress(0.65)
@@ -312,7 +309,7 @@ shiny::shinyServer(
 
               shiny::showNotification(
                 type = "warning",
-                HTML("<b> Calendar Creation Failed</b> <br>
+                HTML("<b>Calendar Creation Failed</b> <br>
                      Please select a different sensor.")
                 )
 
@@ -427,7 +424,21 @@ shiny::shinyServer(
 
             shiny::incProgress(0.44)
 
-            try(AirSensor::sensor_pollutionRose(sensor))
+            rose <- try(AirSensor::sensor_pollutionRose(sensor))
+
+            if ( class(rose)  == "try-error" ) {
+
+              shiny::showNotification(
+                type = "warning",
+                HTML("<b>Rose Plot Failed</b> <br>
+                     Please select a different sensor.")
+              )
+
+              handleError("", paste0(active$label, ": Rose Plot Unavailable"))
+
+            }
+
+            return(rose)
 
           })
 
@@ -628,7 +639,8 @@ shiny::shinyServer(
       function() {
 
         if ( active$navtab == "explore" ) label <- active$label
-        if ( active$navtab == "dataview" ) label <- active$dexp
+        if ( active$navtab == "dataview" ) label <- active$exp_label
+        if ( active$navtab == "latest" ) label <- active$latest_label
 
         dates <- getDates()
         active$pat <-
@@ -905,9 +917,9 @@ shiny::shinyServer(
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
-    # Trigger active pat update based on pas selection, lookback, enddate, dexp
+    # Trigger active pat update based on pas selection, lookback, enddate, exp_label
     shiny::observeEvent(
-      c(active$label, active$lookback, active$enddate, active$dexp),
+      c(active$label, active$lookback, active$enddate, active$exp_label, active$latest_label),
       loadPat()
     )
 
@@ -921,26 +933,16 @@ shiny::shinyServer(
       )
     )
 
-    # Trigger update to latest pas on marker click
-    shiny::observeEvent(
-      active$marker,
-      shiny::updateSelectInput(
-        session,
-        inputId = "latest_pas_select",
-        selected = active$marker
-      )
-    )
-
     # Trigger update selected pas on data explorer pas select
     shiny::observeEvent(
-      active$dexp,
-      { active$label <- active$latest_label <- active$dexp }
+      active$exp_label,
+      { active$label <- active$latest_label <- active$exp_label }
     )
 
     # Trigger update when latest pas is selected in latest view
     shiny::observeEvent(
       active$latest_label,
-      { active$label <- active$latest_label}
+      { active$label <- active$exp_label <- active$latest_label }
     )
 
     # Global observations
@@ -982,7 +984,7 @@ shiny::shinyServer(
       )
 
       # Watch the active variables to update the URL
-      nquery()
+      #nquery()
 
     })
 
@@ -1042,7 +1044,9 @@ shiny::shinyServer(
 
 )
 
-# CURRENT ISSUES:
+#  ----- CURRENT ISSUES: -----
 
-# - URL querying
+# - URL querying/Bookmarking
+# - Color breaks
+# - Rose Plot???
 
