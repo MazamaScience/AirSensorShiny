@@ -38,8 +38,8 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . --- . working on a Mac
-VERSION=1.0.1
+# first version . airsensorshiny 1.3.1 . ----
+VERSION=1.1.0
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 

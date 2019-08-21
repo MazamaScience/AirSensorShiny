@@ -12,15 +12,80 @@
 library(AirSensor)
 library(MazamaCoreUtils)
 
+# Source the internal Utils for shiny
+source(file.path(getwd(), "utils.R"))
+
+# ----- Set up logging ---------------------------------------------------------
+
+if ( interactive() ) { # Running from RStudio
+
+  LOG_DIR <- file.path(getwd(),"logs")
+
+} else {
+
+  LOG_DIR <- Sys.getenv("LOG_DIR")
+
+}
+
+dir.create(LOG_DIR, showWarnings = FALSE)
+
+logger.setup(
+  traceLog = file.path(LOG_DIR, "AirSensorShiny_TRACE.log"),
+  debugLog = file.path(LOG_DIR, "AirSensorShiny_DEBUG.log"),
+  infoLog  = file.path(LOG_DIR, "AirSensorShiny_INFO.log"),
+  errorLog = file.path(LOG_DIR, "AirSensorShiny_ERROR.log")
+)
+
+if ( interactive() ) { # Running from RStudio
+  logger.setLevel(TRACE)
+}
+
+# Log session info
+logger.debug(capture.output(sessionInfo()))
+
+# ----- Global settings --------------------------------------------------------
+
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 # Define global pas object
-PAS <- AirSensor::pas_load()
+PAS <- AirSensor::pas_load() # TODO:  Should we add "archival = TRUE"?
 
 # Define global communities
 PAS_COMM <- na.omit(unique(PAS$communityRegion))
 
-# Source the internal Utils for shiny
-source(paste0(getwd(),"/utils.R"))
+# Helpful conversion list
+communityById <- list(
+  "SCAP" = "Alhambra/Monterey Park",
+  "SCBB" = "Big Bear Lake",
+  "SCEM" = "El Monte",
+  "SCIV" = "Imperial Valley",
+  "SCNP" = "Nipomo",
+  "SCPR" = "Paso Robles",
+  "SCSJ" = "San Jacinto",
+  "SCSB" = "Seal Beach",
+  "SCAH" = "SCAH",
+  "SCAN" = "SCAN",
+  "SCUV" = "SCUV",
+  "SCSG" = "South Gate",
+  "SCHS" = "Sycamore Canyon",
+  "SCTV" = "Temescal Valley"
+)
 
+# Helpful conversion list
+IdByCommunity <- list(
+  "Alhambra/Monterey Park" = "SCAP",
+  "Big Bear Lake" = "SCBB",
+  "El Monte" = "SCEM",
+  "Imperial Valley" = "SCIV",
+  "Nipomo" = "SCNP",
+  "Paso Robles" = "SCPR",
+  "San Jacinto" = "SCSJ",
+  "Seal Beach" = "SCSB",
+  "SCAH" = "SCAH",
+  "SCAN" = "SCAN",
+  "SCUV" = "SCUV",
+  "South Gate" = "SCSG",
+  "Sycamore Canyon" = "SCHS",
+  "Temescal Valley" = "SCTV"
+)
