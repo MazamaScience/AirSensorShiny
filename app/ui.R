@@ -9,7 +9,7 @@
 # - Mazama Science
 #
 
-MazamaCoreUtils::logger.debug("----- ui() -----")
+#MazamaCoreUtils::logger.debug("----- ui() -----")
 
 # ----- Define UI --------------------------------------------------------------
 shiny::shinyUI(

@@ -40,6 +40,8 @@ utils_leaflet <- function(
   maptype = "terrain"
 ) {
 
+  logger.debug('----- utils_leaflet -----')
+
   # ----- Validate parameters --------------------------------------------------
 
   if ( !("data.frame" %in% class(pas)) )
@@ -169,6 +171,8 @@ utils_barplot <-
     ylim = NULL
   ) {
 
+    logger.debug('----- utils_barplot -----')
+
     # ----- Validate parameters ------------------------------------------------
 
     if ( AirSensor::pat_isEmpty(pat) )
@@ -176,8 +180,6 @@ utils_barplot <-
 
     if ( !AirSensor::pat_isPat(pat) )
       stop("Required parameter 'pat' is not a valid 'pa_timerseries' object.")
-
-    MazamaCoreUtils::logger.debug(" # utils_barplot() # ")
 
     ast <-
       AirSensor::pat_createAirSensor(
@@ -254,6 +256,8 @@ comp_leaflet <- function(
   opacity = 0.8,
   maptype = "terrain"
 ) {
+
+  logger.debug('----- comp_leaflet -----')
 
   # ----- Validate parameters --------------------------------------------------
 
@@ -415,6 +419,8 @@ utils_externalFit <- function(
   min_count = 20
 ) {
 
+  logger.debug('----- utils_externalFit -----')
+
   # ----- Validate parameters --------------------------------------------------
 
   if ( !AirSensor::pat_isPat(pat) )
@@ -550,6 +556,8 @@ handleError <-
 
 utils_patternPlot <-
   function(pat) {
+
+    logger.debug('----- utils_patternPlot -----')
 
     sensor <- AirSensor::pat_createAirSensor(pat)
 
