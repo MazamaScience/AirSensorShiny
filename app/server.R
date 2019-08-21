@@ -460,7 +460,8 @@ shiny::shinyServer(
             strftime(active$enddate, "%m")
           dd <-
             strftime(active$enddate, "%d")
-          hh <- "09"
+          # Hour (HH) disabled
+          #hh <- "09"
           comm <- active$community
 
           url <-

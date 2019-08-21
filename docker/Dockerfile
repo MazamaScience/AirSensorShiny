@@ -7,7 +7,7 @@ LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
  
 LABEL build_date="2019-08-20"
-LABEL version="1.3"
+LABEL version="1.3.1"
 
 LABEL description="AirShiny Docker Image"
 
@@ -44,6 +44,7 @@ RUN apt-get update && apt-get install -y \
 # Create directories for shiny
 RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
 RUN mkdir -p /var/lib/AirSensorShiny/bookmarks/shiny
+
 # Create directories for AirSensor
 RUN mkdir -p /home/mazama/data/Spatial
 
@@ -82,7 +83,12 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	xts \ 
 	zoo \ 
 	shinythemes \
-	worldmet
+	worldmet \ 
+	remotes 
+
+# Install AirMonitorPlots
+RUN installGithub.r \ 
+	MazamaScience/AirMonitorPlots 
 
 # Copy the AirSensor package to image
 COPY /src/AirSensor_0.4.0.tar.gz /
