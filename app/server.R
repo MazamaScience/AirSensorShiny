@@ -461,7 +461,7 @@ shiny::shinyServer(
           dd <-
             strftime(active$enddate, "%d")
           # Hour (HH) disabled
-          #hh <- "09"
+          # hh <- "09"
           comm <- active$community
 
           url <-
@@ -474,16 +474,17 @@ shiny::shinyServer(
               year,
               mm,
               dd,
-              hh,
-              ".mp4"
+              #hh,
+              ".mp4" #".webm"
             )
 
 
           tags$video(
             id="video2",
-            type = "video/webm",
+            type = "video/mp4",
             src = url,
-            controls = "controls", loop = TRUE
+            controls = "controls",
+            loop = TRUE
           )
 
         })
