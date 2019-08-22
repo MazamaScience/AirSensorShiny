@@ -12,8 +12,12 @@
 library(AirSensor)
 library(MazamaCoreUtils)
 
-# Source the internal Utils for shiny
-source(file.path(getwd(), "utils.R"))
+# Load R functions
+R_files <- list.files('.', pattern='^shiny_.+\\.R', full.names=TRUE)
+for ( file in R_files ) {
+  source( file.path(getwd(),file) )
+}
+
 
 # ----- Set up logging ---------------------------------------------------------
 
@@ -55,7 +59,7 @@ PAS <- AirSensor::pas_load() # TODO:  Should we add "archival = TRUE"?
 PAS_COMM <- na.omit(unique(PAS$communityRegion))
 
 # Helpful conversion list
-communityById <- list(
+CommunityById <- list(
   "SCAP" = "Alhambra/Monterey Park",
   "SCBB" = "Big Bear Lake",
   "SCEM" = "El Monte",

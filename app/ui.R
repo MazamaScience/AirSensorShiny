@@ -126,7 +126,7 @@ shiny::shinyUI(
                             value = "comp",
                             # Comparison Leaflet
                             leaflet::leafletOutput(
-                                outputId = "comp_leaflet"
+                                outputId = "shiny_leaflet_comparison"
                             ),
                             shiny::column(
                                 width = 8,
@@ -423,7 +423,7 @@ shiny::shinyUI(
                             value = "comp",
                             # Comparison Leaflet
                             leaflet::leafletOutput(
-                                outputId = "comp_leaflet"
+                                outputId = "shiny_leaflet_comparison"
                             ),
                             shiny::column(
                                 width = 8,

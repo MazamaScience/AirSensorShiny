@@ -79,8 +79,8 @@ shiny::shinyServer(
     # Update active marker with comparison leaflet
     shiny::observeEvent(
       label = "comparison leaflet marker update",
-      input$comp_leaflet_marker_click,
-      updateActive("marker", "comp_leaflet_marker_click")
+      input$shiny_leaflet_comparison_marker_click,
+      updateActive("marker", "shiny_leaflet_comparison_marker_click")
     )
 
     # Update active navtab
@@ -124,7 +124,7 @@ shiny::shinyServer(
       input$pas_select,
       { active$communityId <-
         names(
-          which(communityById == active$pas$communityRegion)
+          which(CommunityById == active$pas$communityRegion)
         )
       }
     )
@@ -236,7 +236,7 @@ shiny::shinyServer(
           valid_sensors <-
             sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
 
-          utils_leaflet(
+          shiny_leaflet(
             pas = valid_sensors,
             parameter = "pm25_current",
             paletteName = "Spectral" #"Purple"
@@ -261,7 +261,7 @@ shiny::shinyServer(
           dates <- getDates()
           if ( plotType == "daily_plot" ) {
 
-            utils_barplot(
+            shiny_barplot(
               pat,
               period = "1 day",
               startdate = dates[1],
@@ -270,7 +270,7 @@ shiny::shinyServer(
 
           }  else if ( plotType == "hourly_plot" ) {
 
-            utils_barplot(
+            shiny_barplot(
               pat,
               period = "1 hour",
               startdate = dates[1],
@@ -388,7 +388,7 @@ shiny::shinyServer(
 
           req(active$pat)
 
-          utils_externalFit(active$pat)
+          shiny_externalFit(active$pat)
 
         })
 
@@ -425,18 +425,29 @@ shiny::shinyServer(
 
             dates <- getDates()
             AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+
+            sensor <- AirSensor::sensor_load(
+              startdate = dates[1],
+              enddate = dates[2]
+            )
+
+            logger.trace("sensor_load(%s, %s) returns %d rows of data",
+                         strftime(dates[1], tz = sensor$meta$timezone),
+                         strftime(dates[2], tz = sensor$meta$timezone),
+                         nrow(sensor$data))
+
             sensor <-
-              AirSensor::sensor_filterMeta(
-                monitorID == active$label,
-                sensor = AirSensor::sensor_load(
-                  startdate = dates[1],
-                  enddate = dates[2]
-                )
-              )
+              sensor %>%
+              AirSensor::sensor_filterMeta(monitorID == active$label)
+
+            logger.trace("sensor '%s' has %s rows of data",
+                         active$label, nrow(sensor$data))
 
             shiny::incProgress(0.44)
 
-            rose <- try(AirSensor::sensor_pollutionRose(sensor))
+            rose <- try({
+              AirSensor::sensor_pollutionRose(sensor)
+            }, silent = FALSE)
 
             if ( class(rose)  == "try-error" ) {
 
@@ -555,7 +566,7 @@ shiny::shinyServer(
 
             shiny::incProgress(0.7)
 
-            utils_patternPlot(active$pat) #+ ggplot2::scale_fill_brewer()
+            shiny_diurnalPattern(active$pat) #+ ggplot2::scale_fill_brewer()
 
 
           })
@@ -739,7 +750,7 @@ shiny::shinyServer(
           lat_pas <-  PAS$latitude[ind]
 
           # Interact with proxy comparison leaflet to avoid redraw
-          leaflet::leafletProxy("comp_leaflet") %>%
+          leaflet::leafletProxy("shiny_leaflet_comparison") %>%
             leaflet::clearGroup("ws_markers") %>%
             leaflet::clearGroup("pas_markers") %>%
             # leaflet::flyTo(
@@ -785,7 +796,7 @@ shiny::shinyServer(
             lng_ws <-  nearestMonitor$meta$longitude
 
             # Nearest monitor markers
-            leaflet::leafletProxy("comp_leaflet") %>%
+            leaflet::leafletProxy("shiny_leaflet_comparison") %>%
               leaflet::addAwesomeMarkers(
                 lng = lng_ws,
                 lat = lat_ws,
@@ -808,7 +819,7 @@ shiny::shinyServer(
           # If unsuccessful, add error label
           } else {
 
-            leaflet::leafletProxy("comp_leaflet") %>%
+            leaflet::leafletProxy("shiny_leaflet_comparison") %>%
               leaflet::addAwesomeMarkers(
                 lng = lng_pas,
                 lat = lat_pas,
@@ -1016,7 +1027,7 @@ shiny::shinyServer(
     output$cal_plot <- renderCalPlot()
 
     # - Comparison Tab -
-    output$comp_leaflet <- renderLeaf()
+    output$shiny_leaflet_comparison <- renderLeaf()
     output$ws_ext <- renderExtFit()
     output$ws_comp <- renderMonitorComp()
 
