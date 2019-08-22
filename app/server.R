@@ -122,7 +122,11 @@ shiny::shinyServer(
     shiny::observeEvent(
       label = "update community ID",
       input$pas_select,
-      { active$communityId <- names(which(communityById == active$pas$communityRegion)) }
+      { active$communityId <-
+        names(
+          which(communityById == active$pas$communityRegion)
+        )
+      }
     )
 
     # ----- Reactive Functions -------------------------------------------------
@@ -472,20 +476,7 @@ shiny::shinyServer(
           # hh <- "09"
           comm <- active$communityId
 
-          url <-
-            paste0(
-              baseUrl,
-              year,
-              "/",
-              comm,
-              "_",
-              year,
-              mm,
-              dd,
-              #hh,
-              ".mp4" #".webm"
-            )
-
+          url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
 
           tags$video(
             id="video2",
