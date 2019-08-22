@@ -307,7 +307,7 @@ shiny::shinyServer(
                 )
               )
 
-            if ( class(pat) == "try-error" ) {
+            if ( "try-error" %in% class(pat) ) {
               handleError("", "Error: Please select a different sensor.")
               shiny::showNotification("Data loading failed.")
             }
@@ -317,7 +317,7 @@ shiny::shinyServer(
             # Calendar plot
             calendar <- try(AirSensor::pat_calendarPlot(pat, ncol = 2))
 
-            if ( class(calendar)  == "try-error" ) {
+            if ( "try-error" %in% class(calendar) ) {
 
               shiny::showNotification(
                 type = "warning",
@@ -424,7 +424,7 @@ shiny::shinyServer(
           showLoad({
 
             dates <- getDates()
-            AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+            # AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
             sensor <- AirSensor::sensor_load(
               startdate = dates[1],
@@ -445,11 +445,39 @@ shiny::shinyServer(
 
             shiny::incProgress(0.44)
 
-            rose <- try({
-              AirSensor::sensor_pollutionRose(sensor)
+            # Get wind data
+
+            result <- try({
+
+              logger.trace("loading wind data")
+
+              # Find wind data readings from the closest NOAA site
+              year <- lubridate::year(sensor$data$datetime[1])
+              lon <- sensor$meta$longitude[1]
+              lat <- sensor$meta$latitude[1]
+
+              closestSite <- worldmet::getMeta(lon = lon, lat = lat, n = 1,
+                                               plot = FALSE)[1,]
+              siteCode <- paste0(closestSite$USAF, "-", closestSite$WBAN)
+
+              siteData <- worldmet::importNOAA(code = siteCode, year = year,
+                                               parallel = FALSE)
+              windData <- dplyr::select(siteData, c("date", "wd", "ws"))
+
+            }, silent = TRUE)
+
+            timeRange <- range(windData$date)
+            logger.trace("windData goes from %s to %s local time",
+                         strftime(timeRange[1], tz = sensor$meta$timezone),
+                         strftime(timeRange[2], tz = sensor$meta$timezone))
+
+            # TODO:  Opporutnity to test for time range overlap with sensor data
+
+            result <- try({
+              rose <- AirSensor::sensor_pollutionRose(sensor)
             }, silent = FALSE)
 
-            if ( class(rose)  == "try-error" ) {
+            if ( "try-error" %in% class(result) ) {
 
               shiny::showNotification(
                 type = "warning",
@@ -460,6 +488,8 @@ shiny::shinyServer(
               handleError("", paste0(active$label, ": Rose Plot Unavailable"))
 
             }
+
+            logger.trace("class(rose) = %s", class(rose))
 
             return(rose)
 
@@ -789,7 +819,7 @@ shiny::shinyServer(
             )
 
           # If load is successful -> add monitor to map
-          if ( class(nearestMonitor) != "try-error" ) {
+          if ( !"try-error" %in% class(nearestMonitor) ) {
 
             lab_ws <-  nearestMonitor$meta$monitorID
             lat_ws <-  nearestMonitor$meta$latitude
