@@ -23,7 +23,8 @@ shiny::shinyServer(
         exp_label = NULL,
         latest_load = NULL,
         latest_community = NULL,
-        latest_label = NULL
+        latest_label = NULL,
+        communityId = NULL
       )
 
     # Update the active variable with an input variable
@@ -115,6 +116,13 @@ shiny::shinyServer(
       label = "latest pas select update",
       input$latest_pas_select,
       updateActive("latest_label", "latest_pas_select")
+    )
+
+    # Update active community ID with pas selection
+    shiny::observeEvent(
+      label = "update community ID",
+      input$pas_select,
+      { active$communityId <- names(which(communityById == active$pas$communityRegion)) }
     )
 
     # ----- Reactive Functions -------------------------------------------------
@@ -462,7 +470,7 @@ shiny::shinyServer(
             strftime(active$enddate, "%d")
           # Hour (HH) disabled
           # hh <- "09"
-          comm <- active$community
+          comm <- active$communityId
 
           url <-
             paste0(
@@ -556,7 +564,8 @@ shiny::shinyServer(
 
             shiny::incProgress(0.7)
 
-            utils_patternPlot(active$pat)
+            utils_patternPlot(active$pat) #+ ggplot2::scale_fill_brewer()
+
 
           })
 
@@ -870,12 +879,12 @@ shiny::shinyServer(
 
         # Community
         # -- Substitute spaces if true
-        cComm <-
-          ifelse(
-            grepl("\\s", active$community ),
-            gsub("\\s","\\+", active$community),
-            active$community
-          )
+        cComm <- active$communityId
+          # ifelse(
+          #   grepl("\\s", active$community ),
+          #   gsub("\\s","\\+", active$community),
+          #   active$community
+          # )
         cNav <- active$navtab
         # Current tab
         cTab <- active$tab
