@@ -235,10 +235,10 @@ shiny::shinyServer(
 
           valid_sensors <-
             sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
-
+library(leaflet)
           shiny_leaflet(
             pas = valid_sensors,
-            parameter = "pm25_current",
+            parameter = "pm25_current",maptype = "Wikimedia", #"CartoDB.Positron",
             paletteName = "PuBu"#"Spectral" #"Purple"
           )
 
