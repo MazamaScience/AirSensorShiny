@@ -79,7 +79,7 @@ shiny_barplot <-
         axis.title.y = ggplot2::element_text(size = 14)
       )
 
-
+    cuts <- cut(ast$data[[2]], breaks = c(0,12, 35, 55, 75, 6000))
 
     # Average PM2.5 barplot
     pm25_avg_bar <-
@@ -88,7 +88,8 @@ shiny_barplot <-
         mapping = ggplot2::aes(
           x = .data$datetime,
           y = ast$data[[2]],
-          fill = ast$data[[2]]),
+          fill = ast$data[[2]]), #sqamd_break(ast$data[[2]])
+
         stat = "identity",
         color = "gray95",
         show.legend = FALSE
@@ -96,7 +97,7 @@ shiny_barplot <-
 
     gg <-
       pm25_plot +
-      pm25_avg_bar
+      pm25_avg_bar + scale_fill_sqamd(reverse = TRUE, discrete = FALSE)
 
 
     return(gg)

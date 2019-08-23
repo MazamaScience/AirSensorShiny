@@ -239,7 +239,7 @@ shiny::shinyServer(
           shiny_leaflet(
             pas = valid_sensors,
             parameter = "pm25_current",
-            paletteName = "Spectral" #"Purple"
+            paletteName = "PuBu"#"Spectral" #"Purple"
           )
 
         })
@@ -315,7 +315,11 @@ shiny::shinyServer(
             shiny::incProgress(0.65)
 
             # Calendar plot
-            calendar <- try(AirSensor::pat_calendarPlot(pat, ncol = 2))
+            calendar <-
+              try({
+                AirSensor::pat_calendarPlot(pat, ncol = 2) +
+                  scale_fill_sqamd(discrete = FALSE, reverse = TRUE)
+              })
 
             if ( "try-error" %in% class(calendar) ) {
 
@@ -332,7 +336,6 @@ shiny::shinyServer(
           })
 
           return(calendar)
-
         })
 
       }
