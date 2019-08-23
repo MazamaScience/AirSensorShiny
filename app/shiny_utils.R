@@ -25,6 +25,18 @@ handleError <-
 
   }
 
+notify <-
+  function(title = NULL, info = NULL) {
+
+    if ( is.null(title) ) title <- "Error"
+    if ( is.null(info) ) info <- "Please select a different sensor."
+
+    shiny::showNotification(
+      type = "warning",
+      HTML(paste0("<b>", title, "</b> <br>", info))
+    )
+  }
+
 # sqamd color breaks
 sqamd_break <-
   function(data) {
