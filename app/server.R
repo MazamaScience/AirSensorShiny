@@ -308,8 +308,10 @@ library(leaflet)
               )
 
             if ( "try-error" %in% class(pat) ) {
+
               handleError("", "Error: Please select a different sensor.")
-              shiny::showNotification("Data loading failed.")
+              notify("Data Creation Failed")
+
             }
 
             shiny::incProgress(0.65)
@@ -323,12 +325,7 @@ library(leaflet)
 
             if ( "try-error" %in% class(calendar) ) {
 
-              shiny::showNotification(
-                type = "warning",
-                HTML("<b>Calendar Creation Failed</b> <br>
-                     Please select a different sensor.")
-                )
-
+              notify("Calendar Creation Failed")
               handleError("", paste0(active$label, ": Calendar Unavailable"))
 
             }
@@ -477,17 +474,12 @@ library(leaflet)
             # TODO:  Opporutnity to test for time range overlap with sensor data
 
             result <- try({
-              rose <- AirSensor::sensor_pollutionRose(sensor)
+              rose <- AirSensor::sensor_pollutionRose(sensor, windData)
             }, silent = FALSE)
 
             if ( "try-error" %in% class(result) ) {
 
-              shiny::showNotification(
-                type = "warning",
-                HTML("<b>Rose Plot Failed</b> <br>
-                     Please select a different sensor.")
-              )
-
+              notify("Rose Plot Failed")
               handleError("", paste0(active$label, ": Rose Plot Unavailable"))
 
             }
