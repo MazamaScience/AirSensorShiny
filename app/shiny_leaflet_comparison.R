@@ -56,7 +56,14 @@ shiny_leaflet_comparison <- function(
 
   colorInfo <- AirSensor::pas_palette(
     pas,
-    paletteName = paletteName,
+    paletteName =
+      c(
+        "purple2" = "#6b0096",
+        "purple1" = "#9f00de",
+        "blue3" = "#002ade",
+        "blue2" = "#3b8aff",
+        "blue1" = "#abebff"
+      ),
     parameter = parameter,
     reverse= TRUE
   )

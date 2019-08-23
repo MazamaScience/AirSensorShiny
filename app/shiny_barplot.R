@@ -67,7 +67,7 @@ shiny_barplot <-
       ggplot2::xlab("Datetime") +
       ggplot2::ylab("\u03bcg / m\u00b3") +
       ggplot2::theme_minimal() +
-      ggplot2::scale_fill_viridis_c(begin = 0.15) +
+      #ggplot2::scale_fill_viridis_d(begin = 0.15) +
       ggplot2::scale_x_datetime(date_breaks = "1 day") +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(
@@ -88,7 +88,7 @@ shiny_barplot <-
         mapping = ggplot2::aes(
           x = .data$datetime,
           y = ast$data[[2]],
-          fill = ast$data[[2]]), #sqamd_break(ast$data[[2]])
+          fill = sqamd_break(ast$data[[2]])),
 
         stat = "identity",
         color = "gray95",
@@ -97,7 +97,8 @@ shiny_barplot <-
 
     gg <-
       pm25_plot +
-      pm25_avg_bar + scale_fill_sqamd(reverse = TRUE, discrete = FALSE)
+      pm25_avg_bar +
+      scale_fill_sqamd()
 
 
     return(gg)

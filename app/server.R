@@ -318,7 +318,7 @@ shiny::shinyServer(
             calendar <-
               try({
                 AirSensor::pat_calendarPlot(pat, ncol = 2) +
-                  scale_fill_sqamd(discrete = FALSE, reverse = TRUE)
+                  scale_fill_sqamd()
               })
 
             if ( "try-error" %in% class(calendar) ) {
