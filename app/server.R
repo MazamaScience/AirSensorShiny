@@ -45,7 +45,10 @@ shiny::shinyServer(
     shiny::observeEvent(
       label = "community update",
       input$comm_select,
-      updateActive("community", "comm_select")
+      { updateActive("community", "comm_select")
+        active$communityId <-
+          names(which(CommunityById == active$community))
+      }
     )
 
     # Update active enddate
@@ -235,7 +238,7 @@ shiny::shinyServer(
 
           valid_sensors <-
             sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
-library(leaflet)
+
           shiny_leaflet(
             pas = valid_sensors,
             parameter = "pm25_current",maptype = "Wikimedia", #"CartoDB.Positron",
