@@ -16,9 +16,6 @@ RUN rm -rf /srv/shiny-server/
 ################################################################################
 # app
 
-# Mounted directories
-ENV LOG_DIR /app/logs
-
 # Copy app
 COPY app /srv/shiny-server/app
 
