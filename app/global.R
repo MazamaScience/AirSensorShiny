@@ -27,7 +27,8 @@ if ( interactive() ) { # Running from RStudio
 
 } else {
 
-  LOG_DIR <- Sys.getenv("LOG_DIR")
+  ##LOG_DIR <- Sys.getenv("LOG_DIR")
+  LOG_DIR <- "/var/log/shiny-server/"
 
 }
 
