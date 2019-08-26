@@ -13,8 +13,8 @@ library(AirSensor)
 library(MazamaCoreUtils)
 
 # Load R functions
-R_files <- list.files('.', pattern='^shiny_.+\\.R', full.names=TRUE)
-for ( file in R_files ) {
+R_utils <- list.files('utils/', pattern='^shiny_.+\\.R', full.names=TRUE)
+for ( file in R_utils ) {
   source( file.path(getwd(),file) )
 }
 
