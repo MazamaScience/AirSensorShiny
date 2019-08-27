@@ -91,9 +91,9 @@ RUN installGithub.r \
 	MazamaScience/AirMonitorPlots 
 
 # Copy the AirSensor package to image
-COPY /src/AirSensor_0.4.0.tar.gz /
+COPY /src/AirSensor_0.4.3.tar.gz /
 
 # Install the AirSensor package
-RUN R CMD INSTALL AirSensor_0.4.0.tar.gz
+RUN R CMD INSTALL AirSensor_0.4.3.tar.gz
 
 

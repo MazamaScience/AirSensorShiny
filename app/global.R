@@ -23,22 +23,17 @@ for ( file in R_utils ) {
 
 if ( interactive() ) { # Running from RStudio
 
+  # Somewhere easy to find
   LOG_DIR <- file.path(getwd(),"logs")
 
 } else {
 
-  LOG_DIR <- Sys.getenv("LOG_DIR")
+  # Use the shiny-server default
+  LOG_DIR <- "/var/log/shiny-server/"
 
 }
 
-dir.create(LOG_DIR, showWarnings = FALSE)
-
-logger.setup(
-  traceLog = file.path(LOG_DIR, "AirSensorShiny_TRACE.log"),
-  debugLog = file.path(LOG_DIR, "AirSensorShiny_DEBUG.log"),
-  infoLog  = file.path(LOG_DIR, "AirSensorShiny_INFO.log"),
-  errorLog = file.path(LOG_DIR, "AirSensorShiny_ERROR.log")
-)
+MazamaCoreUtils::initializeLogging(LOG_DIR)
 
 if ( interactive() ) { # Running from RStudio
   logger.setLevel(TRACE)
