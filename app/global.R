@@ -24,7 +24,7 @@ for ( file in R_utils ) {
 if ( interactive() ) { # Running from RStudio
 
   # Somewhere easy to find
-  LOG_DIR <- file.path(getwd(),"logs")
+  LOG_DIR <- file.path(getwd(),"../logs")
 
 } else {
 
@@ -88,3 +88,6 @@ IdByCommunity <- list(
   "Sycamore Canyon" = "SCHS",
   "Temescal Valley" = "SCTV"
 )
+
+# Set Timezone
+TIMEZONE <- "America/Los_Angeles"

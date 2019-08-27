@@ -138,10 +138,10 @@ shiny::shinyServer(
     getDates <-
       shiny::reactive({
 
-        sd <- lubridate::ymd(active$enddate) -
+        sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
           lubridate::ddays(as.numeric(active$lookback))
 
-        ed <- lubridate::ymd(active$enddate)
+        ed <- lubridate::ymd(active$enddate, tz = TIMEZONE)
 
         return(c(sd, ed))
 
@@ -207,9 +207,9 @@ shiny::shinyServer(
       shiny::eventReactive(
         input$loadButton,
         {
-          sd <- lubridate::ymd(Sys.Date())
+          ed <- lubridate::now(tzone = TIMEZONE)
 
-          ed <- lubridate::ymd(Sys.Date()) + lubridate::ddays(1)
+          sd <- ed - lubridate::ddays(1)
 
           # Get both channels from global pas
           pas <- PAS[grepl(active$label, PAS$label),]
@@ -295,9 +295,9 @@ shiny::shinyServer(
           # Require active label before loading
           shiny::req(active$label)
 
-          # Create start of year date
-          sd <- paste0(strftime(active$enddate, "%Y"), "0101")
-
+          # Create dates from start of year to enddate
+          sd <- lubridate::floor_date(active$enddate, "year")
+          ed <- active$enddate
           showLoad({
 
             # Load annual pat to now
@@ -306,7 +306,7 @@ shiny::shinyServer(
                 AirSensor::pat_load(
                   active$label,
                   startdate = sd,
-                  enddate = Sys.Date()
+                  enddate = ed
                 )
               )
 
@@ -506,11 +506,11 @@ shiny::shinyServer(
           baseUrl <-
             "http://smoke.mazamascience.com/data/PurpleAir/videos/"
           year <-
-            strftime(active$enddate, "%Y")
+            strftime(active$enddate, "%Y", tz = TIMEZONE)
           mm <-
-            strftime(active$enddate, "%m")
+            strftime(active$enddate, "%m", tz = TIMEZONE)
           dd <-
-            strftime(active$enddate, "%d")
+            strftime(active$enddate, "%d", tz = TIMEZONE)
           # Hour (HH) disabled
           # hh <- "09"
           comm <- active$communityId
