@@ -241,7 +241,7 @@ shiny::shinyServer(
 
           shiny_leaflet(
             pas = valid_sensors,
-            parameter = "pm25_current",maptype = "Wikimedia", #"CartoDB.Positron",
+            parameter = "pm25_current",maptype = "Stamen.TonerLite",#"CartoDB.Positron",
             paletteName = "PuBu"#"Spectral" #"Purple"
           )
 
@@ -773,7 +773,11 @@ shiny::shinyServer(
               layerId = "selectTmp",
               options = leaflet::pathOptions(interactive = FALSE)
             ) %>%
-            leaflet::addPopups(lng, lat, popup = content)
+            leaflet::addPopups(
+              lng,
+              lat,
+              popup = content,
+              options = leaflet::popupOptions(closeOnClick = FALSE, autoPan = TRUE))
 
         }
 

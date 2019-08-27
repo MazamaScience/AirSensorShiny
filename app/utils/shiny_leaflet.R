@@ -34,7 +34,7 @@ shiny_leaflet <- function(
   pas = NULL,
   parameter = "pm25_1hr",
   paletteName = NULL,
-  radius = 11,
+  radius = 9,
   opacity = 0.8,
   maptype = "terrain"
 ) {
@@ -140,7 +140,10 @@ shiny_leaflet <- function(
       radius=radius,
       fillColor=cols,
       fillOpacity=opacity,
-      stroke=FALSE,
+      stroke=TRUE,
+      color = "#77A4B2",
+      weight = "1",
+      label = ~label,
       layerId = pas$label
     )
 
