@@ -13,8 +13,8 @@ library(AirSensor)
 library(MazamaCoreUtils)
 
 # Load R functions
-R_files <- list.files('.', pattern='^shiny_.+\\.R', full.names=TRUE)
-for ( file in R_files ) {
+R_utils <- list.files('utils', pattern='^shiny_.+\\.R', full.names=TRUE)
+for ( file in R_utils ) {
   source( file.path(getwd(),file) )
 }
 
@@ -41,6 +41,8 @@ if ( interactive() ) { # Running from RStudio
 
 # Log session info
 logger.debug(capture.output(sessionInfo()))
+
+logger.debug("LOG_DIR = %s", LOG_DIR)
 
 # ----- Global settings --------------------------------------------------------
 

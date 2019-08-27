@@ -124,22 +124,35 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Compare",
                             value = "comp",
-                            # Comparison Leaflet
-                            leaflet::leafletOutput(
-                                outputId = "shiny_leaflet_comparison"
+                            shiny::fluidRow(
+
+                                shiny::column(
+                                    width = 9,
+                                    # Comparison Leaflet
+                                    leaflet::leafletOutput(
+                                        outputId = "shiny_leaflet_comparison",
+                                        height = 500
+                                    )
+                                ),
+
+                                shiny::column(
+                                    width = 3,
+                                    # Comparison table
+                                    shiny::tableOutput(
+                                        outputId = "comparison_table"
+                                    ),
+                                    # External fit plot
+                                    shiny::plotOutput(
+                                        outputId = "ws_ext"
+                                    )
+                                )
                             ),
+
                             shiny::column(
-                                width = 8,
+                                width = 12,
                                 # Monitor comparison plot
                                 shiny::plotOutput(
                                     outputId = "ws_comp"
-                                )
-                            ),
-                            shiny::column(
-                                width = 4,
-                                # External fit plot
-                                shiny::plotOutput(
-                                    outputId = "ws_ext"
                                 )
                             )
 

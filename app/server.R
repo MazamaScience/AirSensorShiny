@@ -45,7 +45,10 @@ shiny::shinyServer(
     shiny::observeEvent(
       label = "community update",
       input$comm_select,
-      updateActive("community", "comm_select")
+      { updateActive("community", "comm_select")
+        active$communityId <-
+          names(which(CommunityById == active$community))
+      }
     )
 
     # Update active enddate
@@ -235,7 +238,7 @@ shiny::shinyServer(
 
           valid_sensors <-
             sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
-library(leaflet)
+
           shiny_leaflet(
             pas = valid_sensors,
             parameter = "pm25_current",maptype = "Wikimedia", #"CartoDB.Positron",
@@ -636,6 +639,17 @@ library(leaflet)
           })
 
         })
+
+      }
+
+    renderCompTable <-
+      function() {
+
+        shiny::renderTable({
+          shiny::req(active$pat)
+          shiny_comparisonTable(active$pat)
+
+        }, colnames = TRUE, align = "c", bordered = TRUE)
 
       }
 
@@ -1053,6 +1067,7 @@ library(leaflet)
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
+    output$comparison_table <- renderCompTable()
     output$ws_ext <- renderExtFit()
     output$ws_comp <- renderMonitorComp()
 
