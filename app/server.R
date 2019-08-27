@@ -642,6 +642,17 @@ shiny::shinyServer(
 
       }
 
+    renderCompTable <-
+      function() {
+
+        shiny::renderTable({
+          shiny::req(active$pat)
+          shiny_comparisonTable(active$pat)
+
+        }, colnames = TRUE, align = "c", bordered = TRUE)
+
+      }
+
     # ----- Helper functions ---------------------------------------------------
 
     # Handle download button
@@ -1056,6 +1067,7 @@ shiny::shinyServer(
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
+    output$comparison_table <- renderCompTable()
     output$ws_ext <- renderExtFit()
     output$ws_comp <- renderMonitorComp()
 
