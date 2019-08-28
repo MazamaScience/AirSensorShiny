@@ -1,18 +1,18 @@
-# BASE DOCKER for intended for 
-# AirSensor package and  AirSensorShiny App 
+# BASE DOCKER for intended for
+# AirSensor package and  AirSensorShiny App
 
 FROM rocker/shiny:3.6.0
 
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
- 
+
 LABEL build_date="2019-08-20"
 LABEL version="1.3.1"
 
 LABEL description="AirShiny Docker Image"
 
-# Install general libraries 
-RUN apt-get update && apt-get install libcurl4-openssl-dev libv8-3.14-dev -y 
+# Install general libraries
+RUN apt-get update && apt-get install libcurl4-openssl-dev libv8-3.14-dev -y
 
 # Install AirSensor library Dependencies
 RUN apt-get update && apt-get install -y \
@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
     libxt-dev \
     xtail \
     wget \
-    libudunits2-dev \ 
+    libudunits2-dev \
     libssl-dev \
     libprotobuf-dev \
     libjq-dev \
@@ -55,40 +55,41 @@ RUN wget -nv http://mazamascience.com/RData/Spatial/CA_AirBasins_01.RData \
 # Download and install R dependencies
 RUN install2.r --error -r "https://cran.rstudio.com" \
 	shiny \
-	V8 \ 
-	shinyjs \ 
-	countrycode \ 
-	dplyr \ 
-	dygraphs \ 
+	V8 \
+	shinyjs \
+	countrycode \
+	dplyr \
+	dygraphs \
 	geosphere \
-	geodist \ 
-	GGally \ 
-	ggmap \ 
+	geodist \
+	GGally \
+	ggmap \
 	ggplot2 \
-	httr \ 
-	jsonlite \ 
-	leaflet \ 
-	lubridate \ 
-	MazamaCoreUtils \ 
-	MazamaSpatialUtils \ 
-	plyr \ 
-	PWFSLSmoke \ 
-	RColorBrewer \ 
-	rlang \ 
-	seismicRoll \ 
-	sp \ 
-	stringr \ 
-	tidyr \ 
-	magrittr \ 
-	xts \ 
-	zoo \ 
+	httr \
+	jsonlite \
+	leaflet \
+	lubridate \
+	MazamaCoreUtils \
+	MazamaSpatialUtils \
+	plyr \
+	PWFSLSmoke \
+	RColorBrewer \
+	rlang \
+	seismicRoll \
+	sp \
+	stringr \
+	tidyr \
+	magrittr \
+	xts \
+	zoo \
 	shinythemes \
-	worldmet \ 
-	remotes 
+	worldmet \
+	remotes \
+	shinyWidgets
 
 # Install AirMonitorPlots
-RUN installGithub.r \ 
-	MazamaScience/AirMonitorPlots 
+RUN installGithub.r \
+	MazamaScience/AirMonitorPlots
 
 # Copy the AirSensor package to image
 COPY /src/AirSensor_0.4.3.tar.gz /
