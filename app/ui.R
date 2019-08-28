@@ -112,7 +112,7 @@ shiny::shinyUI(
                         # --- Leaflet Tab ---
                         shiny::tabPanel(
 
-                            title = "Overview",
+                            title = tags$b("Overview"), icon = shiny::icon("home"),
                             value = "main",
 
                             tags$br(),
@@ -142,7 +142,7 @@ shiny::shinyUI(
 
                         # --- Video tab ---
                         shiny::tabPanel(
-                            title = "Animation",
+                            title = tags$b("Animation"),icon = shiny::icon("file-video"),
                             value = "anim",
 
                             tags$br(),
@@ -154,7 +154,7 @@ shiny::shinyUI(
 
                         # --- Compare tab ---
                         shiny::tabPanel(
-                            title = "Compare",
+                            title = tags$b("Compare"), icon = shiny::icon("bars"),
                             value = "comp",
 
                             tags$br(),
@@ -194,7 +194,7 @@ shiny::shinyUI(
                         ),
 
                         shiny::tabPanel(
-                            title = "Daily Patterns",
+                            title = tags$b("Daily Patterns"),
                             value = "dp",
 
                             tags$br(),
@@ -207,7 +207,7 @@ shiny::shinyUI(
 
                         # --- Raw & Weather data tab ---
                         shiny::tabPanel(
-                            title = "Raw Data",
+                            title = tags$b("Raw Data"),
                             value = "raw",
 
                             tags$br(),
@@ -284,7 +284,7 @@ shiny::shinyUI(
                             choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
                             justified = TRUE
                         ),
-                        #tags$h4("Download Data"),
+
                         tags$br(),
                         shiny::downloadButton(
                             outputId = "download_data"
