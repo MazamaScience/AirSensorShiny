@@ -580,7 +580,10 @@ shiny::shinyServer(
 
           showLoad(shiny::incProgress(0.7))
 
-          return(active$pat$data)
+          # Remove unecessary columns
+          data <- active$pat$data[-(6:10)]
+
+          return(data)
 
         })
 
