@@ -422,9 +422,11 @@ shiny::shinyServer(
 
     # Render Multiplot
     renderMultiplot <-
-      function() {
+      function(columns = NULL) {
 
         shiny::renderPlot({
+
+          if ( is.null(columns) ) columns <- 2
 
           handleError(
             AirSensor::pat_isPat(active$pat),
@@ -433,7 +435,7 @@ shiny::shinyServer(
 
           shiny::req(active$pat)
 
-          AirSensor::pat_multiplot(active$pat)
+          AirSensor::pat_multiplot(active$pat, columns = columns)
 
         })
 
@@ -450,18 +452,19 @@ shiny::shinyServer(
           showLoad({
 
             dates <- getDates()
-            # AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
+            # load sensor
             sensor <- AirSensor::sensor_load(
               startdate = dates[1],
               enddate = dates[2]
             )
 
             logger.trace("sensor_load(%s, %s) returns %d rows of data",
-                         strftime(dates[1], tz = sensor$meta$timezone),
-                         strftime(dates[2], tz = sensor$meta$timezone),
+                         strftime(dates[1]),#, tz = sensor$meta$timezone),
+                         strftime(dates[2]), #,tz = sensor$meta$timezone),
                          nrow(sensor$data))
 
+            # Filter sensor
             sensor <-
               sensor %>%
               AirSensor::sensor_filterMeta(monitorID == active$label)
@@ -469,35 +472,16 @@ shiny::shinyServer(
             logger.trace("sensor '%s' has %s rows of data",
                          active$label, nrow(sensor$data))
 
-            shiny::incProgress(0.44)
+            # Get world met data
+            metData <-
+              shiny_getMet(
+                label=active$label,
+                startdate=dates[1],
+                enddate=dates[2]
+              )
 
-            # Get wind data
-
-            result <- try({
-
-              logger.trace("loading wind data")
-
-              # Find wind data readings from the closest NOAA site
-              year <- lubridate::year(sensor$data$datetime[1])
-              lon <- sensor$meta$longitude[1]
-              lat <- sensor$meta$latitude[1]
-
-              closestSite <- worldmet::getMeta(lon = lon, lat = lat, n = 1,
-                                               plot = FALSE)[1,]
-              siteCode <- paste0(closestSite$USAF, "-", closestSite$WBAN)
-
-              siteData <- worldmet::importNOAA(code = siteCode, year = year,
-                                               parallel = FALSE)
-              windData <- dplyr::select(siteData, c("date", "wd", "ws"))
-
-            }, silent = TRUE)
-
-            timeRange <- range(windData$date)
-            logger.trace("windData goes from %s to %s local time",
-                         strftime(timeRange[1], tz = sensor$meta$timezone),
-                         strftime(timeRange[2], tz = sensor$meta$timezone))
-
-            # TODO:  Opporutnity to test for time range overlap with sensor data
+            # filter wind data
+            windData <- dplyr::select(metData, c("date", "wd", "ws"))
 
             result <- try({
               rose <- AirSensor::sensor_pollutionRose(sensor, windData)
@@ -673,6 +657,21 @@ shiny::shinyServer(
           shiny_comparisonTable(active$pat)
 
         }, colnames = TRUE, align = "c", bordered = TRUE)
+
+      }
+
+    renderMetTable <-
+      function() {
+
+        shiny::renderTable({
+          showLoad({
+          shiny::req(active$pat, active$label)
+          dates <- getDates()
+          metData <- shiny_getMet(active$label, dates[1], dates[2])
+
+          shiny_metTable(metData)
+        })
+        }, bordered = TRUE, align = "c")
 
       }
 
@@ -1100,7 +1099,8 @@ shiny::shinyServer(
 
     # - Raw tab -
     output$rose_plot <- renderRose()
-    output$raw_plot <- renderMultiplot()
+    output$raw_plot <- renderMultiplot(columns = 4)
+    output$met_table <- renderMetTable()
 
     # - Animation tab -
     output$video_out <- renderVideo()

@@ -18,7 +18,7 @@ shiny::shinyUI(
         # ----- Nav Bar --------------------------------------------------------
         title = tags$b("AirShiny (Beta)"),
         theme = shinythemes::shinytheme("lumen"),
-        inverse = FALSE,#TRUE,
+        inverse = FALSE,
         id = "navtab",
         fluid = TRUE,
         collapsible = TRUE,
@@ -38,33 +38,36 @@ shiny::shinyUI(
 
                     width = 2,
 
+                    shiny::wellPanel(
                     shinyWidgets::pickerInput(
                         inputId = "comm_select",
-                        label = tags$h5("Community"),
+                        label = tags$h4("Community"),
                         choices = PAS_COMM,
                         options = list(title = "Select community...")
                     ),
 
                     shinyWidgets::pickerInput(
                         inputId = "pas_select",
-                        label = tags$h5("Sensor"),
+                        label = tags$h4("Sensor"),
                         choices = "",
                         options = list(
                             `live-search` = TRUE,
                             title = "Select sensor...",
                             size = 7)
                     ),
+                    #shiny::wellPanel(
                     shinyWidgets::airDatepickerInput(
                         inputId = "date_select",
-                        label = tags$h5("Date"),
+                        label = tags$h4("Date"),
                         value = lubridate::now()
                         ),
 
                     shinyWidgets::radioGroupButtons(
                         inputId = "lookback_select",
-                        label = "Look Back",
+                        label = tags$h4("View Past"),
                         choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
                         justified = TRUE
+                    )
                     ),
 
                     # Display selection mini table
@@ -188,15 +191,25 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Raw Data",
                             value = "raw",
-                            shiny::plotOutput(
-                                outputId = "raw_plot"
+
+                            shiny::column(
+                                width = 8,
+                                shiny::plotOutput(
+                                    outputId = "raw_plot"
+                                )
                             ),
                             shiny::column(
-                                width = 6,
+                                width = 4,
                                 shiny::plotOutput(
                                     outputId = "rose_plot"
                                 )
-                            )
+                            ),
+                            tags$h4("Average Weather Data"),
+
+                                shiny::tableOutput(
+                                    outputId = "met_table"
+                                )
+
                         )
 
                     )
