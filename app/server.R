@@ -583,6 +583,8 @@ shiny::shinyServer(
           # Remove unecessary columns
           data <- active$pat$data[-(6:10)]
 
+          names(data) <- c("Datetime", "PM2.5 Ch. A (\u03bcg / m\u00b)","PM2.5 Ch. B (\u03bcg / m\u00b)", "Temperature (F)", "Relative Humidity (%)")
+
           return(data)
 
         })
