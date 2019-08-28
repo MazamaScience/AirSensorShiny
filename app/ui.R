@@ -16,15 +16,19 @@ shiny::shinyUI(
     shiny::navbarPage(
 
         # ----- Nav Bar --------------------------------------------------------
-        title = "AirShiny (Beta)",
+        title = tags$b("AirShiny (Beta)"),
         theme = shinythemes::shinytheme("lumen"),
-        inverse = TRUE,
+        inverse = FALSE,#TRUE,
         id = "navtab",
+        fluid = TRUE,
+        collapsible = TRUE,
+        position = "fixed-top",
+        windowTitle = "AirShiny (Beta)",
 
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
 
-            title = "Explorer",
+            title = tags$b("Explorer"),
             value = "explore",
 
             shiny::fluidRow(
@@ -207,7 +211,7 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
-            title = "Data Viewer",
+            title = tags$b("Data Viewer"),
             value = "dataview",
 
             # PAS selection input
@@ -247,7 +251,7 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
-            title = "Latest Data",
+            title = tags$b("Latest Data"),
             value = "latest",
 
             shiny::column(
@@ -302,13 +306,18 @@ shiny::shinyUI(
 
         shiny::tabPanel(
 
-            title = "About",
+            title = tags$b("About"),
             value = "about"
 
             # TODO: Get an about section.
 
-        )
+        ),
+
+        # ----- Misc -----------------------------------------------------------
+
+        tags$style(type="text/css", "body {padding-top: 70px;}")
 
     )
+
 
 )
