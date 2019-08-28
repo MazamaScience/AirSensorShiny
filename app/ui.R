@@ -34,42 +34,52 @@ shiny::shinyUI(
 
                     width = 2,
 
-                    # Community Selection input
-                    shiny::selectInput(
+                    shinyWidgets::pickerInput(
                         inputId = "comm_select",
-                        label = "Community",
-                        choices = c("All..." = "all",
-                                    PAS_COMM)
+                        label = tags$h5("Community"),
+                        choices = PAS_COMM,
+                        options = list(title = "Select community...")
                     ),
 
-                    # PAS selection input
-                    shiny::selectInput(
+                    shinyWidgets::pickerInput(
                         inputId = "pas_select",
-                        label = "Sensor",
-                        choices = ""
+                        label = tags$h5("Sensor"),
+                        choices = "",
+                        options = list(
+                            `live-search` = TRUE,
+                            title = "Select sensor...",
+                            size = 7)
                     ),
-
-                    # End Date input
-                    shiny::dateInput(
+                    shinyWidgets::airDatepickerInput(
                         inputId = "date_select",
-                        label = "Date"
-                    ),
+                        label = tags$h5("Date"),
+                        value = lubridate::now()
+                        ),
 
-                    # Lookback interval
-                    shiny::radioButtons(
+                    shinyWidgets::radioGroupButtons(
                         inputId = "lookback_select",
-                        label = "Look back",
-                        choices = c("3 Days" = 3,
-                                    "7 Days" = 7,
-                                    "30 Days" = 30)
+                        label = "Look Back",
+                        choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
+                        justified = TRUE
                     ),
 
                     # Display selection mini table
-                    shiny::tableOutput(outputId = "mini_table"),
+                    # shiny::tableOutput(outputId = "mini_table"),
 
                     shiny::tableOutput("debug"),
 
-                    shiny::icon("question-circle"),
+                    shinyWidgets::prettyToggle(
+                        status_on = "primary",
+                        status_off = "primary",
+                        inputId = "help_select",
+                        label_on = "",
+                        label_off = "",
+                        outline = TRUE,
+                        plain = TRUE,
+                        icon_on = icon("question-circle", class = "regular"),
+                        icon_off = icon("question-circle", class = "solid")
+                    ),
+
 
                     shiny::textOutput(
                         outputId = "help_text")
@@ -95,17 +105,20 @@ shiny::shinyUI(
                                 width = 10,
                                 # Plot outputs
                                 leaflet::leafletOutput(
-                                    outputId = "leaflet", height = 600
+                                    outputId = "leaflet", height = 400
                                 ),
                                 # Summary Plot
                                 shiny::plotOutput(
-                                    outputId = "summary_plot", height = 200
+                                    outputId = "summary_plot", height = 300
                                 )
                             ),
+                            # Bar plot
                             shiny::column(
-                                width = 2, style = "margin-top: 0px;",
+                                width = 2,
+                                style = "margin-top: 0px;",
                                 shiny::plotOutput(
-                                    outputId = "cal_plot", height = 800
+                                    outputId = "cal_plot", height = 700,
+                                    width = "100%"
                                 )
                             )
 

@@ -24,7 +24,8 @@ shiny::shinyServer(
         latest_load = NULL,
         latest_community = NULL,
         latest_label = NULL,
-        communityId = NULL
+        communityId = NULL,
+        help = NULL
       )
 
     # Update the active variable with an input variable
@@ -130,6 +131,12 @@ shiny::shinyServer(
           which(CommunityById == active$pas$communityRegion)
         )
       }
+    )
+
+    # Update help text with help click
+    shiny::observeEvent(
+      input$help_select,
+      updateActive("help", "help_select")
     )
 
     # ----- Reactive Functions -------------------------------------------------
@@ -346,15 +353,31 @@ shiny::shinyServer(
 
         shiny::renderTable({
 
-          req(active$label, active$pas)
+          #req(active$label, active$pas)
+          if ( is.null(active$label) ||
+               active$label == "Select Sensor..." ||
+               active$label == "") {
 
-          dplyr::tibble(
-            "Sensor" = active$label,
-            "Latitude" = active$pas$latitude,
-            "Longitude" = active$pas$longitude
-          )
+            mini <-
+              dplyr::tibble(
+                #"Sensor" = "",
+                "Latitude" ="",
+                "Longitude" = ""
+              )
 
-        })
+          } else {
+
+            mini <-
+              dplyr::tibble(
+                #"Sensor" = active$label,
+                "Latitude" = active$pas$latitude,
+                "Longitude" = active$pas$longitude
+              )
+
+          }
+          return(mini)
+
+        },align = "c", spacing = "xs")
 
       }
 
@@ -1030,7 +1053,7 @@ shiny::shinyServer(
       shiny::updateSelectInput(
         session,
         inputId = "latest_pas_select",
-        choices = c("Select Sensor...", getPasLabels()),
+        choices = getPasLabels(),
         selected = active$label
       )
 
@@ -1059,7 +1082,7 @@ shiny::shinyServer(
     # ----- Outputs ------------------------------------------------------------
 
     # DEBUG OUTPUT
-    #output$debug <- renderTable(active$pat)
+    #output$debug <- renderTable(session$clientData$pixelratio)
 
     # L Col
     output$mini_table <- renderMiniTable()
@@ -1096,7 +1119,7 @@ shiny::shinyServer(
     output$latest_leaflet <- renderLeaf()
 
     # - Help text -
-    output$help_text <- shiny::renderText( helpText())
+    output$help_text <- shiny::renderText({ if (active$help) helpText()})
 
 
   }
@@ -1106,5 +1129,4 @@ shiny::shinyServer(
 #  ----- CURRENT ISSUES: -----
 
 # - URL querying/Bookmarking
-# - Color breaks
 
