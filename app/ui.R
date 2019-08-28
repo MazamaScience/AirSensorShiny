@@ -39,35 +39,38 @@ shiny::shinyUI(
                     width = 2,
 
                     shiny::wellPanel(
-                    shinyWidgets::pickerInput(
-                        inputId = "comm_select",
-                        label = tags$h4("Community"),
-                        choices = PAS_COMM,
-                        options = list(title = "Select community...")
-                    ),
 
-                    shinyWidgets::pickerInput(
-                        inputId = "pas_select",
-                        label = tags$h4("Sensor"),
-                        choices = "",
-                        options = list(
-                            `live-search` = TRUE,
-                            title = "Select sensor...",
-                            size = 7)
-                    ),
-                    #shiny::wellPanel(
-                    shinyWidgets::airDatepickerInput(
-                        inputId = "date_select",
-                        label = tags$h4("Date"),
-                        value = lubridate::now()
+                        shinyWidgets::pickerInput(
+                            inputId = "comm_select",
+                            label = tags$h4("Community"),
+                            choices = c("All..." = "all",PAS_COMM),
+                            options = list(title = "Select community...")
                         ),
 
-                    shinyWidgets::radioGroupButtons(
-                        inputId = "lookback_select",
-                        label = tags$h4("View Past"),
-                        choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
-                        justified = TRUE
-                    )
+                        shinyWidgets::pickerInput(
+                            inputId = "pas_select",
+                            label = tags$h4("Sensor"),
+                            choices = "",
+                            options = list(
+                                `live-search` = TRUE,
+                                title = "Select sensor...",
+                                size = 7)
+                        ),
+                        #shiny::wellPanel(
+                        shinyWidgets::airDatepickerInput(
+                            inputId = "date_select",
+                            label = tags$h4("Date"),
+                            value = lubridate::now()
+                        ),
+
+                        shinyWidgets::radioGroupButtons(
+                            inputId = "lookback_select",
+                            label = tags$h4("View Past"),
+                            choices = c( "3 Days" = 3,
+                                         "7 Days" = 7,
+                                         "30 Days" = 30 ),
+                            justified = TRUE
+                        )
                     ),
 
                     # Display selection mini table
@@ -75,6 +78,7 @@ shiny::shinyUI(
 
                     shiny::tableOutput("debug"),
 
+                    # Help Button
                     shinyWidgets::prettyToggle(
                         status_on = "primary",
                         status_off = "primary",
@@ -88,8 +92,11 @@ shiny::shinyUI(
                     ),
 
 
+
                     shiny::textOutput(
-                        outputId = "help_text")
+                        outputId = "help_text"
+                    )
+
 
                 ),
 
@@ -107,6 +114,8 @@ shiny::shinyUI(
 
                             title = "Overview",
                             value = "main",
+
+                            tags$br(),
 
                             shiny::column(
                                 width = 10,
@@ -135,6 +144,9 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Animation",
                             value = "anim",
+
+                            tags$br(),
+
                             shiny::uiOutput(
                                 outputId = "video_out"
                             )
@@ -144,6 +156,9 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Compare",
                             value = "comp",
+
+                            tags$br(),
+
                             shiny::fluidRow(
 
                                 shiny::column(
@@ -181,6 +196,9 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Daily Patterns",
                             value = "dp",
+
+                            tags$br(),
+
                             shiny::plotOutput(
                                 outputId = "pattern_plot"
                             )
@@ -191,6 +209,9 @@ shiny::shinyUI(
                         shiny::tabPanel(
                             title = "Raw Data",
                             value = "raw",
+
+                            tags$br(),
+
 
                             shiny::column(
                                 width = 8,
@@ -206,9 +227,9 @@ shiny::shinyUI(
                             ),
                             tags$h4("Average Weather Data"),
 
-                                shiny::tableOutput(
-                                    outputId = "met_table"
-                                )
+                            shiny::tableOutput(
+                                outputId = "met_table"
+                            )
 
                         )
 
@@ -226,38 +247,110 @@ shiny::shinyUI(
 
             title = tags$b("Data Viewer"),
             value = "dataview",
+            shiny::fluidRow(
+                # ----- L Column -----------------------------------------------
+                shiny::column(
 
-            # PAS selection input
-            shiny::column(
-                width = 2,
-                shiny::selectInput(
-                    inputId = "de_pas_select",
-                    label = "Sensor",
-                    choices = ""
+                    width = 2,
+
+                    shiny::wellPanel(
+
+                        # shinyWidgets::pickerInput(
+                        #     inputId = "de_comm_select",
+                        #     label = tags$h4("Community"),
+                        #     choices = c("All..." = "all",PAS_COMM),
+                        #     options = list(title = "Select community...")
+                        # ),
+
+                        shinyWidgets::pickerInput(
+                            inputId = "de_pas_select",
+                            label = tags$h4("Sensor"),
+                            choices = "",
+                            options = list(
+                                `live-search` = TRUE,
+                                title = "Select sensor...",
+                                size = 7)
+                        ),
+                        #shiny::wellPanel(
+                        shinyWidgets::airDatepickerInput(
+                            inputId = "de_date_select",
+                            label = tags$h4("Date"),
+                            value = lubridate::now()
+                        ),
+
+                        shinyWidgets::radioGroupButtons(
+                            inputId = "de_lookback_select",
+                            label = tags$h4("View Past"),
+                            choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
+                            justified = TRUE
+                        ),
+                        #tags$h4("Download Data"),
+                        tags$br(),
+                        shiny::downloadButton(
+                            outputId = "download_data"
+                        )
+                    ),
+
+                    # Display selection mini table
+                    # shiny::tableOutput(outputId = "mini_table"),
+
+                    shiny::tableOutput("de_debug"),
+
+                    # Help button
+                    shinyWidgets::prettyToggle(
+                        status_on = "primary",
+                        status_off = "primary",
+                        inputId = "de_help_select",
+                        label_on = "",
+                        label_off = "",
+                        outline = TRUE,
+                        plain = TRUE,
+                        icon_on = icon("question-circle", class = "regular"),
+                        icon_off = icon("question-circle", class = "solid")
+                    ),
+
+
+
+                    shiny::textOutput(
+                        outputId = "de_help_text"
+                    )
+
+
+                ),
+                # PAS selection input
+                # shiny::column(
+                #     width = 2,
+                #     shiny::selectInput(
+                #         inputId = "de_pas_select",
+                #         label = "Sensor",
+                #         choices = ""
+                #     )
+                # ),
+
+                # Meta explorer
+                shiny::column(
+                    width = 9,
+                    shiny::tableOutput(
+                        outputId = "meta_explorer"
+                    )
+                ),
+
+                # Download Button
+                # shiny::column(
+                #     width = 1,
+                #     shiny::downloadButton(
+                #         outputId = "download_data"
+                #     )
+                # ),
+
+                # Data explorer
+                shiny::column(
+                    width = 10,
+                    shiny::dataTableOutput(
+                        outputId = "data_explorer"
+                    )
                 )
-            ),
-
-            # Meta explorer
-            shiny::column(
-                width = 9,
-                shiny::tableOutput(
-                    outputId = "meta_explorer"
-                )
-            ),
-
-            # Download Button
-            shiny::column(
-                width = 1,
-                shiny::downloadButton(
-                    outputId = "download_data"
-                )
-            ),
-
-            # Data explorer
-            shiny::dataTableOutput(
-                outputId = "data_explorer"
             )
-
         ),
 
         # ----- NavTab 3 -------------------------------------------------------
@@ -266,53 +359,77 @@ shiny::shinyUI(
 
             title = tags$b("Latest Data"),
             value = "latest",
+            shiny::fluidRow(
+                shiny::column(
 
-            shiny::column(
+                    width = 2,
 
-                width = 2,
+                    # Latest leaflet display
+                    # leaflet::leafletOutput(
+                    #     outputId = "latest_leaflet", height = 400
+                    # ),
 
-                # Latest leaflet display
-                # leaflet::leafletOutput(
-                #     outputId = "latest_leaflet", height = 400
-                # ),
+                    shiny::wellPanel(
+                        shinyWidgets::pickerInput(
+                            inputId = "latest_comm_select",
+                            label = tags$h4("Community"),
+                            choices = c("All..." = "all",PAS_COMM),
+                            options = list(title = "Select community...")
+                        ),
 
-                # Community Selection input
-                shiny::selectInput(
-                    inputId = "latest_comm_select",
-                    label = "Community",
-                    choices = c("All..." = "all",
-                                PAS_COMM)
+                        shinyWidgets::pickerInput(
+                            inputId = "latest_pas_select",
+                            label = tags$h4("Sensor"),
+                            choices = "",
+                            options = list(
+                                `live-search` = TRUE,
+                                title = "Select sensor...",
+                                size = 7)
+                        ),
+
+                        # Display selection mini table
+                        shiny::tableOutput(outputId = "Latest_mini_table"),
+
+                        tags$br(),
+
+                        shiny::actionButton(
+                            inputId = "loadButton",
+                            label = "Load Latest"
+                        )
+                    ),
+
+                    # Help button
+                    shinyWidgets::prettyToggle(
+                        status_on = "primary",
+                        status_off = "primary",
+                        inputId = "latest_help_select",
+                        label_on = "",
+                        label_off = "",
+                        outline = TRUE,
+                        plain = TRUE,
+                        icon_on = icon("question-circle", class = "regular"),
+                        icon_off = icon("question-circle", class = "solid")
+                    )
+
                 ),
 
-                # PAS selection input
-                shiny::selectInput(
-                    inputId = "latest_pas_select",
-                    label = "Sensor",
-                    choices = ""
-                ),
 
-                # Display selection mini table
-                shiny::tableOutput(outputId = "Latest_mini_table"),
-                shiny::actionButton(
-                    inputId = "loadButton",
-                    label = "Load Latest"
+                shiny::column(
+                    width = 10,
+
+
+                    # dygraphs::dygraphOutput(
+                    #     outputId = "dygraph_plot"
+                    # ),
+                    #
+
+                    shiny::plotOutput(
+                        outputId = "aux_plot",
+                        height = 850
+                    )
                 )
-            ),
 
-            shiny::column(
-                width = 10,
-
-
-                # dygraphs::dygraphOutput(
-                #     outputId = "dygraph_plot"
-                # ),
-                #
-
-                shiny::plotOutput(
-                    outputId = "aux_plot", height = 850
-                )
             )
-
         ),
 
         # ----- NavTab 4 -------------------------------------------------------

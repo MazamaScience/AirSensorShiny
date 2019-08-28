@@ -139,6 +139,23 @@ shiny::shinyServer(
       updateActive("help", "help_select")
     )
 
+    # Update active community with DE pas select
+    # shiny::observeEvent(
+    #   input$de_comm_select,
+    #   updateActive("community", "de_comm_select")
+    # )
+
+    # Update date based on DE date select
+    shiny::observeEvent(
+      input$de_date_select,
+      updateActive("enddate", "de_date_select")
+    )
+
+    # Update lookback based on DE lookback
+    shiny::observeEvent(
+      input$de_lookback_select,
+      updateActive("lookback", "de_lookback_select")
+    )
     # ----- Reactive Functions -------------------------------------------------
 
     # Get the dates
@@ -583,7 +600,11 @@ shiny::shinyServer(
           # Remove unecessary columns
           data <- active$pat$data[-(6:10)]
 
-          names(data) <- c("Datetime", "PM2.5 Ch. A (\u03bcg / m\u00b)","PM2.5 Ch. B (\u03bcg / m\u00b)", "Temperature (F)", "Relative Humidity (%)")
+          names(data) <- c( "Datetime",
+                            "PM2.5 Ch. A (\u03bcg / m\u00b)",
+                            "PM2.5 Ch. B (\u03bcg / m\u00b)",
+                            "Temperature (F)",
+                            "Relative Humidity (%)" )
 
           return(data)
 
@@ -776,22 +797,19 @@ shiny::shinyServer(
             )
 
           # Check which to draw on
-          if( active$tab == "main" ) proxy <- "leaflet"; zoom <- input$leaflet_zoom
-          if( active$navtab == "latest" ) proxy <- "latest_leaflet"; zoom <- input$latest_leaflet_zoom
+          if( active$tab == "main" ) {
+            proxy <- "leaflet"
+            zoom <- input$leaflet_zoom
+          }
+
+          if( active$navtab == "latest" ) {
+            proxy <- "latest_leaflet"
+            zoom <- input$latest_leaflet_zoom
+          }
 
           # Interact with proxy leaflet to avoid redraw
           leaflet::leafletProxy(proxy) %>%
             leaflet::clearPopups() %>%
-            # leaflet::setView(#flyTo(
-            #   lng,
-            #   lat,
-            #   zoom = ifelse(is.null(input$leaflet_zoom), 12, input$leaflet_zoom),
-            #   options = list(animate=FALSE)
-            # ) %>%
-            # Add a selected PAS marker
-            # NOTE: Marker given tmp layerId for hacky temp
-            # visual workaround. Interactive is false for hacky
-            # workaround to "send to back" to avoid popup conflict.
             leaflet::addCircleMarkers(
               lng,
               lat,
@@ -823,12 +841,6 @@ shiny::shinyServer(
           leaflet::leafletProxy("shiny_leaflet_comparison") %>%
             leaflet::clearGroup("ws_markers") %>%
             leaflet::clearGroup("pas_markers") %>%
-            # leaflet::flyTo(
-            #   lng_pas,
-            #   lat_pas,
-            #   zoom = 12,
-            #   option = list(animate=FALSE) #Problem
-            # ) %>%
             # Selected pas markers
             leaflet::addCircleMarkers(
               lng = lng_pas,
@@ -950,13 +962,9 @@ shiny::shinyServer(
       function() {
 
         # Community
-        # -- Substitute spaces if true
         cComm <- active$communityId
-          # ifelse(
-          #   grepl("\\s", active$community ),
-          #   gsub("\\s","\\+", active$community),
-          #   active$community
-          # )
+
+        # Nav tab
         cNav <- active$navtab
         # Current tab
         cTab <- active$tab
@@ -1004,7 +1012,11 @@ shiny::shinyServer(
 
     # Trigger active pat update based on pas selection, lookback, enddate, exp_label
     shiny::observeEvent(
-      c(active$label, active$lookback, active$enddate, active$exp_label, active$latest_label),
+      c( active$label,
+         active$lookback,
+         active$enddate,
+         active$exp_label,
+         active$latest_label ),
       loadPat()
     )
 
