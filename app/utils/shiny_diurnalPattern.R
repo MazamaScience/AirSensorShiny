@@ -12,7 +12,7 @@ shiny_diurnalPattern <-
     sensor <- AirSensor::pat_createAirSensor(pat)
 
    p1 <- AirMonitorPlots::ggplot_pm25Diurnal(ws_data = sensor, offsetBreaks = TRUE) +
-     scale_fill_sqamd()
+     AirMonitorPlots::stat_meanByHour(output = "scaqmd")
 
    p2 <- AirMonitorPlots::monitor_ggClockPlot(sensor) + scale_fill_sqamd()
 
