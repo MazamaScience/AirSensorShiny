@@ -17,8 +17,8 @@ shiny::shinyUI(
 
         # ----- Nav Bar --------------------------------------------------------
         title = tags$b("AirShiny (Beta)"),
-        theme = shinythemes::shinytheme("lumen"),
-        inverse = FALSE,
+        theme = shinythemes::shinytheme("yeti"),
+        inverse = TRUE,
         id = "navtab",
         fluid = TRUE,
         collapsible = TRUE,
@@ -154,7 +154,7 @@ shiny::shinyUI(
 
                         # --- Compare tab ---
                         shiny::tabPanel(
-                            title = tags$b("Compare"), icon = shiny::icon("bars"),
+                            title = tags$b("Compare"), icon = shiny::icon("project-diagram"),
                             value = "comp",
 
                             tags$br(),
@@ -194,7 +194,7 @@ shiny::shinyUI(
                         ),
 
                         shiny::tabPanel(
-                            title = tags$b("Daily Patterns"),
+                            title = tags$b("Daily Patterns"), icon = shiny::icon("chart-bar"),
                             value = "dp",
 
                             tags$br(),
@@ -207,7 +207,7 @@ shiny::shinyUI(
 
                         # --- Raw & Weather data tab ---
                         shiny::tabPanel(
-                            title = tags$b("Raw Data"),
+                            title = tags$b("Raw Data"), icon = shiny::icon("database"),
                             value = "raw",
 
                             tags$br(),

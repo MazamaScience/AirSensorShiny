@@ -198,21 +198,18 @@ shiny::shinyServer(
     getCommunitySensors <-
       shiny::reactive({
 
-        if ( active$navtab == "latest" ) {
-          community <- active$latest_community
-        } else {
-          community <- active$community
-        }
+        community <-
+          ifelse(
+            active$navtab == "latest",
+            active$latest_community,
+            active$community
+          )
 
+        # NOTE: ifelse function does not work here...
         if ( community == "all" )  {
-          pas <- PAS[which(!is.na(PAS$communityRegion)),]
+          pas <-  PAS
         } else {
-          pas <-
-            PAS[which(
-              stringr::str_detect(
-                PAS$communityRegion,
-                community)
-            ),]
+          pas <- PAS[grepl(community, PAS$communityRegion),]
         }
 
         pas$label <-
