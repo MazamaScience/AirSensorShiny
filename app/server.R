@@ -285,24 +285,33 @@ shiny::shinyServer(
           dates <- getDates()
           if ( plotType == "daily_plot" ) {
 
-            shiny_barplot(
-              pat,
-              period = "1 day",
-              startdate = dates[1],
-              enddate = dates[2]
-            )
+            result <-
+              try({plot <-
+                shiny_barplot(
+                  pat,
+                  period = "1 day",
+                  startdate = dates[1],
+                  enddate = dates[2]
+                )}, silent = TRUE )
 
           }  else if ( plotType == "hourly_plot" ) {
 
-            shiny_barplot(
-              pat,
-              period = "1 hour",
-              startdate = dates[1],
-              enddate = dates[2]
-            )
+            result <-
+              try({
+                plot <-
+                  shiny_barplot(
+                    pat,
+                    period = "1 hour",
+                    startdate = dates[1],
+                    enddate = dates[2]
+                  )}, silent = TRUE)
 
           }
-
+          if ( "try-error" %in% class(result) ) {
+            notify("Summary Plot Failed.", duration = 15)
+          } else {
+            return(plot)
+          }
         })
 
       }
@@ -318,7 +327,9 @@ shiny::shinyServer(
 
           # Create dates from start of year to enddate
           sd <- lubridate::floor_date(active$enddate, "year")
-          ed <- active$enddate
+          # NOTE: Use last seen date to insure calendar plot has all annual data
+          ed <- lubridate::date(active$pas$lastSeenDate)
+
           showLoad({
 
             # Load annual pat to now
@@ -731,25 +742,26 @@ shiny::shinyServer(
 
       }
 
+    # DEPRECATED
     # Load the pat into the active pat (reactive expr only)
-    loadPat <-
-      function() {
-
-        if ( active$navtab == "explore" ) label <- active$label
-        if ( active$navtab == "dataview" ) label <- active$exp_label
-        if ( active$navtab == "latest" ) label <- active$latest_label
-
-        dates <- getDates()
-        active$pat <-
-          try(
-            AirSensor::pat_load(
-              label,
-              dates[1],
-              dates[2]
-            )
-          )
-
-      }
+    # loadPat <-
+    #   function() {
+    #
+    #     if ( active$navtab == "explore" ) label <- active$label
+    #     if ( active$navtab == "dataview" ) label <- active$exp_label
+    #     if ( active$navtab == "latest" ) label <- active$latest_label
+    #
+    #     dates <- getDates()
+    #     active$pat <-
+    #       #try(
+    #         AirSensor::pat_load(
+    #           label,
+    #           dates[1],
+    #           dates[2]
+    #         #)
+    #       )
+    #
+    #   }
 
     # Update leaflet function for selected pas, or map click
     updateLeaf <-
@@ -1014,7 +1026,22 @@ shiny::shinyServer(
          active$enddate,
          active$exp_label,
          active$latest_label ),
-      loadPat()
+      {
+        result <-
+        try({
+          active$pat <-
+            AirSensor::pat_load(
+              label = active$label,
+              startdate = getDates()[1],
+              enddate = getDates()[2],
+              timezone = TIMEZONE
+              )
+          })
+        if ( "try-error" %in% class(result) ) {
+          notify(paste0(active$label, " Unavailiable"),
+                 paste0("Sensor last seen: ",tags$br(), active$pas$lastSeenDate), duration = 15)
+        }
+      }
     )
 
     # Trigger update selected pas on marker click

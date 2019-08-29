@@ -26,14 +26,15 @@ handleError <-
   }
 
 notify <-
-  function(title = NULL, info = NULL) {
+  function(title = NULL, info = NULL, ...) {
 
     if ( is.null(title) ) title <- "Error"
     if ( is.null(info) ) info <- "Please select a different sensor."
 
     shiny::showNotification(
       type = "warning",
-      HTML(paste0("<b>", title, "</b> <br>", info))
+      ui = HTML(paste0("<b>", title, "</b> <br>", info)),
+      ...
     )
   }
 

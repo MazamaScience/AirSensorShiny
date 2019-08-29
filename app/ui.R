@@ -60,7 +60,7 @@ shiny::shinyUI(
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
                             label = tags$h4("Date"),
-                            value = lubridate::now()
+                            value = lubridate::now(), todayButton = TRUE
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -446,7 +446,7 @@ shiny::shinyUI(
         # ----- Misc -----------------------------------------------------------
 
         tags$style(type="text/css", "body {padding-top: 70px;}")
-
+        #shinythemes::themeSelector()
     )
 
 
