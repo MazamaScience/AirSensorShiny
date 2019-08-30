@@ -25,6 +25,21 @@ shiny::shinyUI(
         position = "fixed-top",
         windowTitle = "AirShiny (Beta)",
 
+  #       tags$style(HTML("
+  #     .navbar .navbar-nav {float: right;
+  #                          color: #3b8aff;
+  #                          font-size: 38px;
+  #                          background-color: #3b8aff ; }
+  #     .navbar.navbar-default.navbar-static-top{ color: #3b8aff;
+  #                                     font-size: 38px;
+  #                                     background-color: #3b8aff ;}
+  #     .navbar .navbar-header {float: left; }
+  #     .navbar-default .navbar-brand { color: #3b8aff;
+  #                                     font-size: 38px;
+  #                                     background-color: #3b8aff ;}
+  #
+  # ")),
+
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
 
@@ -38,7 +53,7 @@ shiny::shinyUI(
 
                     width = 2,
 
-                    shiny::wellPanel(
+                    shiny::wellPanel(      shinyjs::useShinyjs(),
 
                         shinyWidgets::pickerInput(
                             inputId = "comm_select",
@@ -124,9 +139,10 @@ shiny::shinyUI(
                                     outputId = "leaflet", height = 400
                                 ),
                                 # Summary Plot
-                                shiny::plotOutput(
-                                    outputId = "summary_plot", height = 300
-                                )
+                                # shiny::plotOutput(
+                                #     outputId = "summary_plot", height = 300
+                                # ),
+                                dygraphs::dygraphOutput("dySummary_plot", height = 300)
                             ),
                             # Bar plot
                             shiny::column(
@@ -142,7 +158,7 @@ shiny::shinyUI(
 
                         # --- Video tab ---
                         shiny::tabPanel(
-                            title = tags$b("Animation"),icon = shiny::icon("file-video"),
+                            title = tags$b("Community Timelapse"),icon = shiny::icon("file-video"),
                             value = "anim",
 
                             tags$br(),

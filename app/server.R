@@ -5,9 +5,9 @@ shiny::shinyServer(
 
     # ----- Reactive Controls --------------------------------------------------
 
-     # Define active user selections
-     # NOTE: This contains all active data to avoid redundant func and load.
-     #       Update the active values only on trigger events.
+    # Define active user selections
+    # NOTE: This contains all active data to avoid redundant func and load.
+    #       Update the active values only on trigger events.
     active <-
       shiny::reactiveValues(
         pas = NULL,
@@ -699,13 +699,31 @@ shiny::shinyServer(
 
         shiny::renderTable({
           showLoad({
-          shiny::req(active$pat, active$label)
-          dates <- getDates()
-          metData <- shiny_getMet(active$label, dates[1], dates[2])
+            shiny::req(active$pat, active$label)
+            dates <- getDates()
+            metData <- shiny_getMet(active$label, dates[1], dates[2])
 
-          shiny_metTable(metData)
-        })
+            shiny_metTable(metData)
+          })
         }, bordered = TRUE, align = "c")
+
+      }
+
+    renderDygraphSummary <-
+      function() {
+
+        dygraphs::renderDygraph({
+
+          shiny::req(active$pat)
+          handleError(
+            AirSensor::pat_isPat(active$pat),
+            "Please Select a Sensor."
+          )
+
+          shinyjs::reset("dySummary_plot")
+          shiny_dySummary(active$pat)
+
+        })
 
       }
 
@@ -1119,6 +1137,18 @@ shiny::shinyServer(
       updateLeaf(label = active$label)
       )
 
+    shiny::observeEvent(
+      active$tab,
+      {
+        if (active$tab == "anim") {
+          shinyjs::disable("pas_select")
+        } else {
+          shinyjs::enable("pas_select")
+        }
+      }
+    )
+    # shinyjs::toggleState("pas_select", active$tab == "anim")
+
     # ----- Outputs ------------------------------------------------------------
 
     # DEBUG OUTPUT
@@ -1129,7 +1159,8 @@ shiny::shinyServer(
 
     # - Overview Tab -
     output$leaflet <- renderLeaf()
-    output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
+    #output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
+    output$dySummary_plot <- renderDygraphSummary()
     output$cal_plot <- renderCalPlot()
 
     # - Comparison Tab -
