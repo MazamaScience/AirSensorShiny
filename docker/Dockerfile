@@ -85,7 +85,8 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	shinythemes \
 	worldmet \
 	remotes \
-	shinyWidgets
+	shinyWidgets \
+	shinyjs
 
 # Install AirMonitorPlots
 RUN installGithub.r \
