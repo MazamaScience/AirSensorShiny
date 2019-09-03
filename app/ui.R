@@ -71,6 +71,7 @@ shiny::shinyUI(
                             choices = c( "3 Days" = 3,
                                          "7 Days" = 7,
                                          "30 Days" = 30 ),
+                            selected = 7,
                             justified = TRUE
                         )
                     ),
@@ -82,7 +83,7 @@ shiny::shinyUI(
 
                     # Help Button
                     shinyWidgets::prettyToggle(
-                        status_on = "primary",
+                        status_on = "success",
                         status_off = "primary",
                         inputId = "help_select",
                         label_on = "",
@@ -95,7 +96,7 @@ shiny::shinyUI(
 
 
 
-                    shiny::textOutput(
+                    shiny::htmlOutput(
                         outputId = "help_text"
                     )
 
