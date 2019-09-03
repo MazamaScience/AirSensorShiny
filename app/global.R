@@ -12,6 +12,8 @@
 library(AirSensor)
 library(MazamaCoreUtils)
 
+shiny::enableBookmarking(store = "server")
+
 # Load R functions
 R_utils <- list.files('utils/', pattern='^shiny_.+\\.R', full.names=TRUE)
 for ( file in R_utils ) {

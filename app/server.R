@@ -1,6 +1,7 @@
 # ----- AirShiny Server Logic --------------------------------------------------
 
-shiny::shinyServer(
+#shiny::shinyServer(
+  server <-
   function(input, output, session) {
 
     # ----- Reactive Controls --------------------------------------------------
@@ -156,6 +157,7 @@ shiny::shinyServer(
       input$de_lookback_select,
       updateActive("lookback", "de_lookback_select")
     )
+
     # ----- Reactive Functions -------------------------------------------------
 
     # Get the dates
@@ -545,8 +547,7 @@ shiny::shinyServer(
             strftime(active$enddate, "%m", tz = TIMEZONE)
           dd <-
             strftime(active$enddate, "%d", tz = TIMEZONE)
-          # Hour (HH) disabled
-          # hh <- "09"
+
           comm <- active$communityId
 
           url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
@@ -578,12 +579,12 @@ shiny::shinyServer(
           meta <-
             data.frame(
               "Community" = community,
-              "Sensor Type" = active$pas$sensorType, #pat$meta$sensorType,
-              "Longitude" = active$pas$longitude,#pat$meta$longitude,
-              "Latitude" = active$pas$latitude, #pat$meta$latitude,
-              "State" = active$pas$stateCode,#pat$meta$stateCode,
-              "Country" = active$pas$countryCode, #pat$meta$countryCode,
-              "Timezone" = active$pas$timezone#pat$meta$timezone
+              "Sensor Type" = active$pas$sensorType,
+              "Longitude" = active$pas$longitude,
+              "Latitude" = active$pas$latitude,
+              "State" = active$pas$stateCode,
+              "Country" = active$pas$countryCode,
+              "Timezone" = active$pas$timezone
             )
 
           return(meta)
@@ -637,7 +638,7 @@ shiny::shinyServer(
 
             shiny::incProgress(0.7)
 
-            shiny_diurnalPattern(active$pat) #+ ggplot2::scale_fill_brewer()
+            shiny_diurnalPattern(active$pat)
 
 
           })
@@ -705,8 +706,13 @@ shiny::shinyServer(
             dates <- getDates()
             metData <- shiny_getMet(active$label, dates[1], dates[2])
 
-            shiny_metTable(metData)
+            table <- shiny_metTable(metData)
+
+            shiny::incProgress(0.6)
           })
+
+          return(table)
+
         }, bordered = TRUE, align = "c")
 
       }
@@ -723,7 +729,16 @@ shiny::shinyServer(
           )
 
           shinyjs::reset("dySummary_plot")
-          shiny_dySummary(active$pat)
+
+          result <-
+            try({dySummary <- shiny_dySummary(active$pat)}, silent = TRUE)
+
+          if ( "try-error" %in% class(result) ) {
+            notify("Summary Failed")
+            handleError("", paste0(active$label, ": Failed"))
+          }
+
+          return(dySummary)
 
         })
 
@@ -761,27 +776,6 @@ shiny::shinyServer(
         )
 
       }
-
-    # DEPRECATED
-    # Load the pat into the active pat (reactive expr only)
-    # loadPat <-
-    #   function() {
-    #
-    #     if ( active$navtab == "explore" ) label <- active$label
-    #     if ( active$navtab == "dataview" ) label <- active$exp_label
-    #     if ( active$navtab == "latest" ) label <- active$latest_label
-    #
-    #     dates <- getDates()
-    #     active$pat <-
-    #       #try(
-    #         AirSensor::pat_load(
-    #           label,
-    #           dates[1],
-    #           dates[2]
-    #         #)
-    #       )
-    #
-    #   }
 
     # Update leaflet function for selected pas, or map click
     updateLeaf <-
@@ -1129,10 +1123,7 @@ shiny::shinyServer(
             )
         }
 
-        ### EXAMPLE
-
         return(txt)
-
 
       }
 
@@ -1158,8 +1149,11 @@ shiny::shinyServer(
               )
           })
         if ( "try-error" %in% class(result) ) {
-          notify(paste0(active$label, " Unavailiable"),
-                 paste0("Sensor last seen: ",tags$br(), active$pas$lastSeenDate), duration = 15)
+          notify(
+            paste0(active$label, " Unavailiable"),
+            paste0("Sensor last seen: ", tags$br(), active$pas$lastSeenDate),
+            duration = 15
+          )
         }
       }
     )
@@ -1185,6 +1179,34 @@ shiny::shinyServer(
       active$latest_label,
       { active$label <- active$exp_label <- active$latest_label }
     )
+
+    ######
+
+    shiny::observe({
+      query <- shiny::parseQueryString(session$clientData$url_search)
+      print(query)
+      if ( length(query) != 0 ) {
+        active$label <- query[["sensor"]]
+        # updateLeaf()
+        # active$community <- query[["communityID"]]
+        # active$tab <- query[["tab"]]
+        # active$navtab <- query[["nav"]]
+        # active$lookback <- query[["past"]]
+        # active$enddate <- query[["date"]]
+      }
+    })
+
+    # onBookmark(function(state) {
+    #   savedTime <- as.character(Sys.time())
+    #   cat("Last saved at", savedTime, "\n")
+    #   # state is a mutable reference object, and we can add arbitrary values to
+    #   # it.
+    #   state$values$time <- savedTime
+    # })
+    #
+    # onRestore(function(state) {
+    #   cat("Restoring from state bookmarked at", state$values$time, "\n")
+    # })
 
     # Global observations
     shiny::observe({
@@ -1249,7 +1271,6 @@ shiny::shinyServer(
         }
       }
     )
-    # shinyjs::toggleState("pas_select", active$tab == "anim")
 
     # ----- Outputs ------------------------------------------------------------
 
@@ -1273,7 +1294,7 @@ shiny::shinyServer(
 
     # - Raw tab -
     output$rose_plot <- renderRose()
-    output$raw_plot <- renderMultiplot(columns = 4)
+    output$raw_plot <- renderMultiplot(columns = 1)
     output$met_table <- renderMetTable()
 
     # - Animation tab -
@@ -1297,7 +1318,7 @@ shiny::shinyServer(
 
   }
 
-)
+#)
 
 #  ----- CURRENT ISSUES: -----
 

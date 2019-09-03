@@ -12,7 +12,9 @@
 MazamaCoreUtils::logger.debug("----- ui() -----")
 
 # ----- Define UI --------------------------------------------------------------
-shiny::shinyUI(
+#shiny::shinyUI(
+ui <- function(request) {
+
     shiny::navbarPage(
 
         # ----- Nav Bar --------------------------------------------------------
@@ -45,7 +47,7 @@ shiny::shinyUI(
                         shinyWidgets::pickerInput(
                             inputId = "comm_select",
                             label = tags$h4("Community"),
-                            choices = c("All..." = "all",PAS_COMM),
+                            choices = c("All..." = "all", PAS_COMM),
                             options = list(title = "Select community...")
                         ),
 
@@ -71,7 +73,6 @@ shiny::shinyUI(
                             choices = c( "3 Days" = 3,
                                          "7 Days" = 7,
                                          "30 Days" = 30 ),
-                            selected = 7,
                             justified = TRUE
                         )
                     ),
@@ -98,7 +99,8 @@ shiny::shinyUI(
 
                     shiny::htmlOutput(
                         outputId = "help_text"
-                    )
+                    ),
+                    shiny::bookmarkButton()
 
 
                 ),
@@ -151,23 +153,29 @@ shiny::shinyUI(
 
                           tags$br(),
 
-
                           shiny::column(
                             width = 8,
+                            height = "800",
+                            tags$h4("Raw Data"),
                             shiny::plotOutput(
-                              outputId = "raw_plot"
+                              outputId = "raw_plot",
+                              height = "700"
                             )
                           ),
-                          shiny::column(
-                            width = 4,
-                            shiny::plotOutput(
-                              outputId = "rose_plot"
-                            )
-                          ),
-                          tags$h4("Average Weather Data"),
 
-                          shiny::tableOutput(
-                            outputId = "met_table"
+                          shiny::column(
+                              width = 4,
+                              shiny::fluidRow(
+                                  tags$h4("Wind Rose Plot"),
+                                  shiny::plotOutput(
+                                      outputId = "rose_plot"
+                                  ),
+                                  tags$h4("Average Weather Data"),
+
+                                  shiny::tableOutput(
+                                      outputId = "met_table"
+                                  )
+                              )
                           )
 
                         ),
@@ -178,6 +186,7 @@ shiny::shinyUI(
                           value = "dp",
 
                           tags$br(),
+                          tags$h4("Average Daily Patterns"),
 
                           shiny::plotOutput(
                             outputId = "pattern_plot"
@@ -322,15 +331,6 @@ shiny::shinyUI(
 
 
                 ),
-                # PAS selection input
-                # shiny::column(
-                #     width = 2,
-                #     shiny::selectInput(
-                #         inputId = "de_pas_select",
-                #         label = "Sensor",
-                #         choices = ""
-                #     )
-                # ),
 
                 # Meta explorer
                 shiny::column(
@@ -339,14 +339,6 @@ shiny::shinyUI(
                         outputId = "meta_explorer"
                     )
                 ),
-
-                # Download Button
-                # shiny::column(
-                #     width = 1,
-                #     shiny::downloadButton(
-                #         outputId = "download_data"
-                #     )
-                # ),
 
                 # Data explorer
                 shiny::column(
@@ -450,30 +442,30 @@ shiny::shinyUI(
                 tags$h2("About AirShiny"), align = "center"),
                 tags$h3("Purpose"),
                 tags$p(
-                  "The AirShiny App as well as the AirSensor R-Package were developed through a
-                  collaboration between the South Coast Air Quality Management District (South Coast AQMD), a regional U.S.
-                  Governmental Agency in California, USA and Mazama Science, a software company in Seattle, WA. This tool is
-                  intended to support data exploration and analysis by community members participating in the US EPA funded
-                  STAR Grant at the South Coast AQMD, entitled “Engage, Educate and Empower California Communities on the Use
-                  and Applications of Low-cost Air Monitoring Sensors”. Funding for the development of this tool was provided
-                  through this US EPA STAR Grant (RD83618401)."
+                      "The AirShiny App as well as the AirSensor R-Package were developed through a
+                      collaboration between the South Coast Air Quality Management District (South Coast AQMD), a regional U.S.
+                      Governmental Agency in California, USA and Mazama Science, a software company in Seattle, WA. This tool is
+                      intended to support data exploration and analysis by community members participating in the US EPA funded
+                      STAR Grant at the South Coast AQMD, entitled “Engage, Educate and Empower California Communities on the Use
+                      and Applications of Low-cost Air Monitoring Sensors”. Funding for the development of this tool was provided
+                      through this US EPA STAR Grant (RD83618401)."
                 ),
               tags$h3("QA/QC Procedures"),
               tags$p(
-                "Description of QA/QC Procedures: All data provided throughout this application
-                (with the exception of the data displayed on the “Raw Data” tab on the Explorer page and the data shown on the “Latest Data” page) has
-                undergone the following QA/QC procedures: (1) removal of values outside of the specifications for the sensors, as
-                defined by the manufacturer, (2) pollutant values for Channel A and Channel B are averaged on an hourly basis,
-                (3) if the proportion of points contributing to the hourly average meets the minimum requirement and the hourly
-                averages are judged to be not statistically different, according to a student’s t-test, then the hourly averages for
-                Channel A and B are averaged together – producing a single value for each hour. More detail on the procedures
-                and functions used is available in the AirSensor R-Package documentation."
+                    "Description of QA/QC Procedures: All data provided throughout this application
+                    (with the exception of the data displayed on the “Raw Data” tab on the Explorer page and the data shown on the “Latest Data” page) has
+                    undergone the following QA/QC procedures: (1) removal of values outside of the specifications for the sensors, as
+                    defined by the manufacturer, (2) pollutant values for Channel A and Channel B are averaged on an hourly basis,
+                    (3) if the proportion of points contributing to the hourly average meets the minimum requirement and the hourly
+                    averages are judged to be not statistically different, according to a student’s t-test, then the hourly averages for
+                    Channel A and B are averaged together – producing a single value for each hour. More detail on the procedures
+                    and functions used is available in the AirSensor R-Package documentation."
               ),
               tags$h3("Disclaimer"),
               tags$p(
-                "Disclaimer: This tool is intended to be used for educational and informational purposes only. Furthermore, the
-                code used to build this tool, the QA/QC procedures, and the different features of this tool may be subject to
-                revision at any time depending on the needs of the project."
+                    "Disclaimer: This tool is intended to be used for educational and informational purposes only. Furthermore, the
+                    code used to build this tool, the QA/QC procedures, and the different features of this tool may be subject to
+                    revision at any time depending on the needs of the project."
               )
 
             )
@@ -487,4 +479,4 @@ shiny::shinyUI(
 
     )
 
-)
+}#)
