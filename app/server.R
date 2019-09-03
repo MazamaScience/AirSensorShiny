@@ -1204,9 +1204,9 @@
     #   state$values$time <- savedTime
     # })
     #
-    # onRestore(function(state) {
-    #   cat("Restoring from state bookmarked at", state$values$time, "\n")
-    # })
+    onRestore(function(state) {
+      cat("Restoring from state bookmarked at", state$values$time, "\n")
+    })
 
     # Global observations
     shiny::observe({
