@@ -1193,6 +1193,9 @@ shiny::shinyServer(
     # - Help text -
     output$help_text <- shiny::renderText({ if (active$help) helpText()})
 
+    # - About text -
+    output$about_txt <- shiny::renderText(about_txt)
+
 
   }
 
