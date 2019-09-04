@@ -1,7 +1,7 @@
 # ----- AirShiny Server Logic --------------------------------------------------
 
 #shiny::shinyServer(
-  server <-
+server <-
   function(input, output, session) {
 
     # ----- Reactive Controls --------------------------------------------------
@@ -210,8 +210,8 @@
         # NOTE: ifelse function does not work here...
         if ( community == "all" )  {
           pas <- PAS[!is.na(PAS$communityRegion) &
-                             !grepl("(<?\\sB)$", PAS$label) &
-                             PAS$DEVICE_LOCATIONTYPE != "inside",]
+                       !grepl("(<?\\sB)$", PAS$label) &
+                       PAS$DEVICE_LOCATIONTYPE != "inside",]
         } else {
           pas <- PAS[grepl(community, PAS$communityRegion),]
         }
@@ -921,7 +921,7 @@
 
               )
 
-          # If unsuccessful, add error label
+            # If unsuccessful, add error label
           } else {
 
             leaflet::leafletProxy("shiny_leaflet_comparison") %>%
@@ -945,38 +945,39 @@
     # (f)unction query the url
     fquery <-
       function() {
+        shiny::reactive({
+          # -- Query list based on url
+          query <-
+            shiny::parseQueryString(session$clientData$url_search)
 
-        # -- Query list based on url
-        query <-
-          shiny::parseQueryString(session$clientData$url_search)
+          # -- Define updates based on query
+          # Update community selection based on query
+          shiny::updateSelectInput(
+            session,
+            inputId = "comm_select",
+            selected = query[["communityId"]]
+          )
 
-        # -- Define updates based on query
-        # Update community selection based on query
-        shiny::updateSelectInput(
-          session,
-          inputId = "comm_select",
-          selected = query[["communityId"]]
-        )
+          # Update selected tab based on query
+          shiny::updateTabsetPanel(
+            session,
+            inputId = "tab_select",
+            selected = query[["tb"]]
+          )
 
-        # Update selected tab based on query
-        shiny::updateTabsetPanel(
-          session,
-          inputId = "tab_select",
-          selected = query[["tb"]]
-        )
+          # Update selected pas based on query
+          shiny::updateSelectInput(
+            session,
+            inputId = "pas_select",
+            selected = query[["sensorId"]]
+          )
 
-        # Update selected pas based on query
-        shiny::updateSelectInput(
-          session,
-          inputId = "pas_select",
-          selected = query[["sensorId"]]
-        )
-
-        shiny::updateNavbarPage(
-          session,
-          inputId = "navtab",
-          selected = query[["nav"]]
-        )
+          shiny::updateNavbarPage(
+            session,
+            inputId = "navtab",
+            selected = query[["nav"]]
+          )
+        })
 
       }
 
@@ -1028,7 +1029,7 @@
         if ( active$tab == "main" ) {
           txt <-
             shiny::HTML(
-            "<small>
+              "<small>
             <p>
             On this page, you can view all of the air quality sensors deployed through the
             US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
@@ -1048,7 +1049,7 @@
             defines the colors in the map, bar chart, and calendar plot.
             </p>
             </small>"
-          )
+            )
         } else if ( active$tab == "comp") {
           txt <-
             shiny::HTML(
@@ -1139,13 +1140,13 @@
          active$latest_label ),
       {
         result <-
-        try({
-          active$pat <-
-            AirSensor::pat_load(
-              label = active$label,
-              startdate = getDates()[1],
-              enddate = getDates()[2],
-              timezone = TIMEZONE
+          try({
+            active$pat <-
+              AirSensor::pat_load(
+                label = active$label,
+                startdate = getDates()[1],
+                enddate = getDates()[2],
+                timezone = TIMEZONE
               )
           })
         if ( "try-error" %in% class(result) ) {
@@ -1179,34 +1180,6 @@
       active$latest_label,
       { active$label <- active$exp_label <- active$latest_label }
     )
-
-    ######
-
-    shiny::observe({
-      query <- shiny::parseQueryString(session$clientData$url_search)
-      print(query)
-      if ( length(query) != 0 ) {
-        active$label <- query[["sensor"]]
-        # updateLeaf()
-        # active$community <- query[["communityID"]]
-        # active$tab <- query[["tab"]]
-        # active$navtab <- query[["nav"]]
-        # active$lookback <- query[["past"]]
-        # active$enddate <- query[["date"]]
-      }
-    })
-
-    # onBookmark(function(state) {
-    #   savedTime <- as.character(Sys.time())
-    #   cat("Last saved at", savedTime, "\n")
-    #   # state is a mutable reference object, and we can add arbitrary values to
-    #   # it.
-    #   state$values$time <- savedTime
-    # })
-    #
-    onRestore(function(state) {
-      cat("Restoring from state bookmarked at", state$values$time, "\n")
-    })
 
     # Global observations
     shiny::observe({
@@ -1247,7 +1220,7 @@
       )
 
       # Watch the active variables to update the URL
-      #nquery()
+      # nquery()
 
     })
 
@@ -1255,11 +1228,11 @@
     shiny::observeEvent(
       c(active$marker, active$tab, active$navtab),
       updateLeaf()
-      )
+    )
     shiny::observeEvent(
       c(active$label, active$tab, active$navtab),
       updateLeaf(label = active$label)
-      )
+    )
 
     shiny::observeEvent(
       active$tab,
@@ -1271,6 +1244,78 @@
         }
       }
     )
+
+    # ----- Bookmark & Restore -------------------------------------------------
+
+    # Exclude inputs for bookmarking
+    shiny::setBookmarkExclude(
+      c( "de_date_select_button",
+         "de_help_select",
+         "de_date_select",
+         "de_lookback_select",
+         "de_pas_select",
+         "latest_help_select",
+         "latest_comm_select",
+         "latest_pas_select",
+         "leaflet_zoom",
+         "help_select",
+         "leaflet_marker_mouseover",
+         "loadButton",
+         "leaflet_bounds",
+         "leaflet_marker_mouseout",
+         "date_select_button",
+         "shinyjs-resettable-dySummary_plot",
+         "leaflet_center",
+         "dySummary_plot_date_window"
+      )
+    )
+
+    # Callback on bookmark button click to save important states
+    shiny::onBookmark( function(state) {
+
+      state$values$pas_select <- active$label
+      state$values$date_select <- active$enddate
+      state$values$lookback_select <- active$lookback
+
+    })
+
+    # Callback on restore after load
+    shiny::onRestored(function(state) {
+
+      # Update the pas
+      shiny::updateSelectInput(
+        session,
+        inputId = "pas_select",
+        selected = state$values$pas_select
+      )
+
+      # Update date input (add a day for some reason)
+      shinyWidgets::updateAirDateInput(
+        session,
+        inputId = "date_select",
+        value = lubridate::ymd(state$values$date_select) + lubridate::days(1),
+        clear = TRUE,
+      )
+
+      # Update lookback
+      shinyWidgets::updateRadioGroupButtons(
+        session,
+        inputId = "lookback_select",
+        selected = state$values$lookback_select
+      )
+
+      # Redundant but necessary?
+      active$lookback <- state$values$lookback_select
+
+      active$enddate <- state$values$date_select
+
+    })
+
+    # Update the url when bookmark button clicked
+    shiny::onBookmarked(function(url) {
+      shiny::updateQueryString(url)
+      shiny::showBookmarkUrlModal(url)
+    })
 
     # ----- Outputs ------------------------------------------------------------
 
@@ -1317,10 +1362,4 @@
     output$help_text <- shiny::renderUI({ if (active$help) HTML(helpText()) })
 
   }
-
-#)
-
-#  ----- CURRENT ISSUES: -----
-
-# - URL querying/Bookmarking
 

@@ -12,7 +12,11 @@
 library(AirSensor)
 library(MazamaCoreUtils)
 
-shiny::enableBookmarking(store = "server")
+# Version
+VERSION <<- 0.4
+
+# Enable Bookmarks / state restoration
+shiny::enableBookmarking(store = "url")
 
 # Load R functions
 R_utils <- list.files('utils/', pattern='^shiny_.+\\.R', full.names=TRUE)

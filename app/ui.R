@@ -74,7 +74,14 @@ ui <- function(request) {
                                          "7 Days" = 7,
                                          "30 Days" = 30 ),
                             justified = TRUE
-                        )
+                        ),
+                        tags$br(),
+                        tags$h5("Bookmark"),
+                        shiny::bookmarkButton(label = tags$small("Get URL")),
+                        tags$br(),
+                        tags$br(),
+                        tags$br(),
+                        tags$em(tags$small("Version ", VERSION))
                     ),
 
                     # Display selection mini table
@@ -99,9 +106,7 @@ ui <- function(request) {
 
                     shiny::htmlOutput(
                         outputId = "help_text"
-                    ),
-                    shiny::bookmarkButton()
-
+                    )
 
                 ),
 
@@ -109,142 +114,155 @@ ui <- function(request) {
                 shiny::column(
                     width = 10,
 
-                    # ---- Tabs ----
-                    shiny::tabsetPanel(
-                        type = "tabs",
-                        id = "tab_select",
+                    shiny::fluidRow(
 
-                        # --- Overview Tab ---
-                        shiny::tabPanel(
+                        # ---- Tabs ----
+                        shiny::tabsetPanel(
+                            type = "tabs",
+                            id = "tab_select",
 
-                            title = tags$b("Overview"), icon = shiny::icon("home"),
-                            value = "main",
+                            # --- Overview Tab ---
+                            shiny::tabPanel(
 
-                            tags$br(),
+                                title = tags$b("Overview"),
+                                icon = shiny::icon("home"),
+                                value = "main",
 
-                            shiny::column(
-                                width = 10,
-                                # Plot outputs
-                                leaflet::leafletOutput(
-                                    outputId = "leaflet", height = 400
+                                tags$br(),
+
+                                shiny::column(
+                                    width = 10,
+                                    # Plot outputs
+                                    leaflet::leafletOutput(
+                                        outputId = "leaflet",
+                                        height = 400
+                                    ),
+                                    # Summary Plot
+                                    # shiny::plotOutput(
+                                    #     outputId = "summary_plot", height = 300
+                                    # ),
+                                    dygraphs::dygraphOutput(
+                                        "dySummary_plot",
+                                        height = 300
+                                    )
                                 ),
-                                # Summary Plot
-                                # shiny::plotOutput(
-                                #     outputId = "summary_plot", height = 300
-                                # ),
-                                dygraphs::dygraphOutput("dySummary_plot", height = 300)
+                                # Bar plot
+                                shiny::column(
+                                    width = 2,
+                                    style = "margin-top: 0px;",
+                                    shiny::plotOutput(
+                                        outputId = "cal_plot", height = 700,
+                                        width = "100%"
+                                    )
+                                )
+
                             ),
-                            # Bar plot
-                            shiny::column(
-                                width = 2,
-                                style = "margin-top: 0px;",
+
+                            # --- Raw data tab ---
+                            shiny::tabPanel(
+                                title = tags$b("Raw Data"),
+                                icon = shiny::icon("database"),
+                                value = "raw",
+
+                                tags$br(),
+
+                                shiny::column(
+                                    width = 8,
+                                    height = "800",
+                                    tags$h4("Raw Data"),
+                                    shiny::plotOutput(
+                                        outputId = "raw_plot",
+                                        height = "700"
+                                    )
+                                ),
+
+                                shiny::column(
+                                    width = 4,
+                                    shiny::fluidRow(
+                                        tags$h4("Wind Rose Plot"),
+                                        shiny::plotOutput(
+                                            outputId = "rose_plot"
+                                        ),
+                                        tags$h4("Average Weather Data"),
+
+                                        shiny::tableOutput(
+                                            outputId = "met_table"
+                                        )
+                                    )
+                                )
+
+                            ),
+
+                            # --- Daily patterns tab ---
+                            shiny::tabPanel(
+                                title = tags$b("Daily Patterns"),
+                                icon = shiny::icon("chart-bar"),
+                                value = "dp",
+
+                                tags$br(),
+                                tags$h4("Average Daily Patterns"),
+
                                 shiny::plotOutput(
-                                    outputId = "cal_plot", height = 700,
-                                    width = "100%"
+                                    outputId = "pattern_plot"
+                                )
+
+                            ),
+
+                            # --- Compare tab ---
+                            shiny::tabPanel(
+                                title = tags$b("Compare"),
+                                icon = shiny::icon("project-diagram"),
+                                value = "comp",
+
+                                tags$br(),
+
+                                shiny::fluidRow(
+
+                                    shiny::column(
+                                        width = 9,
+                                        # Comparison Leaflet
+                                        leaflet::leafletOutput(
+                                            outputId = "shiny_leaflet_comparison",
+                                            height = 500
+                                        )
+                                    ),
+
+                                    shiny::column(
+                                        width = 3,
+                                        # Comparison table
+                                        shiny::tableOutput(
+                                            outputId = "comparison_table"
+                                        ),
+                                        # External fit plot
+                                        shiny::plotOutput(
+                                            outputId = "ws_ext"
+                                        )
+                                    )
+                                ),
+
+                                shiny::column(
+                                    width = 12,
+                                    # Monitor comparison plot
+                                    shiny::plotOutput(
+                                        outputId = "ws_comp"
+                                    )
+                                )
+
+                            ),
+
+                            # --- Video tab ---
+                            shiny::tabPanel(
+                                title = tags$b("Community Timelapse"),
+                                icon = shiny::icon("file-video"),
+                                value = "anim",
+
+                                tags$br(),
+
+                                shiny::uiOutput(
+                                    outputId = "video_out"
                                 )
                             )
 
-                        ),
-
-                        # --- Raw data tab ---
-                        shiny::tabPanel(
-                          title = tags$b("Raw Data"), icon = shiny::icon("database"),
-                          value = "raw",
-
-                          tags$br(),
-
-                          shiny::column(
-                            width = 8,
-                            height = "800",
-                            tags$h4("Raw Data"),
-                            shiny::plotOutput(
-                              outputId = "raw_plot",
-                              height = "700"
-                            )
-                          ),
-
-                          shiny::column(
-                              width = 4,
-                              shiny::fluidRow(
-                                  tags$h4("Wind Rose Plot"),
-                                  shiny::plotOutput(
-                                      outputId = "rose_plot"
-                                  ),
-                                  tags$h4("Average Weather Data"),
-
-                                  shiny::tableOutput(
-                                      outputId = "met_table"
-                                  )
-                              )
-                          )
-
-                        ),
-
-                        # --- Daily patterns tab ---
-                        shiny::tabPanel(
-                          title = tags$b("Daily Patterns"), icon = shiny::icon("chart-bar"),
-                          value = "dp",
-
-                          tags$br(),
-                          tags$h4("Average Daily Patterns"),
-
-                          shiny::plotOutput(
-                            outputId = "pattern_plot"
-                          )
-
-                        ),
-
-                        # --- Compare tab ---
-                        shiny::tabPanel(
-                          title = tags$b("Compare"), icon = shiny::icon("project-diagram"),
-                          value = "comp",
-
-                          tags$br(),
-
-                          shiny::fluidRow(
-
-                            shiny::column(
-                              width = 9,
-                              # Comparison Leaflet
-                              leaflet::leafletOutput(
-                                outputId = "shiny_leaflet_comparison",
-                                height = 500
-                              )
-                            ),
-
-                            shiny::column(
-                              width = 3,
-                              # Comparison table
-                              shiny::tableOutput(
-                                outputId = "comparison_table"
-                              ),
-                              # External fit plot
-                              shiny::plotOutput(
-                                outputId = "ws_ext"
-                              )
-                            )
-                          ),
-
-                          shiny::column(
-                            width = 12,
-                            # Monitor comparison plot
-                            shiny::plotOutput(
-                              outputId = "ws_comp"
-                            )
-                          )
-
-                        ),
-
-                        # --- Video tab ---
-                        shiny::tabPanel(
-                            title = tags$b("Community Timelapse"),icon = shiny::icon("file-video"),
-                            value = "anim",
-
-                            tags$br(),
-
-                            shiny::uiOutput(
-                                outputId = "video_out"
-                            )
                         )
 
                     )
@@ -437,12 +455,12 @@ ui <- function(request) {
             value = "about",
             shiny::column(width = 3),
             shiny::column(
-              width = 5,
-              fluidRow(
-                tags$h2("About AirShiny"), align = "center"),
+                width = 5,
+                fluidRow(
+                    tags$h2("About AirShiny"), align = "center"),
                 tags$h3("Purpose"),
                 tags$p(
-                      "The AirShiny App as well as the AirSensor R-Package were developed through a
+                    "The AirShiny App as well as the AirSensor R-Package were developed through a
                       collaboration between the South Coast Air Quality Management District (South Coast AQMD), a regional U.S.
                       Governmental Agency in California, USA and Mazama Science, a software company in Seattle, WA. This tool is
                       intended to support data exploration and analysis by community members participating in the US EPA funded
@@ -450,8 +468,8 @@ ui <- function(request) {
                       and Applications of Low-cost Air Monitoring Sensors”. Funding for the development of this tool was provided
                       through this US EPA STAR Grant (RD83618401)."
                 ),
-              tags$h3("QA/QC Procedures"),
-              tags$p(
+                tags$h3("QA/QC Procedures"),
+                tags$p(
                     "Description of QA/QC Procedures: All data provided throughout this application
                     (with the exception of the data displayed on the “Raw Data” tab on the Explorer page and the data shown on the “Latest Data” page) has
                     undergone the following QA/QC procedures: (1) removal of values outside of the specifications for the sensors, as
@@ -460,13 +478,13 @@ ui <- function(request) {
                     averages are judged to be not statistically different, according to a student’s t-test, then the hourly averages for
                     Channel A and B are averaged together – producing a single value for each hour. More detail on the procedures
                     and functions used is available in the AirSensor R-Package documentation."
-              ),
-              tags$h3("Disclaimer"),
-              tags$p(
+                ),
+                tags$h3("Disclaimer"),
+                tags$p(
                     "Disclaimer: This tool is intended to be used for educational and informational purposes only. Furthermore, the
                     code used to build this tool, the QA/QC procedures, and the different features of this tool may be subject to
                     revision at any time depending on the needs of the project."
-              )
+                )
 
             )
 
@@ -475,8 +493,7 @@ ui <- function(request) {
         # ----- Misc -----------------------------------------------------------
 
         tags$style(type="text/css", "body {padding-top: 70px;}")
-        #shinythemes::themeSelector()
 
     )
 
-}#)
+}
