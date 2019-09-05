@@ -617,7 +617,9 @@ server <-
                             "Temperature (F)",
                             "Relative Humidity (%)" )
 
-          data <- DT::datatable(data) %>% DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+          data <-
+            DT::datatable(data, selection = "none") %>%
+            DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
 
           return(data)
 
