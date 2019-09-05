@@ -38,8 +38,8 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . airsensorshiny 1.3.1 . fix docker container logging:
-VERSION=1.1.1
+# first version . airsensorshiny 1.3.1 . Han's 2019-09-05 improvements
+VERSION=1.1.2
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
