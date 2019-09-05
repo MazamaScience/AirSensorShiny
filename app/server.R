@@ -597,15 +597,15 @@ server <-
     renderDataExplorer <-
       function() {
 
-        shiny::renderDataTable({
+        DT::renderDataTable({
 
-          handleError(
-            AirSensor::pat_isPat(active$pat),
-            "Please select a sensor."
-          )
-
+          # handleError(
+          #   AirSensor::pat_isPat(active$pat),
+          #   "Please select a sensor."
+          # )
+          #
           req(active$pat)
-
+          #
           showLoad(shiny::incProgress(0.7))
 
           # Remove unecessary columns
@@ -616,6 +616,8 @@ server <-
                             "PM2.5 Ch. B (\u03bcg / m\u00b)",
                             "Temperature (F)",
                             "Relative Humidity (%)" )
+
+          data <- DT::datatable(data) %>% DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
 
           return(data)
 

@@ -361,7 +361,10 @@ ui <- function(request) {
                 # Data explorer
                 shiny::column(
                     width = 10,
-                    shiny::dataTableOutput(
+                    # shiny::dataTableOutput(
+                    #     outputId = "data_explorer"
+                    # )
+                    DT::dataTableOutput(
                         outputId = "data_explorer"
                     )
                 )
