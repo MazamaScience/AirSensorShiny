@@ -557,7 +557,7 @@ server <-
             type = "video/mp4",
             src = url,
             controls = "controls",
-            loop = TRUE
+            loop = FALSE
           )
 
         })
