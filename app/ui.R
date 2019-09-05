@@ -223,7 +223,7 @@ ui <- function(request) {
                                         # Comparison Leaflet
                                         leaflet::leafletOutput(
                                             outputId = "shiny_leaflet_comparison",
-                                            height = 500
+                                            height = 400
                                         )
                                     ),
 
@@ -303,7 +303,7 @@ ui <- function(request) {
                                 title = "Select sensor...",
                                 size = 7)
                         ),
-                        #shiny::wellPanel(
+
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
                             label = tags$h4("Date"),

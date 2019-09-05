@@ -1188,7 +1188,7 @@ server <-
       shiny::updateSelectInput(
         session,
         inputId = "pas_select",
-        choices = c("Select Sensor...", getPasLabels()),
+        choices = getPasLabels(),
         selected = active$label
 
       )
@@ -1244,6 +1244,18 @@ server <-
         }
       }
     )
+
+    # Update once if the selected pas is null i.e On Startup
+    # -- Using a random selected pas ATM
+    shiny::observeEvent(
+      is.null(active$label), once = TRUE,
+      {
+        shiny::updateSelectInput(
+          session,
+          inputId = "pas_select",
+          selected = sample(getPasLabels(), 1)
+        )
+      })
 
     # ----- Bookmark & Restore -------------------------------------------------
 
