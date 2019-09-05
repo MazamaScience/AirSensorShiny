@@ -26,14 +26,15 @@ handleError <-
   }
 
 notify <-
-  function(title = NULL, info = NULL) {
+  function(title = NULL, info = NULL, ...) {
 
     if ( is.null(title) ) title <- "Error"
     if ( is.null(info) ) info <- "Please select a different sensor."
 
     shiny::showNotification(
       type = "warning",
-      HTML(paste0("<b>", title, "</b> <br>", info))
+      ui = HTML(paste0("<b>", title, "</b> <br>", info)),
+      ...
     )
   }
 
@@ -51,11 +52,14 @@ scale_fill_sqamd <- function(...) {
       "purple2" = "#6b0096",
       "purple1" = "#9f00de",
       "blue3" = "#002ade",
-      "blue2" = "#3b8aff",
+      "blue2" = "#008cba",#"#3b8aff",
       "blue1" = "#abebff"
     )
 
-  ggplot2::scale_fill_manual(...,values = rev(stringr::str_to_upper(sqamd_cols)))
+ scaqmd_colors <- rev(c("blue1" = "#abe3f4", "blue2" = "#118CBA", "blue3" = "#286096", "purple1" = "#8659A5", "purple2" = "#6A367A"))
+
+
+  ggplot2::scale_fill_manual(...,values = rev(stringr::str_to_upper(scaqmd_colors)))
 
 }
 
