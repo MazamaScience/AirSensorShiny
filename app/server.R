@@ -1238,14 +1238,39 @@ server <-
       updateLeaf(label = active$label)
     )
 
+    # disable box when not needed on community tab
+    # shiny::observeEvent(
+    #   active$tab,
+    #   {
+    #     if (active$tab == "anim") {
+    #       shinyjs::disable("pas_select")
+    #     } else {
+    #       shinyjs::enable("pas_select")
+    #     }
+    #   }
+    # )
+
+    # Update the the labels when switching tabs
     shiny::observeEvent(
-      active$tab,
+      active$navtab,
       {
-        if (active$tab == "anim") {
-          shinyjs::disable("pas_select")
-        } else {
-          shinyjs::enable("pas_select")
-        }
+        shiny::updateSelectInput(
+          session,
+          inputId = "pas_select",
+          selected = active$label
+        )
+
+        shiny::updateSelectInput(
+          session,
+          inputId = "de_pas_select",
+          selected = active$label
+        )
+
+        shiny::updateSelectInput(
+          session,
+          inputId = "latest_pas_select",
+          selected = active$label
+        )
       }
     )
 
