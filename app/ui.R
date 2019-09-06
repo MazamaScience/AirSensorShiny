@@ -77,7 +77,11 @@ ui <- function(request) {
                         ),
                         tags$br(),
                         tags$h5("Bookmark"),
-                        shiny::bookmarkButton(label = tags$small("Get URL")),
+                        shiny::bookmarkButton(
+                            label = tags$small("Share..."),
+                            icon = shiny::icon("share-square"),
+                            title = "Copy Link to Share"
+                        ),
                         tags$br(),
                         tags$br(),
                         tags$br(),
