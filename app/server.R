@@ -1242,16 +1242,18 @@ server <-
     )
 
     # disable box when not needed on community tab
-    # shiny::observeEvent(
-    #   active$tab,
-    #   {
-    #     if (active$tab == "anim") {
-    #       shinyjs::disable("pas_select")
-    #     } else {
-    #       shinyjs::enable("pas_select")
-    #     }
-    #   }
-    # )
+    shiny::observeEvent(
+      active$tab,
+      {
+        if (active$tab == "anim") {
+          #shinyjs::disable("pas_select")
+          shinyjs::hide("pas_select", anim = TRUE)
+        } else {
+          #shinyjs::enable("pas_select")
+          shinyjs::show("pas_select", anim = TRUE)
+        }
+      }
+    )
 
     # Update the the labels when switching tabs
     shiny::observeEvent(
