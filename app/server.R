@@ -4,6 +4,9 @@
 server <-
   function(input, output, session) {
 
+    # Show memory usage on startup
+    memory_debug("Start")
+
     # ----- Reactive Controls --------------------------------------------------
 
     # Define active user selections
@@ -373,6 +376,8 @@ server <-
 
           })
 
+          memory_debug("Calendar")
+
           return(calendar)
         })
 
@@ -531,6 +536,8 @@ server <-
 
           })
 
+          memory_debug("Rose Plot")
+
         })
 
       }
@@ -621,6 +628,8 @@ server <-
           data <-
             DT::datatable(data, selection = "none") %>%
             DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+
+          memory_debug("Data Explorer")
 
           return(data)
 
@@ -1137,6 +1146,7 @@ server <-
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
+    # LOAD PAT -- VERY IMPORTANT
     # Trigger active pat update based on pas selection, lookback, enddate, exp_label
     shiny::observeEvent(
       ignoreInit = TRUE, #Ignore init value to avoid startup error
@@ -1163,6 +1173,7 @@ server <-
             duration = 15
           )
         }
+        memory_debug("PAT LOAD")
       }
     )
 
@@ -1319,32 +1330,6 @@ server <-
         "leaflet_marker_mouseout"
       )
     )
-      # c( "de_date_select_button",
-      #    "de_help_select",
-      #    "de_date_select",
-      #    "de_lookback_select",
-      #    "de_pas_select",
-      #    "latest_help_select",
-      #    "latest_comm_select",
-      #    "latest_pas_select",
-      #    "leaflet_zoom",
-      #    "help_select",
-      #    "leaflet_marker_mouseover",
-      #    "loadButton",
-      #    "leaflet_bounds",
-      #    "leaflet_marker_mouseout",
-      #    "date_select_button",
-      #    "shinyjs-resettable-dySummary_plot",
-      #    "leaflet_center",
-      #    "dySummary_plot_date_window",
-      #    "data_explorer_rows_all",
-      #    "data_explorer_rows_current",
-      #    "data_explorer_search",
-      #    "data_explorer_cell_clicked",
-      #    "data_explorer_state"
-      #
-      # )
-
 
     # Callback on bookmark button click to save important states
     shiny::onBookmark( function(state) {
@@ -1352,6 +1337,8 @@ server <-
       state$values$pas_select <- active$label
       state$values$date_select <- active$enddate
       state$values$lookback_select <- active$lookback
+      state$values$tab <- active$tab
+      #state$values$nav <- active$navtab
 
     })
 
@@ -1380,9 +1367,22 @@ server <-
         selected = state$values$lookback_select
       )
 
+      # Update nav tab
+      # shiny::updateNavbarPage(
+      #   session,
+      #   inputId = "navtab",
+      #   selected = state$values$nav
+      # )
+
+      # Update tab select
+      shiny::updateTabsetPanel(
+        session,
+        inputId = "tab_select",
+        selected = state$values$tab
+      )
+
       # Redundant but necessary?
       active$lookback <- state$values$lookback_select
-
       active$enddate <- state$values$date_select
 
     })
@@ -1392,6 +1392,14 @@ server <-
       shiny::updateQueryString(url)
       shiny::showBookmarkUrlModal(url)
     })
+
+    # ----- On Flush -----------------------------------------------------------
+    shiny::onStop(
+      function() {
+        memory_debug("ON EXIT")
+        gc(reset = TRUE)
+      }
+    )
 
     # ----- Outputs ------------------------------------------------------------
 

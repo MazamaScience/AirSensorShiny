@@ -63,3 +63,9 @@ scale_fill_sqamd <- function(...) {
 
 }
 
+memory_debug <-
+  function(string = NULL) {
+    memoryLines <- capture.output(gc())
+    memoryString <- paste(c(paste0(string, ' Memory Usage:'), memoryLines), collapse='\n')
+    logger.trace(memoryString)
+  }
