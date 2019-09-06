@@ -1,8 +1,8 @@
-FROM mazamascience/airsensorshiny:1.3.2
+FROM mazamascience/airsensorshiny:latest
 
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
- 
+
 LABEL version="1.3.1"
 
 LABEL description="AirSensorShiny Docker Image"
@@ -20,13 +20,13 @@ RUN rm -rf /srv/shiny-server/
 COPY app /srv/shiny-server/app
 
 # Copy index
-COPY src/index.html /srv/shiny-server/ 
+COPY src/index.html /srv/shiny-server/
 
 # Allow readable files
 RUN chmod -R 755 /srv/shiny-server/
 
-# Port 
+# Port
 EXPOSE 3838
 
-# Run 
-CMD ["/usr/bin/shiny-server.sh"] 
+# Run
+CMD ["/usr/bin/shiny-server.sh"]
