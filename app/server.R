@@ -900,7 +900,7 @@ server <-
           # If load is successful -> add monitor to map
           if ( !"try-error" %in% class(nearestMonitor) ) {
 
-            lab_ws <-  nearestMonitor$meta$monitorID
+            lab_ws <-  nearestMonitor$meta$siteName
             lat_ws <-  nearestMonitor$meta$latitude
             lng_ws <-  nearestMonitor$meta$longitude
 
@@ -1290,26 +1290,44 @@ server <-
 
     # Exclude inputs for bookmarking
     shiny::setBookmarkExclude(
-      c( "de_date_select_button",
-         "de_help_select",
-         "de_date_select",
-         "de_lookback_select",
-         "de_pas_select",
-         "latest_help_select",
-         "latest_comm_select",
-         "latest_pas_select",
-         "leaflet_zoom",
-         "help_select",
-         "leaflet_marker_mouseover",
-         "loadButton",
-         "leaflet_bounds",
-         "leaflet_marker_mouseout",
-         "date_select_button",
-         "shinyjs-resettable-dySummary_plot",
-         "leaflet_center",
-         "dySummary_plot_date_window"
+      c(isolate(names(input)),
+        "leaflet_zoom",
+        "leaflet_center",
+        "leaflet_bounds",
+        "shiny_leaflet_comparison_groups",
+        "shinyjs-resettable-dySummary_plot",
+        "shiny_leaflet_comparison_center",
+        "shiny_leaflet_comparison_bounds",
+        "dySummary_plot_date_window",
+        "shiny_leaflet_comparison_zoom"
       )
     )
+      # c( "de_date_select_button",
+      #    "de_help_select",
+      #    "de_date_select",
+      #    "de_lookback_select",
+      #    "de_pas_select",
+      #    "latest_help_select",
+      #    "latest_comm_select",
+      #    "latest_pas_select",
+      #    "leaflet_zoom",
+      #    "help_select",
+      #    "leaflet_marker_mouseover",
+      #    "loadButton",
+      #    "leaflet_bounds",
+      #    "leaflet_marker_mouseout",
+      #    "date_select_button",
+      #    "shinyjs-resettable-dySummary_plot",
+      #    "leaflet_center",
+      #    "dySummary_plot_date_window",
+      #    "data_explorer_rows_all",
+      #    "data_explorer_rows_current",
+      #    "data_explorer_search",
+      #    "data_explorer_cell_clicked",
+      #    "data_explorer_state"
+      #
+      # )
+
 
     # Callback on bookmark button click to save important states
     shiny::onBookmark( function(state) {
