@@ -7,7 +7,7 @@ LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
 
 LABEL build_date="2019-08-20"
-LABEL version="1.3.1"
+LABEL version="1.3.3"
 
 LABEL description="AirShiny Docker Image"
 
@@ -86,7 +86,8 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	worldmet \
 	remotes \
 	shinyWidgets \
-	shinyjs
+	shinyjs \
+	DT
 
 # Install AirMonitorPlots
 RUN installGithub.r \

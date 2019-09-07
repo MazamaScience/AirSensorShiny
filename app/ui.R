@@ -77,7 +77,11 @@ ui <- function(request) {
                         ),
                         tags$br(),
                         tags$h5("Bookmark"),
-                        shiny::bookmarkButton(label = tags$small("Get URL")),
+                        shiny::bookmarkButton(
+                            label = tags$small("Share..."),
+                            icon = shiny::icon("share-square"),
+                            title = "Copy Link to Share"
+                        ),
                         tags$br(),
                         tags$br(),
                         tags$br(),
@@ -223,7 +227,7 @@ ui <- function(request) {
                                         # Comparison Leaflet
                                         leaflet::leafletOutput(
                                             outputId = "shiny_leaflet_comparison",
-                                            height = 500
+                                            height = 400
                                         )
                                     ),
 
@@ -303,7 +307,7 @@ ui <- function(request) {
                                 title = "Select sensor...",
                                 size = 7)
                         ),
-                        #shiny::wellPanel(
+
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
                             label = tags$h4("Date"),
@@ -361,7 +365,10 @@ ui <- function(request) {
                 # Data explorer
                 shiny::column(
                     width = 10,
-                    shiny::dataTableOutput(
+                    # shiny::dataTableOutput(
+                    #     outputId = "data_explorer"
+                    # )
+                    DT::dataTableOutput(
                         outputId = "data_explorer"
                     )
                 )
