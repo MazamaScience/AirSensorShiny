@@ -4,6 +4,9 @@
 server <-
   function(input, output, session) {
 
+    # Show memory usage on startup
+    memory_debug("Start")
+
     # ----- Reactive Controls --------------------------------------------------
 
     # Define active user selections
@@ -266,7 +269,8 @@ server <-
 
           shiny_leaflet(
             pas = valid_sensors,
-            parameter = "pm25_current",maptype = "Stamen.TonerLite",#"CartoDB.Positron",
+            parameter = "pm25_current",
+            maptype = "Stamen.TonerLite",#"CartoDB.Positron",
             paletteName = "PuBu"#"Spectral" #"Purple"
           )
 
@@ -290,13 +294,14 @@ server <-
           if ( plotType == "daily_plot" ) {
 
             result <-
-              try({plot <-
-                shiny_barplot(
-                  pat,
-                  period = "1 day",
-                  startdate = dates[1],
-                  enddate = dates[2]
-                )}, silent = TRUE )
+              try({
+                plot <-
+                  shiny_barplot(
+                    pat,
+                    period = "1 day",
+                    startdate = dates[1],
+                    enddate = dates[2]
+                  )}, silent = TRUE )
 
           }  else if ( plotType == "hourly_plot" ) {
 
@@ -370,6 +375,8 @@ server <-
             }
 
           })
+
+          memory_debug("Calendar")
 
           return(calendar)
         })
@@ -529,6 +536,8 @@ server <-
 
           })
 
+          memory_debug("Rose Plot")
+
         })
 
       }
@@ -553,11 +562,10 @@ server <-
           url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
 
           tags$video(
-            id="video2",
+            id="video",
             type = "video/mp4",
             src = url,
-            controls = "controls",
-            loop = TRUE
+            controls = "controls"
           )
 
         })
@@ -597,15 +605,15 @@ server <-
     renderDataExplorer <-
       function() {
 
-        shiny::renderDataTable({
+        DT::renderDataTable({
 
-          handleError(
-            AirSensor::pat_isPat(active$pat),
-            "Please select a sensor."
-          )
-
+          # handleError(
+          #   AirSensor::pat_isPat(active$pat),
+          #   "Please select a sensor."
+          # )
+          #
           req(active$pat)
-
+          #
           showLoad(shiny::incProgress(0.7))
 
           # Remove unecessary columns
@@ -616,6 +624,12 @@ server <-
                             "PM2.5 Ch. B (\u03bcg / m\u00b)",
                             "Temperature (F)",
                             "Relative Humidity (%)" )
+
+          data <-
+            DT::datatable(data, selection = "none") %>%
+            DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+
+          memory_debug("Data Explorer")
 
           return(data)
 
@@ -896,7 +910,7 @@ server <-
           # If load is successful -> add monitor to map
           if ( !"try-error" %in% class(nearestMonitor) ) {
 
-            lab_ws <-  nearestMonitor$meta$monitorID
+            lab_ws <-  nearestMonitor$meta$siteName
             lat_ws <-  nearestMonitor$meta$latitude
             lng_ws <-  nearestMonitor$meta$longitude
 
@@ -941,80 +955,81 @@ server <-
         }
 
       }
-
-    # (f)unction query the url
-    fquery <-
-      function() {
-        shiny::reactive({
-          # -- Query list based on url
-          query <-
-            shiny::parseQueryString(session$clientData$url_search)
-
-          # -- Define updates based on query
-          # Update community selection based on query
-          shiny::updateSelectInput(
-            session,
-            inputId = "comm_select",
-            selected = query[["communityId"]]
-          )
-
-          # Update selected tab based on query
-          shiny::updateTabsetPanel(
-            session,
-            inputId = "tab_select",
-            selected = query[["tb"]]
-          )
-
-          # Update selected pas based on query
-          shiny::updateSelectInput(
-            session,
-            inputId = "pas_select",
-            selected = query[["sensorId"]]
-          )
-
-          shiny::updateNavbarPage(
-            session,
-            inputId = "navtab",
-            selected = query[["nav"]]
-          )
-        })
-
-      }
-
-    # Create a (n)ew query string
-    nquery <-
-      function() {
-
-        # Community
-        cComm <- active$communityId
-
-        # Nav tab
-        cNav <- active$navtab
-        # Current tab
-        cTab <- active$tab
-
-        # Current pas select
-        cPas <- active$label
-
-        # -- Define queries to update based on input
-        # Update the community string
-        shiny::updateQueryString(
-          paste0(
-            "?nav=",
-            cNav,
-            "&",
-            "?tb=",
-            cTab,
-            "&",
-            "?communityId=",
-            cComm,
-            "&",
-            "?sensorId=",
-            cPas
-          )
-        )
-
-      }
+    # == DEPRECATED ==
+    # # (f)unction query the url
+    # fquery <-
+    #   function() {
+    #     shiny::reactive({
+    #       # -- Query list based on url
+    #       query <-
+    #         shiny::parseQueryString(session$clientData$url_search)
+    #
+    #       # -- Define updates based on query
+    #       # Update community selection based on query
+    #       shiny::updateSelectInput(
+    #         session,
+    #         inputId = "comm_select",
+    #         selected = query[["communityId"]]
+    #       )
+    #
+    #       # Update selected tab based on query
+    #       shiny::updateTabsetPanel(
+    #         session,
+    #         inputId = "tab_select",
+    #         selected = query[["tb"]]
+    #       )
+    #
+    #       # Update selected pas based on query
+    #       shiny::updateSelectInput(
+    #         session,
+    #         inputId = "pas_select",
+    #         selected = query[["sensorId"]]
+    #       )
+    #
+    #       shiny::updateNavbarPage(
+    #         session,
+    #         inputId = "navtab",
+    #         selected = query[["nav"]]
+    #       )
+    #     })
+    #
+    #   }
+    #
+    # # Create a (n)ew query string
+    # nquery <-
+    #   function() {
+    #
+    #     # Community
+    #     cComm <- active$communityId
+    #
+    #     # Nav tab
+    #     cNav <- active$navtab
+    #     # Current tab
+    #     cTab <- active$tab
+    #
+    #     # Current pas select
+    #     cPas <- active$label
+    #
+    #     # -- Define queries to update based on input
+    #     # Update the community string
+    #     shiny::updateQueryString(
+    #       paste0(
+    #         "?nav=",
+    #         cNav,
+    #         "&",
+    #         "?tb=",
+    #         cTab,
+    #         "&",
+    #         "?communityId=",
+    #         cComm,
+    #         "&",
+    #         "?sensorId=",
+    #         cPas
+    #       )
+    #     )
+    #
+    #   }
+    #
 
     helpText <-
       function() {
@@ -1131,8 +1146,10 @@ server <-
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
+    # LOAD PAT -- VERY IMPORTANT
     # Trigger active pat update based on pas selection, lookback, enddate, exp_label
     shiny::observeEvent(
+      ignoreInit = TRUE, #Ignore init value to avoid startup error
       c( active$label,
          active$lookback,
          active$enddate,
@@ -1156,6 +1173,7 @@ server <-
             duration = 15
           )
         }
+        memory_debug("PAT LOAD")
       }
     )
 
@@ -1188,7 +1206,7 @@ server <-
       shiny::updateSelectInput(
         session,
         inputId = "pas_select",
-        choices = c("Select Sensor...", getPasLabels()),
+        choices = getPasLabels(),
         selected = active$label
 
       )
@@ -1234,39 +1252,82 @@ server <-
       updateLeaf(label = active$label)
     )
 
+    # disable box when not needed on community tab
     shiny::observeEvent(
       active$tab,
       {
         if (active$tab == "anim") {
-          shinyjs::disable("pas_select")
+          #shinyjs::disable("pas_select")
+          shinyjs::hide("pas_select", anim = TRUE)
         } else {
-          shinyjs::enable("pas_select")
+          #shinyjs::enable("pas_select")
+          shinyjs::show("pas_select", anim = TRUE)
         }
       }
     )
+
+    # Update the the labels when switching tabs
+    shiny::observeEvent(
+      active$navtab,
+      {
+        shiny::updateSelectInput(
+          session,
+          inputId = "pas_select",
+          selected = active$label
+        )
+
+        shiny::updateSelectInput(
+          session,
+          inputId = "de_pas_select",
+          selected = active$label
+        )
+
+        shiny::updateSelectInput(
+          session,
+          inputId = "latest_pas_select",
+          selected = active$label
+        )
+      }
+    )
+
+   # Update once if the selected pas is null i.e On Startup
+   # -- Using a random selected pas ATM
+   # shiny::observeEvent(
+   #   eventExpr = {is.null(active$label)}, once = TRUE,ignoreNULL = FALSE,
+   #   handlerExpr = {
+   #     shiny::updateSelectInput(
+   #       session,
+   #       inputId = "pas_select",
+   #       selected = sample(getPasLabels(), 1)
+   #     )
+   #   })
+
+
 
     # ----- Bookmark & Restore -------------------------------------------------
 
     # Exclude inputs for bookmarking
     shiny::setBookmarkExclude(
-      c( "de_date_select_button",
-         "de_help_select",
-         "de_date_select",
-         "de_lookback_select",
-         "de_pas_select",
-         "latest_help_select",
-         "latest_comm_select",
-         "latest_pas_select",
-         "leaflet_zoom",
-         "help_select",
-         "leaflet_marker_mouseover",
-         "loadButton",
-         "leaflet_bounds",
-         "leaflet_marker_mouseout",
-         "date_select_button",
-         "shinyjs-resettable-dySummary_plot",
-         "leaflet_center",
-         "dySummary_plot_date_window"
+      c(isolate(names(input)),
+        "leaflet_zoom",
+        "leaflet_center",
+        "leaflet_bounds",
+        "shiny_leaflet_comparison_groups",
+        "shinyjs-resettable-dySummary_plot",
+        "shiny_leaflet_comparison_center",
+        "shiny_leaflet_comparison_bounds",
+        "dySummary_plot_date_window",
+        "shiny_leaflet_comparison_zoom",
+        "data_explorer_search",
+        "leaflet_click",
+        "data_explorer_rows_current",
+        "data_explorer_rows_all",
+        "data_explorer_cell_clicked",
+        "dySummary_plot_click",
+        "leaflet_marker_click",
+        "data_explorer_state",
+        "leaflet_marker_mouseover",
+        "leaflet_marker_mouseout"
       )
     )
 
@@ -1276,6 +1337,8 @@ server <-
       state$values$pas_select <- active$label
       state$values$date_select <- active$enddate
       state$values$lookback_select <- active$lookback
+      state$values$tab <- active$tab
+      #state$values$nav <- active$navtab
 
     })
 
@@ -1304,9 +1367,22 @@ server <-
         selected = state$values$lookback_select
       )
 
+      # Update nav tab
+      # shiny::updateNavbarPage(
+      #   session,
+      #   inputId = "navtab",
+      #   selected = state$values$nav
+      # )
+
+      # Update tab select
+      shiny::updateTabsetPanel(
+        session,
+        inputId = "tab_select",
+        selected = state$values$tab
+      )
+
       # Redundant but necessary?
       active$lookback <- state$values$lookback_select
-
       active$enddate <- state$values$date_select
 
     })
@@ -1316,6 +1392,14 @@ server <-
       shiny::updateQueryString(url)
       shiny::showBookmarkUrlModal(url)
     })
+
+    # ----- On Flush -----------------------------------------------------------
+    shiny::onStop(
+      function() {
+        memory_debug("ON EXIT")
+        gc(reset = TRUE)
+      }
+    )
 
     # ----- Outputs ------------------------------------------------------------
 
