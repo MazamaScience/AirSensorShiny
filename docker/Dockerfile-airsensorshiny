@@ -93,10 +93,14 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 RUN installGithub.r \
 	MazamaScience/AirMonitorPlots
 
+# Install latest MazmamaCore utils
+RUN installGithub.r \
+	MazamaScience/MazamaCoreUtils
+
 # Copy the AirSensor package to image
-COPY /src/AirSensor_0.4.3.tar.gz /
+COPY /src/AirSensor_0.4.5.tar.gz /
 
 # Install the AirSensor package
-RUN R CMD INSTALL AirSensor_0.4.3.tar.gz
+RUN R CMD INSTALL AirSensor_0.4.5.tar.gz
 
 
