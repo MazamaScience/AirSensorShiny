@@ -6,7 +6,7 @@
 #   /etc/httpd/conf.d/tools.mazamascience.com.conf
 #
 # Proxying instructions from:
-# 
+#
 #   https://support.rstudio.com/hc/en-us/articles/213733868-Running-Shiny-Server-with-a-Proxy
 #
 # Note that we are proxying from the port exposed in the Dockerfile.
@@ -17,7 +17,7 @@
 #  <Proxy *>
 #    Allow from localhost
 #  </Proxy>
-# 
+#
 # RewriteEngine on
 # RewriteCond %{HTTP:Upgrade} =websocket
 # RewriteRule /airsensor-test/(.*) ws://localhost:6709/$1 [P,L]
@@ -38,8 +38,8 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . airsensorshiny 1.3.1 . Han's 2019-09-05 improvements
-VERSION=1.1.2
+# first version . airsensorshiny 1.3.1 . fix docker container logging:
+VERSION=1.3.3
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
@@ -100,4 +100,9 @@ test_error_log:
 test_bounce: test_down test_up
 
 test_reboot: test_down test_build test_up
+
+# AirSensorShiny DOCKER CORE ---------------------------------------------------
+
+airsensorshiny_build:
+	docker build -t mazamasciece/airsensorshiny:$(VERSION) -f Dockerfile-airsensorshiny .
 
