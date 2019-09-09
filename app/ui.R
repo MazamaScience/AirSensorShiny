@@ -244,8 +244,9 @@ ui <- function(request) {
                                     shiny::column(
                                         width = 3,
                                         # Comparison table
-                                        shiny::tableOutput(
-                                            outputId = "comparison_table"
+                                        DT::dataTableOutput(
+                                            outputId = "comparison_table",
+                                            width = "90%"
                                         )
 
                                     )

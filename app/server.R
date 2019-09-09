@@ -705,11 +705,18 @@ server <-
     renderCompTable <-
       function() {
 
-        shiny::renderTable({
+        DT::renderDataTable({
           shiny::req(active$pat)
-          shiny_comparisonTable(active$pat)
+          shiny_comparisonTable(active$pat) %>%
+          DT::datatable(
+              selection = "none",
+              colnames = "",
+              options = list(dom = 't', bSort = FALSE),
+              class = 'cell-border stripe'
+          ) %>%
+          DT::formatRound(columns = 1, digits = 2)
 
-        }, colnames = TRUE, align = "c", bordered = TRUE)
+        })
 
       }
 
@@ -731,7 +738,7 @@ server <-
               DT::datatable(
                 selection = "none",
                 colnames = "",
-                options = list(dom = 't'),
+                options = list(dom = 't', bSort = FALSE),
                 class = 'cell-border stripe'
               ) %>%
               DT::formatRound(columns = 1, digits = 2)
