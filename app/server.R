@@ -237,7 +237,7 @@ server <-
         {
           ed <- lubridate::now(tzone = TIMEZONE)
 
-          sd <- ed - lubridate::ddays(1)
+          sd <- ed - lubridate::ddays(2)
 
           # Get both channels from global pas
           pas <- PAS[grepl(active$label, PAS$label),]

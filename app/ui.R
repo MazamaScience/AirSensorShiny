@@ -29,8 +29,10 @@ ui <- function(request) {
 
         # ----- NavTab 1 -------------------------------------------------------
         shiny::tabPanel(
+            # Pad the top of the page
+            tags$style(type="text/css", "body {padding-top: 70px;}"),
 
-            title = tags$b("Explorer"),
+            title = tags$b("Explore"),
             value = "explore",
 
             shiny::fluidRow(
@@ -65,11 +67,12 @@ ui <- function(request) {
                             inputId = "date_select",
                             label = tags$h4("Date"),
                             value = lubridate::now(),
-                            todayButton = TRUE,
+                            todayButton = FALSE,
                             addon = "none",
                             inline = TRUE,
                             range = FALSE,
-                            minDate = "2018-01-01", width = "100%"
+                            minDate = "2018-01-01",
+                            width = "100%"
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -80,7 +83,7 @@ ui <- function(request) {
                                          "30 Days" = 30 ),
                             justified = TRUE
                         ),
-                        tags$br(),
+                        tags$hr(),
                         tags$h5("Bookmark"),
                         shiny::bookmarkButton(
                             label = tags$small("Share..."),
@@ -110,8 +113,6 @@ ui <- function(request) {
                         icon_on = icon("question-circle", class = "regular"),
                         icon_off = icon("question-circle", class = "solid")
                     ),
-
-
 
                     shiny::htmlOutput(
                         outputId = "help_text"
@@ -146,6 +147,7 @@ ui <- function(request) {
                                         outputId = "leaflet",
                                         height = 400
                                     ),
+                                    tags$hr(),
                                     # Summary Plot
                                     # shiny::plotOutput(
                                     #     outputId = "summary_plot", height = 300
@@ -154,16 +156,16 @@ ui <- function(request) {
                                         "dySummary_plot",
                                         height = 300
                                     )
-                                ),
-                                # Bar plot
-                                shiny::column(
-                                    width = 2,
-                                    style = "margin-top: 0px;",
-                                    shiny::plotOutput(
-                                        outputId = "cal_plot", height = 700,
-                                        width = "100%"
-                                    )
                                 )
+                                # Bar plot
+                                # shiny::column(
+                                #     width = 2,
+                                #     style = "margin-top: 0px;",
+                                #     shiny::plotOutput(
+                                #         outputId = "cal_plot", height = 700,
+                                #         width = "100%"
+                                #     )
+                                # )
 
                             ),
 
@@ -181,7 +183,7 @@ ui <- function(request) {
                                     tags$h4("Raw Data"),
                                     shiny::plotOutput(
                                         outputId = "raw_plot",
-                                        height = "700"
+                                        height = "800"
                                     )
                                 ),
 
@@ -194,6 +196,7 @@ ui <- function(request) {
                                         DT::dataTableOutput(
                                             outputId = "met_table", width = "90%"
                                         ),
+                                        tags$hr(),
                                         tags$h4("Wind Rose Plot"),
                                         shiny::plotOutput(
                                             outputId = "rose_plot"
@@ -243,22 +246,26 @@ ui <- function(request) {
                                         # Comparison table
                                         shiny::tableOutput(
                                             outputId = "comparison_table"
-                                        ),
-                                        # External fit plot
+                                        )
+
+                                    )
+                                ),
+                                tags$hr(),
+                                shiny::fluidRow(
+                                    shiny::column(
+                                        width = 3,
+
                                         shiny::plotOutput(
                                             outputId = "ws_ext"
                                         )
-                                    )
-                                ),
-
-                                shiny::column(
-                                    width = 12,
-                                    # Monitor comparison plot
-                                    shiny::plotOutput(
-                                        outputId = "ws_comp"
+                                    ),
+                                    shiny::column(
+                                        width = 8,
+                                        shiny::plotOutput(
+                                            outputId = "ws_comp"
+                                        )
                                     )
                                 )
-
                             ),
 
                             # --- Video tab ---
@@ -318,7 +325,14 @@ ui <- function(request) {
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
                             label = tags$h4("Date"),
-                            value = lubridate::now()
+                            value = lubridate::now(),
+                            todayButton = FALSE,
+                            addon = "none",
+                            inline = TRUE,
+                            range = FALSE,
+                            minDate = "2018-01-01",
+                            width = "100%"
+
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -502,11 +516,7 @@ ui <- function(request) {
 
             )
 
-        ),
-
-        # ----- Misc -----------------------------------------------------------
-
-        tags$style(type="text/css", "body {padding-top: 70px;}")
+        )
 
     )
 

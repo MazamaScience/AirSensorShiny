@@ -83,7 +83,7 @@ shiny_dySummary <-
             ">75 \u03bcg / m\u00b3" = "#6A367A",
             "55-75 \u03bcg / m\u00b3" = "#8659A5",
             "35-55 \u03bcg / m\u00b3" = "#286096",
-            "12-35 \u03bcg / m\u00b3" ="#118CBA",#"#3b8aff",
+            "12-35 \u03bcg / m\u00b3" ="#118CBA",
             "0-12 \u03bcg / m\u00b3" = "#abe3f4"
           ))
         for ( i in colnames(timeseriesMatrix))
