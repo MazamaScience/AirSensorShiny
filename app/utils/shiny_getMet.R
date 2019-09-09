@@ -17,7 +17,7 @@ shiny_getMet <-
       siteCode <- paste0(closestSite$USAF, "-", closestSite$WBAN)
 
       siteData <-
-        worldmet::importNOAA(code = siteCode, year = year, parallel = FALSE) %>%
+        worldmet::importNOAA(code = siteCode, year = year, parallel = TRUE) %>%
         dplyr::filter(date >= startdate, date <= enddate)
     }, silent = TRUE)
 

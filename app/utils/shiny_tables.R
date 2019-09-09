@@ -44,19 +44,43 @@ shiny_comparisonTable <-
 shiny_metTable <-
   function(metData) {
 
-  if (TRUE)
-    metData <-
-      shiny_getMet("SCSC_33", lubridate::ymd("20190820"), lubridate::ymd("20190827"))
+  # if (TRUE)
+  #   metData <-
+  #     shiny_getMet("SCSC_33", lubridate::ymd("20190820"), lubridate::ymd("20190827"))
 
   metTable <-
     data.frame(
-      mean(metData$wd, na.rm = TRUE),
-      mean(metData$ws, na.rm = TRUE),
-      mean(metData$RH, na.rm = TRUE),
-      mean(metData$air_temp, na.rm = TRUE)
-  )
-  names(metTable) <- c("Wind Direction (deg)", "Wind Speed (m/s)", "Humidity (%)", "Temperature (C)")
 
-  return(metTable)
+      mean(metData$ws, na.rm = TRUE),
+      min(metData$ws, na.rm = TRUE),
+      max(metData$ws, na.rm = TRUE),
+
+      mean(metData$wd, na.rm = TRUE),
+
+      mean(metData$air_temp, na.rm = TRUE),
+      min(metData$air_temp, na.rm = TRUE),
+      max(metData$air_temp, na.rm = TRUE),
+
+      mean(metData$RH, na.rm = TRUE),
+      min(metData$RH, na.rm = TRUE),
+      max(metData$RH, na.rm = TRUE)
+    )
+
+  names(metTable) <-
+    c( "Average Wind Speed (m/s)",
+       "Minimum Wind Speed (m/s)",
+       "Maximum Wind Speed (m/s)",
+
+       "Average Wind Direction (deg)",
+
+       "Average Temperature (C)",
+       "Minimum Temperature (C)",
+       "Maximum Temperature (C)",
+
+       "Average Humidity (%)",
+       "Minimum Humidity (%)",
+       "Maximum Humidity (%)" )
+
+  return(t(metTable))
 
   }

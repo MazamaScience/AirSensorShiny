@@ -135,7 +135,7 @@ ui <- function(request) {
                                 tags$br(),
 
                                 shiny::column(
-                                    width = 10,
+                                    width = 11,
                                     # Plot outputs
                                     leaflet::leafletOutput(
                                         outputId = "leaflet",
@@ -183,15 +183,17 @@ ui <- function(request) {
                                 shiny::column(
                                     width = 4,
                                     shiny::fluidRow(
+
+                                        tags$h4("Additional NOAA Weather Data"),
+
+                                        DT::dataTableOutput(
+                                            outputId = "met_table", width = "90%"
+                                        ),
                                         tags$h4("Wind Rose Plot"),
                                         shiny::plotOutput(
                                             outputId = "rose_plot"
-                                        ),
-                                        tags$h4("Average Weather Data"),
-
-                                        shiny::tableOutput(
-                                            outputId = "met_table"
                                         )
+
                                     )
                                 )
 

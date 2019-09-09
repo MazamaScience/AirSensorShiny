@@ -324,64 +324,64 @@ server <-
         })
 
       }
-
+    # == DEPRECATED ==
     # Render calendar plot
-    renderCalPlot <-
-      function() {
-
-        shiny::renderPlot({
-
-          # Require active label before loading
-          shiny::req(active$label)
-
-          # Create dates from start of year to enddate
-          sd <- lubridate::floor_date(active$enddate, "year")
-          # NOTE: Use last seen date to insure calendar plot has all annual data
-          ed <- lubridate::date(active$pas$lastSeenDate)
-
-          showLoad({
-
-            # Load annual pat to now
-            pat <-
-              try(
-                AirSensor::pat_load(
-                  active$label,
-                  startdate = sd,
-                  enddate = ed
-                )
-              )
-
-            if ( "try-error" %in% class(pat) ) {
-
-              handleError("", "Error: Please select a different sensor.")
-              notify("Data Creation Failed")
-
-            }
-
-            shiny::incProgress(0.65)
-
-            # Calendar plot
-            calendar <-
-              try({
-                AirSensor::pat_calendarPlot(pat, ncol = 2) +
-                  scale_fill_sqamd()
-              })
-
-            if ( "try-error" %in% class(calendar) ) {
-
-              notify("Calendar Creation Failed")
-              handleError("", paste0(active$label, ": Calendar Unavailable"))
-
-            }
-
-          })
-
-          memory_debug("Calendar")
-
-          return(calendar)
-        })
-
-      }
+    # renderCalPlot <-
+    #   function() {
+    #
+    #     shiny::renderPlot({
+    #
+    #       # Require active label before loading
+    #       shiny::req(active$label)
+    #
+    #       # Create dates from start of year to enddate
+    #       sd <- lubridate::floor_date(active$enddate, "year")
+    #       # NOTE: Use last seen date to insure calendar plot has all annual data
+    #       ed <- lubridate::date(active$pas$lastSeenDate)
+    #
+    #       showLoad({
+    #
+    #         # Load annual pat to now
+    #         pat <-
+    #           try(
+    #             AirSensor::pat_load(
+    #               active$label,
+    #               startdate = sd,
+    #               enddate = ed
+    #             )
+    #           )
+    #
+    #         if ( "try-error" %in% class(pat) ) {
+    #
+    #           handleError("", "Error: Please select a different sensor.")
+    #           notify("Data Creation Failed")
+    #
+    #         }
+    #
+    #         shiny::incProgress(0.65)
+    #
+    #         # Calendar plot
+    #         calendar <-
+    #           try({
+    #             AirSensor::pat_calendarPlot(pat, ncol = 2) +
+    #               scale_fill_sqamd()
+    #           })
+    #
+    #         if ( "try-error" %in% class(calendar) ) {
+    #
+    #           notify("Calendar Creation Failed")
+    #           handleError("", paste0(active$label, ": Calendar Unavailable"))
+    #
+    #         }
+    #
+    #       })
+    #
+    #       memory_debug("Calendar")
+    #
+    #       return(calendar)
+    #     })
+    #
+    #   }
 
     # Render Selected mini table
     renderMiniTable <-
@@ -515,6 +515,8 @@ server <-
                 startdate=dates[1],
                 enddate=dates[2]
               )
+
+            active$worldmet <- metData
 
             # filter wind data
             windData <- dplyr::select(metData, c("date", "wd", "ws"))
@@ -714,20 +716,32 @@ server <-
     renderMetTable <-
       function() {
 
-        shiny::renderTable({
+        #shiny::renderTable({
+        DT::renderDataTable({
           showLoad({
             shiny::req(active$pat, active$label)
-            dates <- getDates()
-            metData <- shiny_getMet(active$label, dates[1], dates[2])
+            # dates <- getDates()
+            # metData <- shiny_getMet(active$label, dates[1], dates[2])
+            shiny::req(active$worldmet)
 
-            table <- shiny_metTable(metData)
+            metData <- active$worldmet
+
+            table <-
+              shiny_metTable(metData) %>%
+              DT::datatable(
+                selection = "none",
+                colnames = "",
+                options = list(dom = 't'),
+                class = 'cell-border stripe'
+              ) %>%
+              DT::formatRound(columns = 1, digits = 2)
 
             shiny::incProgress(0.6)
           })
 
           return(table)
 
-        }, bordered = TRUE, align = "c")
+        })
 
       }
 
@@ -742,7 +756,11 @@ server <-
             "Please Select a Sensor."
           )
 
+          showLoad({
+
           shinyjs::reset("dySummary_plot")
+
+          shiny::incProgress(0.7)
 
           result <-
             try({dySummary <- shiny_dySummary(active$pat)}, silent = TRUE)
@@ -751,6 +769,7 @@ server <-
             notify("Summary Failed")
             handleError("", paste0(active$label, ": Failed"))
           }
+          })
 
           return(dySummary)
 
@@ -1413,7 +1432,7 @@ server <-
     output$leaflet <- renderLeaf()
     #output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
     output$dySummary_plot <- renderDygraphSummary()
-    output$cal_plot <- renderCalPlot()
+    # output$cal_plot <- renderCalPlot()
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
