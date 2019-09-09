@@ -64,7 +64,12 @@ ui <- function(request) {
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
                             label = tags$h4("Date"),
-                            value = lubridate::now(), todayButton = TRUE
+                            value = lubridate::now(),
+                            todayButton = TRUE,
+                            addon = "none",
+                            inline = TRUE,
+                            range = FALSE,
+                            minDate = "2018-01-01", width = "100%"
                         ),
 
                         shinyWidgets::radioGroupButtons(

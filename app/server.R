@@ -802,7 +802,7 @@ server <-
           content = function(file) {
 
             pat <- active$pat
-            write.csv(pat$data, file = file)
+            write.csv(pat$data[1:5], file = file)
 
           }
 
