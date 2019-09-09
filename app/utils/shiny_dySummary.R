@@ -4,8 +4,8 @@ shiny_dySummary <-
     parameter = "pm25",
     sampleSize = 5000,
     title = NULL,
-    xlab = NULL,
-    ylab = NULL,
+    # xlab = NULL,
+    # ylab = NULL,
     tlim = NULL,
     rollPeriod = 1,
     showLegend = TRUE,
@@ -64,25 +64,27 @@ shiny_dySummary <-
           dygraphs::dygraph(
             timeseriesMatrix,
             main = title,
-            xlab = xlab,
-            ylab = ylab
+            xlab = "Date",
+            ylab = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)"
           ) %>%
           dygraphs::dyOptions(
-            includeZero = T,
+            includeZero = FALSE,
             strokeWidth = 2,
             useDataTimezone = TRUE,
-            axisLineColor = "white",drawPoints = F
+            axisLineColor = "white",
+            drawPoints = FALSE
           ) %>%
+          dygraphs::dyUnzoom() %>%
           dygraphs::dyAxis(rangePad = 15, name = "x") %>%
           dygraphs::dyLegend(hideOnMouseOut = TRUE, show = "onmouseover")
 
         scaqmd_cols =rev(
           c(
-            "PM2.5: >75" = "#6A367A",
-            "PM2.5: 55-75" = "#8659A5",
-            "PM2.5: 35-55" = "#286096",
-            "PM2.5: 12-35" ="#118CBA",#"#3b8aff",
-            "PM2.5: 0-12" = "#abe3f4"
+            ">75 \u03bcg / m\u00b3" = "#6A367A",
+            "55-75 \u03bcg / m\u00b3" = "#8659A5",
+            "35-55 \u03bcg / m\u00b3" = "#286096",
+            "12-35 \u03bcg / m\u00b3" ="#118CBA",#"#3b8aff",
+            "0-12 \u03bcg / m\u00b3" = "#abe3f4"
           ))
         for ( i in colnames(timeseriesMatrix))
           graph <-
@@ -113,13 +115,13 @@ shiny_dySummary <-
       )
 
     colnames(timeseriesMatrix) <-
-      c( "PM2.5: 0-12",
-         "PM2.5: 12-35",
-         "PM2.5: 35-55",
-         "PM2.5: 55-75",
-         "PM2.5: >75" )[1:length(colnames(timeseriesMatrix))]
-
-    if ( is.null(ylab) )( ylab <- "\u03bcg / m\u00b3" )
+      c( "0-12 \u03bcg / m\u00b3",
+         "12-35 \u03bcg / m\u00b3",
+         "35-55 \u03bcg / m\u00b3",
+         "55-75 \u03bcg / m\u00b3",
+         ">75 \u03bcg / m\u00b3" )[1:length(colnames(timeseriesMatrix))]
+#
+#     if ( is.null(ylab) )( ylab <- paste0(expression("PM "[2.5]),"\u03bcg / m\u00b3" ))
 
 
 
