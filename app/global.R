@@ -105,3 +105,99 @@ PAS$communityRegion[PAS$communityRegion=="SCAN"] <- "Richmond"
 
 # Define global communities
 PAS_COMM <<- na.omit(unique(PAS$communityRegion))
+
+main_helpTxt <<-
+  shiny::HTML(
+  "<small>
+  <p>
+  On this page, you can view all of the air quality sensors deployed through the
+  US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
+  and Empower California Communities on the Use and Applications of
+  Low-cost Air Monitoring Sensors”. The drop down menus above allow you to
+  view individual participating communities or highlight individual sensors
+  within the pre-selected community. You can control the timeframe shown in
+  the bar plot by (1) choosing a date and (2) choosing a number of days to
+  “look back”.
+  </p>
+  <p>
+  The colors on the map illustrate the most recent hourly average PM2.5 value,
+  for each site. The bar plot (below the map), shows the hourly average PM2.5
+  values throughout the selected timeframe, for the selected site/sensor. The
+  calendar plot (to the right of the map) shows the historic daily averages for
+  the selected site/sensor. Note, the same color scale (in the bottom right)
+  defines the colors in the map, bar chart, and calendar plot.
+  </p>
+  </small>"
+  )
+
+comparison_helpTxt <<-
+  shiny::HTML(
+  "<small>
+  <p>
+  Once you select a sensor, the map will display the location of the nearest regulatory
+  monitoring station (or AirNow site), and the plots will provide a comparison of the data
+  from that sensor and the nearest regulatory monitoring site. The time series provides a
+  qualitative comparison of the hourly-averaged data, while the scatter plot provides some
+  additional statistics to better assess this comparison. In terms of the data displayed in the
+  scatter plot – on the horizontal axis (or x-axis) the data from the low-cost air quality sensor
+  is plotted, while on the vertical axis (or y-axis) the data from the regulatory monitoring
+  station (or AirNow site) is plotted.
+  </p>
+  <p>
+  In terms of the statistics shared in the scatterplot, a slope close to 1.0 indicates that the
+  low-cost sensor and the reference reflect similar levels. A slope greater than 1.0 indicates
+  higher values are seen at the regulatory monitoring site and vice versa for a slope of less
+  than 1.0. The intercept can be an indicator of bias, particularly if the slope is close to 1.0,
+  but the intercept is either greater or less than zero. Finally, R2 provides an indication of how
+  well the trends agree between the two sites; an R2 closer to 1.0 indicates more agreement
+  and an R2 closer to 0.0 indicates less agreement.
+  </p>
+  </small>"
+  )
+
+dailyPatterns_helpTxt <<-
+  shiny::HTML(
+  "<small>
+  <p>
+  This tab illustrates the average daily trends for a single sensor using
+  two different plots. The bar plot (on the left) lays out the average PM2.5
+  values for each hour of the day. The “donut” plot (on the right),
+  displays these averages in a circular pattern. Note, for both plots the
+  grey shading indicates nighttime hours and the data used to calculate
+  these averages is based on the time frame selected.
+  </p>
+  </small>"
+  )
+
+raw_helpTxt <<-
+  shiny::HTML(
+  "<small>
+  <p>
+  Here you can view the “raw data” for the selected sensor, during the
+  time frame selected. This data has undergone minimal QA/QC allowing
+  you to view the highest time resolution PM2.5 data from Channel A,
+  Channel B, and the temperature and humidity signals. Also included on
+  this page are some additional meteorological data for the time period
+  of interest and a pollution rose. The meteorological information can
+  help you understand whether any events occurred that might impact
+  the air quality or sensor performance. The pollution rose illustrates the
+  direction the wind was blowing from when various pollutant
+  concentrations were recorded by the selected sensor.
+  </p>
+  </small>"
+  )
+
+animation_helpTxt <<-
+  shiny::HTML(
+  "<small>
+  <p>
+  On this page you can view animations of hourly average PM2.5 mass
+  concentrations changing over time. Choose your community and a time
+  frame and press ‘play’. Using the same color scale as other visualization
+  in the app, purple corresponds to higher levels of PM2.5 and light blue
+  to lower levels. The shading of the time slider indicates day vs. night,
+  with white indicating daytime hours and grey indicating nighttime
+  hours.
+  </p>
+  </small>"
+  )
