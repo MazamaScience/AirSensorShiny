@@ -46,7 +46,7 @@ shiny_dySummary <-
     } else {
       tzone <- unique(pat$meta$timezone)
     }
-
+    ### REPLACE WITH SENSOR
     sensor <- pat_createAirSensor(pat)
 
     # Access time
