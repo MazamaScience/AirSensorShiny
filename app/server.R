@@ -784,6 +784,17 @@ server <-
 
       }
 
+    renderPatternText <-
+      function() {
+
+        shiny::renderText({
+          ed <- active$enddate
+          sd <- lubridate::ymd(active$enddate)-lubridate::days(active$lookback)
+          return(paste0("From ", sd, " to ", ed))
+        })
+
+      }
+
     # ----- Helper functions ---------------------------------------------------
 
     # Handle download button
@@ -1446,6 +1457,8 @@ server <-
     output$comparison_table <- renderCompTable()
     output$ws_ext <- renderExtFit()
     output$ws_comp <- renderMonitorComp()
+    output$pattern_title <- renderPatternText()
+
 
     # - Raw tab -
     output$rose_plot <- renderRose()

@@ -216,6 +216,10 @@ ui <- function(request) {
                                 tags$br(),
                                 tags$h4("Average Daily Patterns"),
 
+                                shiny::textOutput(
+                                    outputId = "pattern_title"
+                                ),
+
                                 shiny::plotOutput(
                                     outputId = "pattern_plot"
                                 )
