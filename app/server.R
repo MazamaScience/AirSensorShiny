@@ -29,7 +29,8 @@ server <-
         latest_community = NULL,
         latest_label = NULL,
         communityId = NULL,
-        help = NULL
+        help = NULL,
+        worldmet = NULL
       )
 
     # Update the active variable with an input variable
