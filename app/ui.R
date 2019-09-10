@@ -9,15 +9,15 @@
 # - Mazama Science
 #
 
-MazamaCoreUtils::logger.debug("----- ui() -----")
+MazamaCoreUtils::logger.debug("------ ui() ------")
 
-# ----- Define UI --------------------------------------------------------------
-#shiny::shinyUI(
+# ------ Define UI -------------------------------------------------------------
+
 ui <- function(request) {
 
     shiny::navbarPage(
 
-        # ----- Nav Bar --------------------------------------------------------
+        # ------ Nav Bar -------------------------------------------------------
         title = tags$b("AirShiny (Beta)"),
         theme = shinythemes::shinytheme("yeti"),
         inverse = TRUE,
@@ -27,7 +27,7 @@ ui <- function(request) {
         position = "fixed-top",
         windowTitle = "AirShiny (Beta)",
 
-        # ----- NavTab 1 -------------------------------------------------------
+        # ------ NavTab 1 ------------------------------------------------------
         shiny::tabPanel(
             # Pad the top of the page
             tags$style(type="text/css", "body {padding-top: 70px;}"),
@@ -37,7 +37,7 @@ ui <- function(request) {
 
             shiny::fluidRow(
 
-                # ----- L Column -----------------------------------------------
+                # ------ L Column ----------------------------------------------
                 shiny::column(
 
                     width = 2,
@@ -120,18 +120,18 @@ ui <- function(request) {
 
                 ),
 
-                # ----- R Column -----------------------------------------------
+                # ------ R Column ----------------------------------------------
                 shiny::column(
                     width = 10,
 
                     shiny::fluidRow(
 
-                        # ---- Tabs ----
+                        # ----- Tabs -----
                         shiny::tabsetPanel(
                             type = "tabs",
                             id = "tab_select",
 
-                            # --- Overview Tab ---
+                            # ---- Overview Tab ----
                             shiny::tabPanel(
 
                                 title = tags$b("Overview"),
@@ -169,7 +169,7 @@ ui <- function(request) {
 
                             ),
 
-                            # --- Raw data tab ---
+                            # ---- Raw data tab ----
                             shiny::tabPanel(
                                 title = tags$b("Raw Data"),
                                 icon = shiny::icon("database"),
@@ -194,7 +194,8 @@ ui <- function(request) {
                                         tags$h4("Additional NOAA Weather Data"),
 
                                         DT::dataTableOutput(
-                                            outputId = "met_table", width = "90%"
+                                            outputId = "met_table",
+                                            width = "90%"
                                         ),
                                         tags$hr(),
                                         tags$h4("Wind Rose Plot"),
@@ -207,7 +208,7 @@ ui <- function(request) {
 
                             ),
 
-                            # --- Daily patterns tab ---
+                            # ----- Daily patterns tab -----
                             shiny::tabPanel(
                                 title = tags$b("Daily Patterns"),
                                 icon = shiny::icon("chart-bar"),
@@ -221,59 +222,44 @@ ui <- function(request) {
                                 ),
 
                                 shiny::plotOutput(
-                                    outputId = "pattern_plot"
+                                    outputId = "pattern_plot",
+                                    width = "90%"
                                 )
-
                             ),
 
-                            # --- Compare tab ---
+                            # ----- Compare tab -----
                             shiny::tabPanel(
                                 title = tags$b("Compare"),
                                 icon = shiny::icon("project-diagram"),
                                 value = "comp",
-
                                 tags$br(),
-
                                 shiny::fluidRow(
-
                                     shiny::column(
-                                        width = 9,
-                                        # Comparison Leaflet
+                                        width = 4,
                                         leaflet::leafletOutput(
-                                            outputId = "shiny_leaflet_comparison",
-                                            height = 400
-                                        )
-                                    ),
-
-                                    shiny::column(
-                                        width = 3,
-                                        # Comparison table
+                                            outputId = "shiny_leaflet_comparison"#,
+                                            # height = 420,
+                                            # width = 420
+                                        ),
+                                        tags$hr(),
                                         DT::dataTableOutput(
-                                            outputId = "comparison_table",
-                                            width = "90%"
-                                        )
-
-                                    )
-                                ),
-                                tags$hr(),
-                                shiny::fluidRow(
-                                    shiny::column(
-                                        width = 3,
-
-                                        shiny::plotOutput(
-                                            outputId = "ws_ext"
+                                            outputId = "comparison_table"
                                         )
                                     ),
                                     shiny::column(
-                                        width = 8,
+                                        width = 5,
                                         shiny::plotOutput(
                                             outputId = "ws_comp"
+                                        ),
+                                        tags$hr(),
+                                        shiny::plotOutput(
+                                            outputId = "ws_ext"
                                         )
                                     )
                                 )
                             ),
 
-                            # --- Video tab ---
+                            # ---- Video tab ----
                             shiny::tabPanel(
                                 title = tags$b("Community Timelapse"),
                                 icon = shiny::icon("file-video"),
@@ -285,25 +271,20 @@ ui <- function(request) {
                                     outputId = "video_out"
                                 )
                             )
-
                         )
-
                     )
-
                 )
-
             )
-
         ),
 
-        # ----- NavTab 2 -------------------------------------------------------
+        # ------ NavTab 2 ------------------------------------------------------
 
         shiny::tabPanel(
 
             title = tags$b("Data Viewer"),
             value = "dataview",
             shiny::fluidRow(
-                # ----- L Column -----------------------------------------------
+                # ------ L Column ----------------------------------------------
                 shiny::column(
 
                     width = 2,
@@ -343,7 +324,9 @@ ui <- function(request) {
                         shinyWidgets::radioGroupButtons(
                             inputId = "de_lookback_select",
                             label = tags$h4("View Past"),
-                            choices = c("3 Days" = 3, "7 Days" = 7, "30 Days" = 30),
+                            choices = c( "3 Days" = 3,
+                                         "7 Days" = 7,
+                                         "30 Days" = 30 ),
                             justified = TRUE
                         ),
 
@@ -401,7 +384,7 @@ ui <- function(request) {
             )
         ),
 
-        # ----- NavTab 3 -------------------------------------------------------
+        # ------ NavTab 3 ------------------------------------------------------
 
         shiny::tabPanel(
 
@@ -480,7 +463,7 @@ ui <- function(request) {
             )
         ),
 
-        # ----- NavTab 4 -------------------------------------------------------
+        # ------ NavTab 4 ------------------------------------------------------
 
         shiny::tabPanel(
 
