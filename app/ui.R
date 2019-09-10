@@ -191,17 +191,21 @@ ui <- function(request) {
                                     width = 4,
                                     shiny::fluidRow(
 
-                                        tags$h4("Additional NOAA Weather Data"),
-
-                                        DT::dataTableOutput(
-                                            outputId = "met_table",
-                                            width = "90%"
-                                        ),
-                                        tags$hr(),
-                                        tags$h4("Wind Rose Plot"),
                                         shiny::plotOutput(
-                                            outputId = "rose_plot"
+                                            outputId = "ab_comp_plot"
                                         )
+
+                                        # tags$h4("Additional NOAA Weather Data"),
+                                        #
+                                        # DT::dataTableOutput(
+                                        #     outputId = "met_table",
+                                        #     width = "90%"
+                                        # ),
+                                        # tags$hr(),
+                                        # tags$h4("Wind Rose Plot"),
+                                        # shiny::plotOutput(
+                                        #     outputId = "rose_plot"
+                                        # )
 
                                     )
                                 )
@@ -215,15 +219,37 @@ ui <- function(request) {
                                 value = "dp",
 
                                 tags$br(),
-                                tags$h4("Average Daily Patterns"),
 
-                                shiny::textOutput(
-                                    outputId = "pattern_title"
+                                shiny::column(
+                                    width = 8,
+                                    tags$h4("Average Daily Patterns"),
+
+                                    shiny::textOutput(
+                                        outputId = "pattern_title"
+                                    ),
+
+                                    shiny::plotOutput(
+                                        outputId = "pattern_plot",
+                                        width = "90%"
+                                    )
                                 ),
+                                shiny::column(
+                                    width = 4,
+                                    shiny::fluidRow(
 
-                                shiny::plotOutput(
-                                    outputId = "pattern_plot",
-                                    width = "90%"
+                                        tags$h4("Additional NOAA Weather Data"),
+
+                                        DT::dataTableOutput(
+                                            outputId = "met_table",
+                                            width = "90%"
+                                        ),
+                                        tags$hr(),
+                                        tags$h4("Wind Rose Plot"),
+                                        shiny::plotOutput(
+                                            outputId = "rose_plot"
+                                        )
+
+                                    )
                                 )
                             ),
 

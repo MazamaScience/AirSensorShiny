@@ -790,11 +790,28 @@ server <-
 
         shiny::renderText({
           ed <- active$enddate
-          sd <- lubridate::ymd(active$enddate)-lubridate::days(active$lookback)
+          sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
+            lubridate::days(active$lookback)
           return(paste0("From ", sd, " to ", ed))
         })
 
       }
+
+    renderABcompPlot <-
+      function() {
+        shiny::renderPlot({
+
+          result <-
+            try({ plot <- pat_internalFit(pat = active$pat) })
+
+          if ( "try-error" %in% class(result) ) {
+            handleError("", "")
+          }
+
+        })
+
+      }
+
 
     # ----- Helper functions ---------------------------------------------------
 
@@ -1278,6 +1295,16 @@ server <-
       # Watch the active variables to update the URL
       # nquery()
 
+      # Popup notifcation if sensor is not selected
+      if (active$label == "" & active$tab != "main") {
+        shinyWidgets::sendSweetAlert(
+          session,
+          title = "Please Select a Sensor",
+          type="warning",
+          closeOnClickOutside = TRUE
+        )
+      }
+
     })
 
     # Trigger leaflet update based on marker and pas selections, and tab change
@@ -1327,6 +1354,22 @@ server <-
         )
       }
     )
+
+    # Popup warning if sensor is not selected
+    # shiny::observe(
+    #   ignoreInit = T,
+    #   ignoreNULL = F,
+    #   {
+    #     if (active$label == "" & active$tab != "main") {
+    #       shinyWidgets::sendSweetAlert(
+    #         session,
+    #         title = "Select a Sensor",
+    #         type="warning",
+    #         closeOnClickOutside = TRUE
+    #       )
+    #     }
+    #   }
+    # )
 
    # Update once if the selected pas is null i.e On Startup
    # -- Using a random selected pas ATM
@@ -1394,7 +1437,8 @@ server <-
       shinyWidgets::updateAirDateInput(
         session,
         inputId = "date_select",
-        value = lubridate::ymd(state$values$date_select) + lubridate::days(1),
+        value = lubridate::ymd(state$values$date_select, tz = TIMEZONE) +
+          lubridate::days(1),
         clear = TRUE,
       )
 
@@ -1465,6 +1509,7 @@ server <-
     output$rose_plot <- renderRose()
     output$raw_plot <- renderMultiplot(columns = 1)
     output$met_table <- renderMetTable()
+    output$ab_comp_plot <- renderABcompPlot()
 
     # - Animation tab -
     output$video_out <- renderVideo()
