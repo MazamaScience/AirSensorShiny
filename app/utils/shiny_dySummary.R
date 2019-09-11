@@ -1,34 +1,21 @@
 shiny_dySummary <-
   function(
-    pat = NULL,
+    sensor = NULL,
+    startdate = NULL,
+    enddate = NULL,
     parameter = "pm25",
     sampleSize = 5000,
     title = NULL,
-    # xlab = NULL,
-    # ylab = NULL,
     tlim = NULL,
     rollPeriod = 1,
     showLegend = TRUE,
     colors = NULL
   ) {
 
-    # Remove any duplicate data records
-    pat <- pat_distinct(pat)
-
-    # ----- Reduce large datasets by sampling ------------------------------------
-
-    if ( !is.null(sampleSize) ) {
-
-      if ( sampleSize > 1 ) {
-        pat <-
-          pat %>%
-          pat_sample(sampleSize = sampleSize)
-      } else {
-        pat <-
-          pat %>%
-          pat_sample(sampleFraction = sampleSize)
-      }
-
+    # Checks
+    if ( PWFSLSmoke::monitor_isMonitor(sensor) ||
+            PWFSLSmoke::monitor_isEmpty(sensor) ) {
+      warning("Invalid Monitor")
     }
 
     # Convert tlim to POSIXct
@@ -39,18 +26,21 @@ shiny_dySummary <-
     }
 
     # Set timezone
-    tzCount <- length(unique(pat$meta$timezone))
+    tzCount <- length(unique(sensor$meta$timezone))
     if (tzCount > 1) {
       warning(paste0(tzCount, " timezones found. Using UTC time."))
       tzone <- "UTC"
     } else {
-      tzone <- unique(pat$meta$timezone)
+      tzone <- unique(sensor$meta$timezone)
     }
-    ### REPLACE WITH SENSOR
-    sensor <- pat_createAirSensor(pat)
+
+    sensor <-
+      PWFSLSmoke::monitor_subset(
+      sensor,
+      tlim = c(startdate, enddate)
+    )
 
     # Access time
-
     datetime <- sensor$data[[1]]
     label <- names(sensor$data)[2]
 
@@ -105,7 +95,6 @@ shiny_dySummary <-
 
     }
 
-
     timeseriesMatrix <-
       cbind( groups[[1]],
              groups[[2]],
@@ -120,10 +109,6 @@ shiny_dySummary <-
          "35-55 \u03bcg / m\u00b3",
          "55-75 \u03bcg / m\u00b3",
          ">75 \u03bcg / m\u00b3" )[1:length(colnames(timeseriesMatrix))]
-#
-#     if ( is.null(ylab) )( ylab <- paste0(expression("PM "[2.5]),"\u03bcg / m\u00b3" ))
-
-
 
     return( makeGraph(timeseriesMatrix) )
 
