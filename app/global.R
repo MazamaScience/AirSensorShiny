@@ -24,7 +24,6 @@ for ( file in R_utils ) {
   source( file.path(getwd(),file) )
 }
 
-
 # ----- Set up logging ---------------------------------------------------------
 
 if ( interactive() ) { # Running from RStudio
@@ -54,6 +53,11 @@ logger.debug("LOG_DIR = %s", LOG_DIR)
 
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+
+
+# Load SENSORS
+SENSORS <<- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
+
 
 # Helpful conversion list
 CommunityById <- list(
@@ -95,12 +99,15 @@ IdByCommunity <- list(
 TIMEZONE <<- "America/Los_Angeles"
 
 # Define global pas object
-PAS <<- AirSensor::pas_load(archival = TRUE) # TODO:  Should we add "archival = TRUE"?
+PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"?
 
 # NOTE: These are intended to be temporary "translations"
-PAS$communityRegion[PAS$communityRegion=="SCAH"] <- "Oakland"
-PAS$communityRegion[PAS$communityRegion=="SCUV"] <- "West Los Angeles"
-PAS$communityRegion[PAS$communityRegion=="SCAN"] <- "Richmond"
+PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAH"] <- "Oakland"
+PAS$communityRegion[PAS$communityRegion=="SCUV"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
+PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAN"] <- "Richmond"
 
 
 # Define global communities
