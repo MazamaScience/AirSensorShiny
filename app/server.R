@@ -30,7 +30,8 @@ server <-
         latest_label = NULL,
         communityId = NULL,
         help = NULL,
-        worldmet = NULL
+        worldmet = NULL,
+        sensor = NULL
       )
 
     # Update the active variable with an input variable
@@ -38,12 +39,20 @@ server <-
       function(update, with) active[[update]] <- input[[with]][1]
 
     # Update active pas and label
+    # Update active sensor
     shiny::observeEvent(
       label = "pas update",
       input$pas_select,
       {
         updateActive("label", "pas_select")
         active$pas <- PAS[grepl(active$label, PAS$label),][1,]
+
+        active$sensor <-
+          PWFSLSmoke::monitor_subset(
+            ws_monitor = SENSORS,
+            monitorIDs = active$label,
+            timezone = TIMEZONE
+          )
       }
     )
 
@@ -651,11 +660,17 @@ server <-
           )
           req(active$pat)
 
+          dates <- getDates()
+
           showLoad({
 
             shiny::incProgress(0.7)
 
-            shiny_diurnalPattern(active$pat)
+            shiny_diurnalPattern(
+              sensor = active$sensor,
+              startdate = dates[1],
+              enddate = dates[2]
+            )
 
 
           })
@@ -770,8 +785,10 @@ server <-
 
           shiny::incProgress(0.7)
 
+          dates <- getDates()
+
           result <-
-            try({dySummary <- shiny_dySummary(active$pat)}, silent = TRUE)
+            try({dySummary <- shiny_dySummary(sensor = active$sensor, startdate = dates[1], enddate = dates[2])}, silent = TRUE)
 
           if ( "try-error" %in% class(result) ) {
             notify("Summary Failed")
