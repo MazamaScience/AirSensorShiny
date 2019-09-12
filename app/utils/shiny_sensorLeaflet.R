@@ -36,7 +36,7 @@ shiny_sensorLeaflet <- function(
   enddate = NULL,
   colorPalette = NULL,
   colorBins = NULL,
-  radius = 9,
+  radius = 8,
   opacity = 0.8,
   maptype = "terrain"
 ) {
@@ -155,10 +155,13 @@ shiny_sensorLeaflet <- function(
       fillColor=cols,
       fillOpacity=opacity,
       stroke=TRUE,
-      color = "#77A4B2",
+      color = "#5863f8",
       weight = "1",
-      label = sensor$meta$label,
-      layerId = sensor$meta$label
+      label = ~monitorID,
+      layerId = sensor$meta$monitorID,
+      options = leaflet::markerOptions(riseOnHover = TRUE,
+                                       interactive = TRUE,
+                                       keyboard = TRUE)
     )
 
   # ----- Return ---------------------------------------------------------------

@@ -276,13 +276,23 @@ server <-
 
           valid_sensors <-
             sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
-
-          shiny_leaflet(
-            pas = valid_sensors,
-            parameter = "pm25_current",
-            maptype = "Stamen.TonerLite",#"CartoDB.Positron",
-            paletteName = "PuBu"#"Spectral" #"Purple"
+#
+#           shiny_leaflet(
+#             pas = valid_sensors,
+#             parameter = "pm25_current",
+#             maptype = "Stamen.TonerLite",#"CartoDB.Positron",
+#             paletteName = "PuBu"#"Spectral" #"Purple"
+#           )
+          dates <- getDates()
+          leaf <-
+            shiny_sensorLeaflet(
+            sensor = SENSORS,
+            startdate = dates[1],
+            enddate = dates[2],
+            maptype = "Stamen.TonerLite"
           )
+
+          return(leaf)
 
         })
 
@@ -925,7 +935,8 @@ server <-
               radius = 11,
               fillOpacity = 0,
               layerId = "selectTmp",
-              options = leaflet::pathOptions(interactive = FALSE)
+              color = "#963484",
+              options = list(leaflet::pathOptions(interactive = FALSE))
             ) %>%
             leaflet::addPopups(
               lng,
@@ -959,6 +970,7 @@ server <-
               group = "pas_markers",
               options = leaflet::pathOptions(interactive = FALSE),
               label = lab_pas,
+              color = "#963484",
               labelOptions = leaflet::labelOptions(
                 noHide = TRUE,
                 direction = "top"
