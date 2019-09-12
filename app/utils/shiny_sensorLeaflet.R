@@ -34,15 +34,27 @@ shiny_sensorLeaflet <- function(
   sensor = NULL,
   startdate = NULL,
   enddate = NULL,
-  period = "3 day",
+  colorPalette = NULL,
+  colorBins = NULL,
   radius = 9,
   opacity = 0.8,
   maptype = "terrain"
 ) {
 
-  # TODO: ADD Checks and test for sensor object
+  # ----- Validate parameters --------------------------------------------------
 
-  # Extract view information
+  MazamaCoreUtils::stopIfNull(sensor)
+
+  if ( !sensor_isSensor(sensor) ) {
+    stop("Parameter 'sensor' is not a sensor object.")
+  }
+
+  if ( sensor_isEmpty(sensor) ) {
+    stop("Parameter 'sensor' contains no data.")
+  }
+
+  # ----- Get map parameters ---------------------------------------------------
+
   lonRange <- range(sensor$meta$longitude, na.rm = TRUE)
   latRange <- range(sensor$meta$latitude, na.rm = TRUE)
   maxRange <- max(diff(lonRange), diff(latRange), na.rm = TRUE)
@@ -68,22 +80,6 @@ shiny_sensorLeaflet <- function(
     zoom <- 12
   }
 
-  # sensor <- shiny_sensorMeanAggregate(sensor, period)
-  #
-  # sensor$meta$x_mean <- t(sensor$data[nrow(sensor$data)-1,][c(-1)])
-
-  # sensor <- PWFSLSmoke::monitor_subset(ws_monitor = sensor, tlim = c(startdate, enddate))
-
-  # colBreaks <- purrr::map(sensor$data[c(-1)], cut, breaks = c(0,12,35,55,75,6000))
-#
-#   binpal <- leaflet::colorNumeric(palette = c(
-#     ">75 \u03bcg / m\u00b3" = "#6A367A",
-#     "55-75 \u03bcg / m\u00b3" = "#8659A5",
-#     "35-55 \u03bcg / m\u00b3" = "#286096",
-#     "12-35 \u03bcg / m\u00b3" ="#118CBA",
-#     "0-12 \u03bcg / m\u00b3" = "#abe3f4"
-#   ), sensor$meta$x_mean)
-
   # Convert maptype to a character string that addProviderTiles can read
   if ( missing(maptype) || maptype == 'terrain') {
     providerTiles <- "Esri.WorldTopoMap"
@@ -97,6 +93,44 @@ shiny_sensorLeaflet <- function(
     providerTiles <- maptype
   }
 
+  # ----- Generate colors ------------------------------------------------------
+
+  # Calcualte average value per sensor
+  mean_pm25 <-
+    sensor %>%
+    sensor_filterDate(startdate, enddate) %>%
+    sensor_extractData() %>%
+    dplyr::select(-datetime) %>%
+    colMeans(na.rm = TRUE)
+
+  # Default bins
+  if ( is.null(colorBins) ) {
+    colorBins <- c(0,12,35,55,75,1000)
+    # -OR- a gradient as in AirSensor::sensor_createVideoFrame.R
+    # colorBins <- c(0,
+    #                seq(0,12,length.out=5)[-1],
+    #                seq(12,35,length.out=5)[-1],
+    #                seq(35,55,length.out=5)[-1],
+    #                seq(55,75,length.out=5)[-1],
+    #                100,200,500,1000)
+  }
+
+  # Default colors
+  if ( is.null(colorPalette) ) {
+    scaqmd_colors <- c("#abe3f4", "#118cba", "#286096", "#8659a5", "#6a367a")
+    colorPalette <- grDevices::colorRampPalette(scaqmd_colors)(length(colorBins)-1)
+  }
+
+  # Generate color function
+  colorFunc <- leaflet::colorBin(palette = colorPalette,
+                                 domain = range(colorBins),
+                                 bins = colorBins)
+
+  # Assign colors
+  cols <- colorFunc(mean_pm25)
+
+  # ----- Create the SPDF ------------------------------------------------------
+
   SPDF <-
     sp::SpatialPointsDataFrame(
       data = as.data.frame(sensor$meta),
@@ -106,7 +140,8 @@ shiny_sensorLeaflet <- function(
       )
     )
 
-  # Create leaflet map
+  # ----- Create the map -------------------------------------------------------
+
   map <-
     leaflet::leaflet(SPDF) %>%
     leaflet::setView(
@@ -116,16 +151,44 @@ shiny_sensorLeaflet <- function(
     ) %>%
     leaflet::addProviderTiles(providerTiles) %>%
     leaflet::addCircleMarkers(
-      radius=5,#radius,
-      #fillColor=cols,
-      fillOpacity=1,
+      radius=radius,
+      fillColor=cols,
+      fillOpacity=opacity,
       stroke=TRUE,
-      color = ~binpal(x_mean),#"#77A4B2",
+      color = "#77A4B2",
       weight = "1",
       label = sensor$meta$label,
       layerId = sensor$meta$label
     )
 
+  # ----- Return ---------------------------------------------------------------
+
   return(map)
+
+}
+
+# ===== DEBUGGING ==============================================================
+
+if ( FALSE ) {
+
+  setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+
+  enddate <- MazamaCoreUtils::parseDatetime("2019-07-06",
+                                            timezone = "America/Los_Angeles")
+  startdate <- enddate - lubridate::ddays(3)
+  sensor = sensor_load(startdate = startdate, enddate = enddate)
+  colorPalette <- NULL
+  colorBins <- NULL
+  radius <- 9
+  opacity <- 0.8
+  maptype <- "terrain"
+
+  map <- shiny_sensorLeaflet(
+    sensor = sensor,
+    startdate = startdate,
+    enddate = enddate
+  )
+
+  print(map)
 
 }
