@@ -458,9 +458,9 @@ server <-
 
         shiny::renderPlot({
 
-          req(active$pat)
+          req(active$sensor)
 
-          shiny_externalFit(active$pat)
+          shiny_externalFit(sensor = active$sensor)
 
         })
 
