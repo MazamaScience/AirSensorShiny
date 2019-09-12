@@ -198,14 +198,20 @@ server <-
 
         # NOTE: Remove any pas with no def community & contains B & inside
         if ( community == "all" ) {
-          return(PAS$label[!is.na(PAS$communityRegion) &
-                             !grepl("(<?\\sB)$", PAS$label) &
-                             PAS$DEVICE_LOCATIONTYPE != "inside"])
+
+          sensors <- SENSORS$meta$monitorID
+
         } else {
-          return(PAS$label[grepl(community, PAS$communityRegion) &
-                             !grepl("(<?\\sB)$", PAS$label) &
-                             PAS$DEVICE_LOCATIONTYPE != "inside"])
+
+          sensors <-
+            SENSORS$meta$monitorID[
+              grepl(
+                community,
+                SENSORS$meta$communityRegion
+              )
+            ]
         }
+        return(sensors)
 
       }, label = "get pas labels")
 
@@ -222,21 +228,19 @@ server <-
 
         # NOTE: ifelse function does not work here...
         if ( community == "all" )  {
-          pas <- PAS[!is.na(PAS$communityRegion) &
-                       !grepl("(<?\\sB)$", PAS$label) &
-                       PAS$DEVICE_LOCATIONTYPE != "inside",]
+          sensors <- SENSORS
+
         } else {
-          pas <- PAS[grepl(community, PAS$communityRegion),]
+
+          labels <-
+            SENSORS$meta$monitorID[grepl(community, SENSORS$meta$communityRegion)]
+
+          sensors <- PWFSLSmoke::monitor_subset(ws_monitor = SENSORS,
+                                                monitorIDs = labels)
+
         }
 
-        pas$label <-
-          stringr::str_split(
-            string = pas$label,
-            pattern = " ",
-            simplify = TRUE
-          )[,1]
-
-        return(pas)
+        return(sensors)
 
       }, label = "get community sensors")
 
@@ -270,13 +274,7 @@ server <-
         leaflet::renderLeaflet({
 
           sensors <- getCommunitySensors()
-
-          # Use the defined pas_valid_choices to apply filters if needed
-          # i.e: remove any PAS that contains "Indoor" in its label
-
-          valid_sensors <-
-            sensors[which(!stringr::str_detect(sensors$label, "[Indoor]")),]
-#
+            # == DEPRECATED ==
 #           shiny_leaflet(
 #             pas = valid_sensors,
 #             parameter = "pm25_current",
@@ -286,7 +284,7 @@ server <-
           dates <- getDates()
           leaf <-
             shiny_sensorLeaflet(
-            sensor = SENSORS,
+            sensor = sensors,
             startdate = dates[1],
             enddate = dates[2],
             maptype = "Stamen.TonerLite"
@@ -798,7 +796,14 @@ server <-
           dates <- getDates()
 
           result <-
-            try({dySummary <- shiny_dySummary(sensor = active$sensor, startdate = dates[1], enddate = dates[2])}, silent = TRUE)
+            try({
+              dySummary <-
+                shiny_dySummary(
+                  sensor = active$sensor,
+                  startdate = dates[1],
+                  enddate = dates[2]
+                )
+            }, silent = TRUE)
 
           if ( "try-error" %in% class(result) ) {
             notify("Summary Failed")
