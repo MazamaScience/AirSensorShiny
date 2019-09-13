@@ -6,8 +6,8 @@ FROM rocker/shiny:3.6.0
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
 
-LABEL build_date="2019-08-20"
-LABEL version="1.3.3"
+LABEL build_date="2019-08-12"
+LABEL version="1.3.4"
 
 LABEL description="AirShiny Docker Image"
 
@@ -86,7 +86,6 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	worldmet \
 	remotes \
 	shinyWidgets \
-	shinyjs \
 	DT
 
 # Install AirMonitorPlots
@@ -98,9 +97,9 @@ RUN installGithub.r \
 	MazamaScience/MazamaCoreUtils
 
 # Copy the AirSensor package to image
-COPY /src/AirSensor_0.4.5.tar.gz /
+COPY /src/AirSensor_0.4.9.tar.gz /
 
 # Install the AirSensor package
-RUN R CMD INSTALL AirSensor_0.4.5.tar.gz
+RUN R CMD INSTALL AirSensor_0.4.9.tar.gz
 
 
