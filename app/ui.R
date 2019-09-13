@@ -46,6 +46,11 @@ ui <- function(request) {
 
                         shinyjs::useShinyjs(),
 
+                        shinybusy::add_busy_bar(
+                            color = "#006687",
+                            centered = TRUE
+                        ),
+
                         shinyWidgets::pickerInput(
                             inputId = "comm_select",
                             label = tags$h4("Community"),
@@ -65,24 +70,37 @@ ui <- function(request) {
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
-                            label = tags$h4("Date"),
-                            value = lubridate::now(),
+                            label = tags$h4("Date Range"),
+                            value = c(lubridate::now()-lubridate::days(5),
+                                      lubridate::now()),
                             todayButton = FALSE,
                             addon = "none",
                             inline = TRUE,
-                            range = FALSE,
-                            minDate = "2018-01-01",
-                            width = "100%"
+                            separator = " to ",
+                            range = TRUE,
+                            width = "100%",
+                            maxDate = lubridate::now(tzone = TIMEZONE),
+                            minDate = lubridate::ymd(20180102)
                         ),
 
-                        shinyWidgets::radioGroupButtons(
-                            inputId = "lookback_select",
-                            label = tags$h4("View Past"),
-                            choices = c( "3 Days" = 3,
-                                         "7 Days" = 7,
-                                         "30 Days" = 30 ),
-                            justified = TRUE
-                        ),
+                        # shiny::dateRangeInput(
+                        #     inputId = "date_select",
+                        #     label = "Date",
+                        #     start = "2001-01-01",
+                        #     end   = "2010-12-31"
+                        # ),
+
+                        # shinyWidgets::radioGroupButtons(
+                        #     inputId = "lookback_select",
+                        #     label = tags$h4("View Past"),
+                        #     choices = c( "3 Days" = 3,
+                        #                  "7 Days" = 7,
+                        #                  "15 Days" = 15,
+                        #                  "30 Days" = 30 ),
+                        #     justified = T, direction = "vertical",
+                        #     individual = F
+                        # ),
+
                         tags$hr(),
                         tags$h5("Bookmark"),
                         shiny::bookmarkButton(

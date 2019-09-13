@@ -66,18 +66,42 @@ server <-
       }
     )
 
-    # Update active enddate
-    shiny::observeEvent(
-      label = "date update",
-      input$date_select,
-      updateActive("enddate", "date_select")
-    )
-
     # Update active lookback days
     shiny::observeEvent(
       label = "lookback update",
       input$lookback_select,
       updateActive("lookback", "lookback_select")
+    )
+
+    # Update active enddate
+    shiny::observeEvent(
+      label = "date update",
+      input$date_select[2],
+      {
+        active$enddate <- input$date_select[2]
+        # active$startdate <- input$date_select[1]
+        # shinyWidgets::updateAirDateInput(
+        #   session,
+        #   inputId = "date_select",
+        #   options = list(minDate = lubridate::ymd(isolate(active$enddate)) - lubridate::days(30))
+        # )
+      }
+      # updateActive("enddate", "date_select")
+    )
+    # Update active enddate
+    shiny::observeEvent(
+      label = "date update",
+      input$date_select[1],
+      {
+        active$startdate <- input$date_select[1]
+        # active$startdate <- input$date_select[1]
+        # shinyWidgets::updateAirDateInput(
+        #   session,
+        #   inputId = "date_select",
+        #   options = list(minDate = lubridate::ymd(active$enddate) - lubridate::days(30))
+        # )
+      }
+      # updateActive("enddate", "date_select")
     )
 
     # Update active marker with main leaflet
@@ -177,8 +201,10 @@ server <-
     getDates <-
       shiny::reactive({
 
-        sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-          lubridate::ddays(as.numeric(active$lookback))
+        # sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
+        #   lubridate::ddays(as.numeric(active$lookback))
+
+        sd <- lubridate::ymd(active$startdate, tz = TIMEZONE)
 
         ed <- lubridate::ymd(active$enddate, tz = TIMEZONE)
 
@@ -211,6 +237,7 @@ server <-
               )
             ]
         }
+
         return(sensors)
 
       }, label = "get pas labels")
@@ -263,6 +290,9 @@ server <-
               startdate=sd,
               enddate=ed
             )
+
+          return(latest)
+
         }, label = "load latest data from thingspeak")
 
     # ----- Render Handling ----------------------------------------------------
@@ -452,9 +482,11 @@ server <-
 
             shiny::incProgress(0.66)
 
-            AirSensor::pat_monitorComparison(active$pat)
+            compPlot <- AirSensor::pat_monitorComparison(active$pat)
 
           })
+
+          return(compPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
@@ -466,9 +498,11 @@ server <-
 
         shiny::renderCachedPlot({
 
-          req(active$sensor)
+          req(active$sensor, active$label)
 
-          shiny_externalFit(sensor = active$sensor)
+          extPlot <- shiny_externalFit(sensor = active$sensor)
+
+          return(extPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
@@ -489,7 +523,9 @@ server <-
 
           shiny::req(active$pat)
 
-          AirSensor::pat_multiplot(active$pat, columns = columns)
+          multiPlot <- AirSensor::pat_multiplot(active$pat, columns = columns)
+
+          return(multiPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
@@ -602,7 +638,7 @@ server <-
 
           pat <- active$pat
 
-          community <- active$pas$communityRegion
+          community <- active$pat$meta$communityRegion
 
           meta <-
             data.frame(
@@ -674,12 +710,14 @@ server <-
 
             shiny::incProgress(0.7)
 
-            shiny_diurnalPattern(
+            patternPlot <-
+              shiny_diurnalPattern(
               sensor = active$sensor,
               startdate = dates[1],
               enddate = dates[2]
             )
 
+          return(patternPlot)
 
           })
 
@@ -692,10 +730,13 @@ server <-
 
         dygraphs::renderDygraph({
 
-          AirSensor::pat_dygraph(
+          dygraph <-
+            AirSensor::pat_dygraph(
             pat = active$pat,
             sampleSize = NULL
           )
+
+          return(dygraph)
 
         })
 
@@ -712,17 +753,19 @@ server <-
 
             shiny::incProgress(0.666)
 
-            AirSensor::pat_multiplot(
+            auxPlot <-
+              AirSensor::pat_multiplot(
               pat = latest,
               plottype = "all", #"aux",
               sampleSize = NULL,
               columns = 1
             )
 
+            return(auxPlot)
 
           })
 
-        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -731,7 +774,9 @@ server <-
 
         DT::renderDataTable({
           shiny::req(active$pat)
-          shiny_comparisonTable(active$pat) %>%
+
+          compTable <-
+            shiny_comparisonTable(active$pat) %>%
           DT::datatable(
               selection = "none",
               colnames = "",
@@ -739,6 +784,8 @@ server <-
               class = 'cell-border stripe'
           ) %>%
           DT::formatRound(columns = 1, digits = 2)
+
+          return(compTable)
 
         })
 
@@ -822,8 +869,9 @@ server <-
 
         shiny::renderText({
           ed <- active$enddate
-          sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-            lubridate::days(active$lookback)
+          # sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
+          #   lubridate::days(active$lookback)
+          sd <- active$startdate
           return(paste0("From ", sd, " to ", ed))
         })
 
@@ -833,12 +881,16 @@ server <-
       function() {
         shiny::renderCachedPlot({
 
+          shiny::req(active$pat, active$label)
+
           result <-
-            try({ plot <- pat_internalFit(pat = active$pat) })
+            try({ abPlot <- pat_internalFit(pat = active$pat) })
 
           if ( "try-error" %in% class(result) ) {
             handleError("", "")
           }
+
+          return(abPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
@@ -1214,10 +1266,11 @@ server <-
         session,
         inputId = "de_pas_select",
         selected = active$label,
-        choices = c("Select Sensor...",
-                    PAS$label[!is.na(PAS$communityRegion) &
-                                !grepl("(<?\\sB)$", PAS$label) &
-                                PAS$DEVICE_LOCATIONTYPE != "inside"])
+        choices = SENSORS$meta$monitorID
+        # choices = c("Select Sensor...",
+        #             PAS$label[!is.na(PAS$communityRegion) &
+        #                         !grepl("(<?\\sB)$", PAS$label) &
+        #                         PAS$DEVICE_LOCATIONTYPE != "inside"])
       )
 
       # Update latest pas with label
@@ -1239,7 +1292,7 @@ server <-
       # nquery()
 
       # Popup notifcation if sensor is not selected
-      if (active$label == "" & active$tab != "main") {
+      if (active$label == "" & active$tab != "main" & active$tab != "anim") {
         shinyWidgets::sendSweetAlert(
           session,
           title = "Please Select a Sensor",
