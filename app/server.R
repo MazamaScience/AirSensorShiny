@@ -300,7 +300,7 @@ server <-
     renderBarPlot <-
       function(plotType) {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           handleError(
             AirSensor::pat_isPat(active$pat),
@@ -339,7 +339,7 @@ server <-
           } else {
             return(plot)
           }
-        })
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
     # == DEPRECATED ==
@@ -439,7 +439,7 @@ server <-
     renderMonitorComp <-
       function() {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           handleError(
             AirSensor::pat_isPat(active$pat),
@@ -456,7 +456,7 @@ server <-
 
           })
 
-        })
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -464,13 +464,13 @@ server <-
     renderExtFit <-
       function() {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           req(active$sensor)
 
           shiny_externalFit(sensor = active$sensor)
 
-        })
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -478,7 +478,7 @@ server <-
     renderMultiplot <-
       function(columns = NULL) {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           if ( is.null(columns) ) columns <- 2
 
@@ -491,7 +491,7 @@ server <-
 
           AirSensor::pat_multiplot(active$pat, columns = columns)
 
-        })
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -499,7 +499,7 @@ server <-
     renderRose <-
       function() {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           shiny::req(active$label)
 
@@ -558,7 +558,7 @@ server <-
 
           memory_debug("Rose Plot")
 
-        })
+        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -660,7 +660,7 @@ server <-
     renderPatternPlot <-
       function() {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           handleError(
             AirSensor::pat_isPat(active$pat),
@@ -683,7 +683,7 @@ server <-
 
           })
 
-        })
+        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -704,7 +704,7 @@ server <-
     renderAuxPlot <-
       function() {
 
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           showLoad({
 
@@ -722,7 +722,7 @@ server <-
 
           })
 
-        })
+        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -831,7 +831,7 @@ server <-
 
     renderABcompPlot <-
       function() {
-        shiny::renderPlot({
+        shiny::renderCachedPlot({
 
           result <-
             try({ plot <- pat_internalFit(pat = active$pat) })
@@ -840,7 +840,7 @@ server <-
             handleError("", "")
           }
 
-        })
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
