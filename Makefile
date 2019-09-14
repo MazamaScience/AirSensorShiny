@@ -38,8 +38,8 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . airsensorshiny 1.3.1 . fix docker container logging:
-VERSION=1.3.3
+# first version . airsensorshiny 1.3.4 . using airsensor; no calendar plot
+VERSION=1.3.4
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
@@ -63,7 +63,7 @@ desktop_container_logs:
 
 desktop_bounce: desktop_down desktop_up
 
-desktop_reboot: desktop_down desktop_build desktop_up
+desktop_reboot: desktop_build desktop_down desktop_up
 
 
 # AirSensorShiny TEST version --------------------------------------------------
@@ -99,7 +99,7 @@ test_error_log:
 
 test_bounce: test_down test_up
 
-test_reboot: test_down test_build test_up
+test_reboot: test_build test_down test_up
 
 # AirSensorShiny DOCKER CORE ---------------------------------------------------
 
