@@ -76,32 +76,13 @@ server <-
     # Update active enddate
     shiny::observeEvent(
       label = "date update",
-      input$date_select[2],
+      input$date_select,
       {
-        active$enddate <- input$date_select[2]
-        # active$startdate <- input$date_select[1]
-        # shinyWidgets::updateAirDateInput(
-        #   session,
-        #   inputId = "date_select",
-        #   options = list(minDate = lubridate::ymd(isolate(active$enddate)) - lubridate::days(30))
-        # )
+        active$enddate <-
+          input$date_select
+        active$startdate <-
+          lubridate::ymd(active$enddate) - lubridate::days(active$lookback)
       }
-      # updateActive("enddate", "date_select")
-    )
-    # Update active enddate
-    shiny::observeEvent(
-      label = "date update",
-      input$date_select[1],
-      {
-        active$startdate <- input$date_select[1]
-        # active$startdate <- input$date_select[1]
-        # shinyWidgets::updateAirDateInput(
-        #   session,
-        #   inputId = "date_select",
-        #   options = list(minDate = lubridate::ymd(active$enddate) - lubridate::days(30))
-        # )
-      }
-      # updateActive("enddate", "date_select")
     )
 
     # Update active marker with main leaflet
@@ -201,10 +182,10 @@ server <-
     getDates <-
       shiny::reactive({
 
-        # sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-        #   lubridate::ddays(as.numeric(active$lookback))
+        sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
+          lubridate::ddays(as.numeric(active$lookback))
 
-        sd <- lubridate::ymd(active$startdate, tz = TIMEZONE)
+        # sd <- lubridate::ymd(active$startdate, tz = TIMEZONE)
 
         ed <- lubridate::ymd(active$enddate, tz = TIMEZONE)
 
@@ -260,7 +241,8 @@ server <-
         } else {
 
           labels <-
-            SENSORS$meta$monitorID[grepl(community, SENSORS$meta$communityRegion)]
+            SENSORS$meta$monitorID[grepl(community,
+                                         SENSORS$meta$communityRegion)]
 
           sensors <- PWFSLSmoke::monitor_subset(ws_monitor = SENSORS,
                                                 monitorIDs = labels)
@@ -721,7 +703,7 @@ server <-
 
           })
 
-        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
       }
 
@@ -869,28 +851,49 @@ server <-
 
         shiny::renderText({
           ed <- active$enddate
-          # sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-          #   lubridate::days(active$lookback)
-          sd <- active$startdate
+          sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
+            lubridate::days(active$lookback)
+          # sd <- active$startdate
           return(paste0("From ", sd, " to ", ed))
         })
 
       }
 
-    renderABcompPlot <-
+    renderOverlayPlot <-
       function() {
         shiny::renderCachedPlot({
 
           shiny::req(active$pat, active$label)
 
           result <-
-            try({ abPlot <- pat_internalFit(pat = active$pat) })
+            try({ abPlot <-
+              shiny_internalFit(pat = active$pat, whichPlot = "ab") })
 
           if ( "try-error" %in% class(result) ) {
             handleError("", "")
           }
 
           return(abPlot)
+
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+
+      }
+
+    renderLMPlot <-
+      function() {
+        shiny::renderCachedPlot({
+
+          shiny::req(active$pat, active$label)
+
+          result <-
+            try({ lmPlot <-
+              shiny_internalFit(pat = active$pat, whichPlot = "lm") })
+
+          if ( "try-error" %in% class(result) ) {
+            handleError("", "")
+          }
+
+          return(lmPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
 
@@ -999,7 +1002,8 @@ server <-
               lng,
               lat,
               popup = content,
-              options = leaflet::popupOptions(closeOnClick = FALSE, autoPan = TRUE))
+              options = leaflet::popupOptions(closeOnClick=FALSE, autoPan=TRUE)
+            )
 
         }
 
@@ -1327,6 +1331,16 @@ server <-
       }
     )
 
+    # Help text toggle
+    shiny::observeEvent(
+      active$help,
+      if ( active$help ) {
+        shinyjs::show("help_text", anim = TRUE)
+      } else {
+        shinyjs::hide("help_text", anim = TRUE)
+      }
+    )
+
     # Update the the labels when switching tabs
     shiny::observeEvent(
       active$navtab,
@@ -1378,8 +1392,6 @@ server <-
    #       selected = sample(getPasLabels(), 1)
    #     )
    #   })
-
-
 
     # ----- Bookmark & Restore -------------------------------------------------
 
@@ -1505,7 +1517,8 @@ server <-
     output$rose_plot <- renderRose()
     output$raw_plot <- renderMultiplot(columns = 1)
     output$met_table <- renderMetTable()
-    output$ab_comp_plot <- renderABcompPlot()
+    output$ab_comp_plot <- renderOverlayPlot()
+    output$lm_comp_plot <- renderLMPlot()
 
     # - Animation tab -
     output$video_out <- renderVideo()
@@ -1524,7 +1537,8 @@ server <-
     output$latest_leaflet <- renderLeaf()
 
     # - Help text -
-    output$help_text <- shiny::renderUI({ if (active$help) HTML(helpText()) })
+    output$help_text <-
+      shiny::renderUI({ if (active$help) shiny::wellPanel(HTML(helpText())) })
 
   }
 
