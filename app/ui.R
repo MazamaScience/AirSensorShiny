@@ -83,13 +83,6 @@ ui <- function(request) {
                             minDate = lubridate::ymd(20180102)
                         ),
 
-                        # shiny::dateRangeInput(
-                        #     inputId = "date_select",
-                        #     label = "Date",
-                        #     start = "2001-01-01",
-                        #     end   = "2010-12-31"
-                        # ),
-
                         shinyWidgets::radioGroupButtons(
                             inputId = "lookback_select",
                             label = tags$h4("View Past"),
@@ -111,43 +104,22 @@ ui <- function(request) {
                         shiny::bookmarkButton(
                             label = tags$small("Share..."),
                             icon = shiny::icon("share-square"),
-                            title = "Copy Link to Share"
+                            title = "Copy Link to Share",
+                            id = "exp_bookmark"
                         ),
+
                         tags$br(),
                         tags$br(),
                         tags$br(),
                         tags$em(tags$small("Version ", VERSION))
                     ),
 
-                    # Display selection mini table
-                    # shiny::tableOutput(outputId = "mini_table"),
-
                     shiny::tableOutput("debug")
-
-                    # # Help Button
-                    # shinyWidgets::prettyToggle(
-                    #     status_on = "success",
-                    #     status_off = "primary",
-                    #     inputId = "help_select",
-                    #     label_on = "",
-                    #     label_off = "",
-                    #     outline = TRUE,
-                    #     plain = TRUE,
-                    #     icon_on = icon("question-circle", class = "regular"),
-                    #     icon_off = icon("question-circle", class = "solid")
-                    # ),
-                    #
-                    # shiny::htmlOutput(
-                    #     outputId = "help_text"
-                    # )
-
                 ),
 
                 # ------ R Column ----------------------------------------------
                 shiny::column(
                     width = 8,
-
-                    # shiny::fluidRow(
 
                     # ----- Tabs -----
                     shiny::tabsetPanel(
@@ -172,11 +144,7 @@ ui <- function(request) {
                                         height = 420
                                     )
                                 ),
-                                # tags$hr(),
-                                # Summary Plot
-                                # shiny::plotOutput(
-                                #     outputId = "summary_plot", height = 300
-                                # ),
+
                                 shiny::wellPanel(
                                     dygraphs::dygraphOutput(
                                         "dySummary_plot",
@@ -184,16 +152,6 @@ ui <- function(request) {
                                     )
                                 )
                             )
-                            # Bar plot
-                            # shiny::column(
-                            #     width = 2,
-                            #     style = "margin-top: 0px;",
-                            #     shiny::plotOutput(
-                            #         outputId = "cal_plot", height = 700,
-                            #         width = "100%"
-                            #     )
-                            # )
-
                         ),
 
                         # ---- Raw data tab ----
@@ -226,19 +184,8 @@ ui <- function(request) {
                                         )
 
                                     )
-                                    # tags$h4("Additional NOAA Weather Data"),
-                                    #
-                                    # DT::dataTableOutput(
-                                    #     outputId = "met_table",
-                                    #     width = "90%"
-                                    # ),
-                                    # tags$hr(),
-                                    # tags$h4("Wind Rose Plot"),
-                                    # shiny::plotOutput(
-                                    #     outputId = "rose_plot"
-                                    # )
-
                                 ),
+
                                 shiny::column(
                                     width = 6,
                                     shiny::wellPanel(
@@ -248,7 +195,6 @@ ui <- function(request) {
                                     )
                                 )
                             )
-
                         ),
 
                         # ----- Daily patterns tab -----
@@ -272,9 +218,7 @@ ui <- function(request) {
                                         outputId = "pattern_plot"
                                     )
                                 ),
-                                # ),
-                                # shiny::column(
-                                # width = 4,
+
                                 shiny::fluidRow(
 
                                     shiny::column(
@@ -287,7 +231,7 @@ ui <- function(request) {
                                             )
                                         )
                                     ),
-                                    # tags$hr(),
+
                                     shiny::column(
                                         width = 7,
                                         tags$h4("Wind Rose Plot"),
@@ -304,9 +248,10 @@ ui <- function(request) {
                         # ----- Compare tab -----
                         shiny::tabPanel(
                             title = tags$b("Compare"),
-                            icon = shiny::icon("balance-scale"), #"project-diagram"),
+                            icon = shiny::icon("balance-scale"),
                             value = "comp",
                             tags$br(),
+
                             shiny::fluidRow(
                                 shiny::column(
                                     width = 12,
@@ -325,13 +270,14 @@ ui <- function(request) {
                                             outputId = "comparison_table"
                                         )
                                     ),
+
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ws_ext"
                                         )
                                     )
-
                                 ),
+
                                 shiny::column(
                                     width = 7,
                                     shiny::wellPanel(
@@ -341,30 +287,6 @@ ui <- function(request) {
                                     )
                                 )
                             )
-                            # shiny::fluidRow(
-                            #     shiny::column(
-                            #         width = 4,
-                            #         leaflet::leafletOutput(
-                            #             outputId = "shiny_leaflet_comparison"#,
-                            #             # height = 420,
-                            #             # width = 420
-                            #         ),
-                            #         tags$hr(),
-                            #         DT::dataTableOutput(
-                            #             outputId = "comparison_table"
-                            #         )
-                            #     ),
-                            #     shiny::column(
-                            #         width = 5,
-                            #         shiny::plotOutput(
-                            #             outputId = "ws_comp"
-                            #         ),
-                            #         tags$hr(),
-                            #         shiny::plotOutput(
-                            #             outputId = "ws_ext"
-                            #         )
-                            #     )
-                            # )
                         ),
 
                         # ---- Video tab ----
@@ -384,7 +306,6 @@ ui <- function(request) {
                             )
                         )
                     )
-                    # )
                 ),
 
                 # ----- Help Column ------
@@ -406,13 +327,7 @@ ui <- function(request) {
                     shiny::uiOutput(
                         outputId = "help_text"
                     )
-                    # shiny::wellPanel(
-                    #     shiny::htmlOutput(
-                    #     outputId = "help_text"
-                    # )
-                    # )
                 )
-
             )
         ),
 
@@ -429,13 +344,6 @@ ui <- function(request) {
                     width = 2,
 
                     shiny::wellPanel(
-
-                        # shinyWidgets::pickerInput(
-                        #     inputId = "de_comm_select",
-                        #     label = tags$h4("Community"),
-                        #     choices = c("All..." = "all",PAS_COMM),
-                        #     options = list(title = "Select community...")
-                        # ),
 
                         shinyWidgets::pickerInput(
                             inputId = "de_pas_select",
@@ -477,16 +385,18 @@ ui <- function(request) {
 
                         ),
 
-
-
-                        tags$br(),
+                        tags$hr(),
                         shiny::downloadButton(
-                            outputId = "download_data"
+                            outputId = "download_data",
+                            label = "Download"
+                        ),
+                        shiny::bookmarkButton(
+                            label = tags$small("Share..."),
+                            icon = shiny::icon("share-square"),
+                            title = "Copy Link to Share",
+                            id = "de_bookmark"
                         )
                     ),
-
-                    # Display selection mini table
-                    # shiny::tableOutput(outputId = "mini_table"),
 
                     shiny::tableOutput("de_debug"),
 
@@ -503,13 +413,9 @@ ui <- function(request) {
                         icon_off = icon("question-circle", class = "solid")
                     ),
 
-
-
                     shiny::textOutput(
                         outputId = "de_help_text"
                     )
-
-
                 ),
 
                 # Meta explorer
@@ -523,9 +429,7 @@ ui <- function(request) {
                 # Data explorer
                 shiny::column(
                     width = 10,
-                    # shiny::dataTableOutput(
-                    #     outputId = "data_explorer"
-                    # )
+
                     DT::dataTableOutput(
                         outputId = "data_explorer"
                     )
@@ -541,13 +445,7 @@ ui <- function(request) {
             value = "latest",
             shiny::fluidRow(
                 shiny::column(
-
                     width = 2,
-
-                    # Latest leaflet display
-                    # leaflet::leafletOutput(
-                    #     outputId = "latest_leaflet", height = 400
-                    # ),
 
                     shiny::wellPanel(
                         shinyWidgets::pickerInput(
@@ -569,9 +467,6 @@ ui <- function(request) {
 
                         # display selection mini table
                         shiny::tableOutput(outputId = "latest_mini_table"),
-
-                        # Depr
-                        #tags$br(),
 
                         shiny::actionButton(
                             inputId = "loadButton",

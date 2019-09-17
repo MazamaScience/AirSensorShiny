@@ -158,12 +158,6 @@ server <-
       updateActive("help", "help_select")
     )
 
-    # Update active community with DE pas select
-    # shiny::observeEvent(
-    #   input$de_comm_select,
-    #   updateActive("community", "de_comm_select")
-    # )
-
     # Update date based on DE date select
     shiny::observeEvent(
       input$de_date_select,
@@ -419,14 +413,12 @@ server <-
 
         shiny::renderTable({
 
-          #req(active$label, active$pas)
           if ( is.null(active$label) ||
                active$label == "Select Sensor..." ||
                active$label == "") {
 
             mini <-
               dplyr::tibble(
-                #"Sensor" = "",
                 "Latitude" ="",
                 "Longitude" = ""
               )
@@ -435,7 +427,6 @@ server <-
 
             mini <-
               dplyr::tibble(
-                #"Sensor" = active$label,
                 "Latitude" = active$pas$latitude,
                 "Longitude" = active$pas$longitude
               )
@@ -532,8 +523,8 @@ server <-
             )
 
             logger.trace("sensor_load(%s, %s) returns %d rows of data",
-                         strftime(dates[1]),#, tz = sensor$meta$timezone),
-                         strftime(dates[2]), #,tz = sensor$meta$timezone),
+                         strftime(dates[1]),
+                         strftime(dates[2]),
                          nrow(sensor$data))
 
             # Filter sensor
@@ -645,15 +636,9 @@ server <-
 
         DT::renderDataTable({
 
-          # handleError(
-          #   AirSensor::pat_isPat(active$pat),
-          #   "Please select a sensor."
-          # )
-          #
           req(active$pat)
-          #
-          showLoad(shiny::incProgress(0.7))
 
+          showLoad(shiny::incProgress(0.7))
           # Remove unecessary columns
           data <- active$pat$data[-(6:10)]
 
@@ -853,7 +838,7 @@ server <-
           ed <- active$enddate
           sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
             lubridate::days(active$lookback)
-          # sd <- active$startdate
+
           return(paste0("From ", sd, " to ", ed))
         })
 
@@ -908,27 +893,13 @@ server <-
 
         shiny::downloadHandler(
           filename = function() {
-
             dates <- getDates()
-
-            paste0(
-              active$pat$meta$label,
-              "_",
-              dates[1],
-              "_",
-              dates[2],
-              ".csv"
-            )
-
+            paste0(active$pat$meta$label, "_", dates[1], "_", dates[2], ".csv")
           },
-
           content = function(file) {
-
             pat <- active$pat
             write.csv(pat$data[1:5], file = file)
-
           }
-
         )
 
       }
@@ -1200,7 +1171,7 @@ server <-
     # ----- Reactive Observations ----------------------------------------------
     # NOTE: For use with low-hierarchy update functions and features.
 
-    # LOAD PAT -- VERY IMPORTANT
+    # --- LOAD PAT -- VERY IMPORTANT ---
     # Trigger active pat update based on pas selection, lookback, enddate, de_label
     shiny::observeEvent(
       ignoreInit = TRUE, #Ignore init value to avoid startup error
@@ -1319,10 +1290,8 @@ server <-
       active$tab,
       {
         if (active$tab == "anim") {
-          #shinyjs::disable("pas_select")
           shinyjs::hide("pas_select", anim = TRUE)
         } else {
-          #shinyjs::enable("pas_select")
           shinyjs::show("pas_select", anim = TRUE)
         }
       }
@@ -1420,8 +1389,17 @@ server <-
         "comparison_table_rows_all",
         "comparison_table_rows_current",
         "comparison_table_search",
-        "comparison_table_state"
+        "comparison_table_state",
+        "de_bookmark",
+        "exp_bookmark"
       )
+    )
+
+    shiny::observeEvent(
+      c(input$de_bookmark, input$exp_bookmark),
+      ignoreInit = TRUE,
+      ignoreNULL = TRUE,
+      {session$doBookmark()}
     )
 
     # Callback on bookmark button click to save important states
@@ -1462,11 +1440,11 @@ server <-
       )
 
       # Update nav tab
-      # shiny::updateNavbarPage(
-      #   session,
-      #   inputId = "navtab",
-      #   selected = state$values$nav
-      # )
+      shiny::updateNavbarPage(
+        session,
+        inputId = "navtab",
+        selected = state$values$nav
+      )
 
       # Update tab select
       shiny::updateTabsetPanel(
@@ -1496,9 +1474,6 @@ server <-
     )
 
     # ----- Outputs ------------------------------------------------------------
-
-    # DEBUG OUTPUT
-    #output$debug <- renderTable(session$clientData$pixelratio)
 
     # L Col
     output$mini_table <- renderMiniTable()
@@ -1534,7 +1509,6 @@ server <-
     output$download_data <- downloadButton()
 
     # - Latest Data -
-    #output$dygraph_plot <- renderDygraphPlot()
     output$aux_plot <- renderAuxPlot()
     output$latest_leaflet <- renderLeaf()
 
