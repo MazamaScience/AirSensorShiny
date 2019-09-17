@@ -24,7 +24,7 @@ server <-
         compmarker = NULL,
         tab = NULL,
         navtab = NULL,
-        exp_label = NULL,
+        de_label = NULL,
         latest_load = NULL,
         latest_community = NULL,
         latest_label = NULL,
@@ -117,7 +117,7 @@ server <-
     shiny::observeEvent(
       label = "data explorer pas select update",
       input$de_pas_select,
-      updateActive("exp_label", "de_pas_select")
+      updateActive("de_label", "de_pas_select")
     )
 
     # Update active marker with latest leaflet marker click
@@ -1201,14 +1201,14 @@ server <-
     # NOTE: For use with low-hierarchy update functions and features.
 
     # LOAD PAT -- VERY IMPORTANT
-    # Trigger active pat update based on pas selection, lookback, enddate, exp_label
+    # Trigger active pat update based on pas selection, lookback, enddate, de_label
     shiny::observeEvent(
       ignoreInit = TRUE, #Ignore init value to avoid startup error
       ignoreNULL = TRUE,
       c( active$label,
          active$lookback,
          active$enddate,
-         active$exp_label,
+         active$de_label,
          active$latest_label ),
       {
         result <-
@@ -1244,55 +1244,43 @@ server <-
 
     # Trigger update selected pas on data explorer pas select
     shiny::observeEvent(
-      active$exp_label,
-      { active$label <- active$latest_label <- active$exp_label }
+      active$de_label,
+      { active$label <- active$latest_label <- active$de_label }
     )
 
     # Trigger update when latest pas is selected in latest view
     shiny::observeEvent(
       active$latest_label,
-      { active$label <- active$exp_label <- active$latest_label }
+      { active$label <- active$de_label <- active$latest_label }
     )
 
     # Global observations
     shiny::observe({
 
-      # Watch the pas_select based on the current active label and community
+      # Determine which pas selection to update
+      if ( active$navtab == "latest" ) {
+        pasInput <- "latest_pas_select"
+      } else if ( active$navtab == "dataview" ) {
+        pasInput <- "de_pas_select"
+      } else {
+        pasInput <- "pas_select"
+      }
+
       shiny::updateSelectInput(
         session,
-        inputId = "pas_select",
-        choices = SENSORS$meta$monitorID, #getPasLabels(),
-        selected = active$label
-
-      )
-
-      # Update the data explorer selection based on active label
-      shiny::updateSelectInput(
-        session,
-        inputId = "de_pas_select",
-        selected = active$label,
-        choices = SENSORS$meta$monitorID
-        # choices = c("Select Sensor...",
-        #             PAS$label[!is.na(PAS$communityRegion) &
-        #                         !grepl("(<?\\sB)$", PAS$label) &
-        #                         PAS$DEVICE_LOCATIONTYPE != "inside"])
-      )
-
-      # Update latest pas with label
-      shiny::updateSelectInput(
-        session,
-        inputId = "latest_pas_select",
-        choices = SENSORS$meta$monitorID,#getPasLabels(),
+        inputId = pasInput,
+        choices = getPasLabels(),#SENSORS$meta$monitorID, #getPasLabels(),
         selected = active$label
       )
 
-      # Update the load button
-      shiny::updateActionButton(
-        session,
-        inputId = "loadButton",
-        label = paste0("Load Latest:", active$label)
-      )
-
+      # === Deprecated ===
+      # # Update the load button
+      # shiny::updateActionButton(
+      #   session,
+      #   inputId = "loadButton",
+      #   label = paste0("Load Latest:", active$label)
+      # )
+      # ===
       # Watch the active variables to update the URL
       # nquery()
 
@@ -1305,6 +1293,14 @@ server <-
           closeOnClickOutside = TRUE
         )
       }
+
+      # Only allow downloadable data when a label is selected
+      if ( active$de_label == "" ) {
+        shinyjs::disable(id = "download_data")
+      } else {
+        shinyjs::enable(id = "download_data")
+      }
+
 
     })
 
@@ -1366,6 +1362,7 @@ server <-
       }
     )
 
+    # === Deprecated ===
     # Popup warning if sensor is not selected
     # shiny::observe(
     #   ignoreInit = T,
@@ -1382,6 +1379,7 @@ server <-
     #   }
     # )
 
+   # === Deprecated ===
    # Update once if the selected pas is null i.e On Startup
    # -- Using a random selected pas ATM
    # shiny::observeEvent(
@@ -1417,7 +1415,12 @@ server <-
         "leaflet_marker_click",
         "data_explorer_state",
         "leaflet_marker_mouseover",
-        "leaflet_marker_mouseout"
+        "leaflet_marker_mouseout",
+        "comparison_table_cell_clicked",
+        "comparison_table_rows_all",
+        "comparison_table_rows_current",
+        "comparison_table_search",
+        "comparison_table_state"
       )
     )
 
@@ -1428,7 +1431,7 @@ server <-
       state$values$date_select <- active$enddate
       state$values$lookback_select <- active$lookback
       state$values$tab <- active$tab
-      #state$values$nav <- active$navtab
+      state$values$nav <- active$navtab
 
     })
 
@@ -1502,9 +1505,7 @@ server <-
 
     # - Overview Tab -
     output$leaflet <- renderLeaf()
-    #output$summary_plot <- renderBarPlot(plotType = "hourly_plot")
     output$dySummary_plot <- renderDygraphSummary()
-    # output$cal_plot <- renderCalPlot()
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()

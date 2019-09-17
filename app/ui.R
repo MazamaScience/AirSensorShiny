@@ -101,7 +101,7 @@ ui <- function(request) {
                             direction = "vertical",
                             individual = F,
                             checkIcon = list(
-                                yes = tags$i(class = "fa fa-check-circle",
+                                yes = tags$i(class = "fa fa-check",
                                              style = "color: #5cc4ef"))
 
                         ),
@@ -449,15 +449,16 @@ ui <- function(request) {
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
-                            label = tags$h4("Date"),
-                            value = lubridate::now(),
+                            label = tags$h4("Date Range"),
+                            value = c(lubridate::now()-lubridate::days(7),
+                                      lubridate::now()),
                             todayButton = FALSE,
                             addon = "none",
                             inline = TRUE,
+                            separator = " to ",
                             range = FALSE,
-                            minDate = "2018-01-01",
-                            width = "100%"
-
+                            maxDate = lubridate::now(tzone = TIMEZONE),
+                            minDate = lubridate::ymd(20180102)
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -465,9 +466,18 @@ ui <- function(request) {
                             label = tags$h4("View Past"),
                             choices = c( "3 Days" = 3,
                                          "7 Days" = 7,
+                                         "15 Days" = 15,
                                          "30 Days" = 30 ),
-                            justified = TRUE
+                            justified = T,
+                            direction = "vertical",
+                            individual = F,
+                            checkIcon = list(
+                                yes = tags$i(class = "fa fa-check",
+                                             style = "color: #5cc4ef"))
+
                         ),
+
+
 
                         tags$br(),
                         shiny::downloadButton(
@@ -541,14 +551,14 @@ ui <- function(request) {
 
                     shiny::wellPanel(
                         shinyWidgets::pickerInput(
-                            inputId = "Latest_comm_select",
+                            inputId = "latest_comm_select",
                             label = tags$h4("Community"),
                             choices = c("All..." = "all", PAS_COMM),
                             options = list(title = "Select community...")
                         ),
 
                         shinyWidgets::pickerInput(
-                            inputId = "Latest_pas_select",
+                            inputId = "latest_pas_select",
                             label = tags$h4("Sensor"),
                             choices = "",
                             options = list(
@@ -560,11 +570,12 @@ ui <- function(request) {
                         # display selection mini table
                         shiny::tableOutput(outputId = "latest_mini_table"),
 
-                        tags$br(),
+                        # Depr
+                        #tags$br(),
 
                         shiny::actionButton(
-                            inputId = "loadbutton",
-                            label = "load latest"
+                            inputId = "loadButton",
+                            label = "Load Latest"
                         )
                     ),
 
@@ -586,13 +597,13 @@ ui <- function(request) {
 
                 shiny::column(
                     width = 10,
-
-                    shiny::plotOutput(
-                        outputId = "aux_plot",
-                        height = 850
+                    shiny::wellPanel(
+                        shiny::plotOutput(
+                            outputId = "aux_plot",
+                            height = 850
+                        )
                     )
                 )
-
             )
         ),
 

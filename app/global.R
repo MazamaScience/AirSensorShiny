@@ -99,7 +99,7 @@ IdByCommunity <- list(
 TIMEZONE <<- "America/Los_Angeles"
 
 # Define global pas object
-PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"?
+PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
 
 # NOTE: These are intended to be temporary "translations"
 PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
