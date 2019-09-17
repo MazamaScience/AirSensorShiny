@@ -1204,6 +1204,7 @@ server <-
     # Trigger active pat update based on pas selection, lookback, enddate, exp_label
     shiny::observeEvent(
       ignoreInit = TRUE, #Ignore init value to avoid startup error
+      ignoreNULL = TRUE,
       c( active$label,
          active$lookback,
          active$enddate,
@@ -1260,7 +1261,7 @@ server <-
       shiny::updateSelectInput(
         session,
         inputId = "pas_select",
-        choices = getPasLabels(),
+        choices = SENSORS$meta$monitorID, #getPasLabels(),
         selected = active$label
 
       )
@@ -1281,7 +1282,7 @@ server <-
       shiny::updateSelectInput(
         session,
         inputId = "latest_pas_select",
-        choices = getPasLabels(),
+        choices = SENSORS$meta$monitorID,#getPasLabels(),
         selected = active$label
       )
 

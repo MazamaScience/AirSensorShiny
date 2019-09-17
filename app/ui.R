@@ -27,7 +27,7 @@ ui <- function(request) {
         position = "fixed-top",
         windowTitle = "AirShiny (Beta)",
 
-        # ------ NavTab 1 ------------------------------------------------------
+        # ------ NavTab 1 - Explore --------------------------------------------
         shiny::tabPanel(
             # Pad the top of the page
             tags$style(type="text/css", "body {padding-top: 70px;}"),
@@ -389,34 +389,34 @@ ui <- function(request) {
 
                 # ----- Help Column ------
                 shiny::column(
-                        width = 2,
-                        # Help Button
-                        shinyWidgets::prettyToggle(
-                            status_on = "success",
-                            status_off = "primary",
-                            inputId = "help_select",
-                            label_on = "",
-                            label_off = "",
-                            outline = TRUE,
-                            plain = TRUE,
-                            icon_on = icon("question-circle", class = "regular"),
-                            icon_off = icon("question-circle", class = "solid")
-                        ),
+                    width = 2,
+                    # Help Button
+                    shinyWidgets::prettyToggle(
+                        status_on = "success",
+                        status_off = "primary",
+                        inputId = "help_select",
+                        label_on = "",
+                        label_off = "",
+                        outline = TRUE,
+                        plain = TRUE,
+                        icon_on = icon("question-circle", class = "regular"),
+                        icon_off = icon("question-circle", class = "solid")
+                    ),
 
-                        shiny::uiOutput(
-                            outputId = "help_text"
-                        )
-                        # shiny::wellPanel(
-                        #     shiny::htmlOutput(
-                        #     outputId = "help_text"
-                        # )
-                        # )
+                    shiny::uiOutput(
+                        outputId = "help_text"
                     )
+                    # shiny::wellPanel(
+                    #     shiny::htmlOutput(
+                    #     outputId = "help_text"
+                    # )
+                    # )
+                )
 
             )
         ),
 
-        # ------ NavTab 2 ------------------------------------------------------
+        # ------ NavTab 2 - Data View ------------------------------------------
 
         shiny::tabPanel(
 
@@ -523,7 +523,7 @@ ui <- function(request) {
             )
         ),
 
-        # ------ NavTab 3 ------------------------------------------------------
+        # ------ NavTab 3 - Latest ---------------------------------------------
 
         shiny::tabPanel(
 
@@ -596,7 +596,7 @@ ui <- function(request) {
             )
         ),
 
-        # ------ NavTab 4 ------------------------------------------------------
+        # ------ NavTab 4 - About ----------------------------------------------
 
         shiny::tabPanel(
 
@@ -604,7 +604,7 @@ ui <- function(request) {
             value = "about",
             shiny::column(width = 3),
             shiny::column(
-                width = 5,
+                width = 6,
                 fluidRow(
                     tags$h2("About AirShiny"), align = "center"),
                 tags$h3("Purpose"),
@@ -635,7 +635,8 @@ ui <- function(request) {
                     revision at any time depending on the needs of the project."
                 )
 
-            )
+            ),
+            shiny::column(width = 3)
 
         )
 

@@ -115,7 +115,7 @@ PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
 main_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   On this page, you can view all of the air quality sensors deployed through the
   US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
@@ -139,7 +139,7 @@ main_helpTxt <<-
 
 comparison_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   Once you select a sensor, the map will display the location of the nearest regulatory
   monitoring station (or AirNow site), and the plots will provide a comparison of the data
@@ -164,7 +164,7 @@ comparison_helpTxt <<-
 
 dailyPatterns_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   This tab illustrates the average daily trends for a single sensor using
   two different plots. The bar plot (on the left) lays out the average PM2.5
@@ -178,7 +178,7 @@ dailyPatterns_helpTxt <<-
 
 raw_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   Here you can view the “raw data” for the selected sensor, during the
   time frame selected. This data has undergone minimal QA/QC allowing
@@ -196,7 +196,7 @@ raw_helpTxt <<-
 
 animation_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   On this page you can view animations of hourly average PM2.5 mass
   concentrations changing over time. Choose your community and a time
