@@ -12,12 +12,6 @@ shiny_dySummary <-
     colors = NULL
   ) {
 
-    # Checks
-    if ( PWFSLSmoke::monitor_isMonitor(sensor) ||
-            PWFSLSmoke::monitor_isEmpty(sensor) ) {
-      warning("Invalid Monitor")
-    }
-
     # Convert tlim to POSIXct
     if ( !is.null(tlim) ) {
       dateWindow <- PWFSLSmoke::parseDatetime(tlim)

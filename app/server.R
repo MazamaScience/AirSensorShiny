@@ -1,6 +1,5 @@
 # ----- AirShiny Server Logic --------------------------------------------------
 
-#shiny::shinyServer(
 server <-
   function(input, output, session) {
 
@@ -38,11 +37,11 @@ server <-
     updateActive <-
       function(update, with) active[[update]] <- input[[with]][1]
 
-    # Update active pas and label
-    # Update active sensor
+    # Update active pas and label & Update active sensor
     shiny::observeEvent(
       label = "pas update",
       input$pas_select,
+      ignoreInit = TRUE,
       {
         updateActive("label", "pas_select")
         active$pas <- PAS[grepl(active$label, PAS$label),][1,]
@@ -238,8 +237,11 @@ server <-
             SENSORS$meta$monitorID[grepl(community,
                                          SENSORS$meta$communityRegion)]
 
-          sensors <- PWFSLSmoke::monitor_subset(ws_monitor = SENSORS,
-                                                monitorIDs = labels)
+          sensors <-
+            PWFSLSmoke::monitor_subset(
+              ws_monitor = SENSORS,
+              monitorIDs = labels
+            )
 
         }
 
@@ -252,20 +254,24 @@ server <-
       shiny::eventReactive(
         input$loadButton,
         {
-          ed <- lubridate::now(tzone = TIMEZONE)
+          shiny::req(active$latest_label)
 
+          ed <- lubridate::now(tzone = TIMEZONE)
           sd <- ed - lubridate::ddays(2)
 
           # Get both channels from global pas
-          pas <- PAS[grepl(active$label, PAS$label),]
-
+          pas <- PAS[grepl(active$latest_label, PAS$label),]
           latest <-
             AirSensor::pat_createNew(
-              pas=pas,
-              label=active$label,
-              startdate=sd,
-              enddate=ed
+              pas = pas,
+              label = active$latest_label,
+              startdate = sd,
+              enddate = ed
             )
+
+          # Update page title
+          output$latest_pageTitle <-
+            shiny::renderUI({tags$h4("Latest ", active$latest_label, " Data")})
 
           return(latest)
 
@@ -276,146 +282,80 @@ server <-
     # Render Map
     renderLeaf <-
       function() {
-
         leaflet::renderLeaflet({
 
           sensors <- getCommunitySensors()
-            # == DEPRECATED ==
-#           shiny_leaflet(
-#             pas = valid_sensors,
-#             parameter = "pm25_current",
-#             maptype = "Stamen.TonerLite",#"CartoDB.Positron",
-#             paletteName = "PuBu"#"Spectral" #"Purple"
-#           )
           dates <- getDates()
+
           leaf <-
             shiny_sensorLeaflet(
-            sensor = sensors,
-            startdate = dates[1],
-            enddate = dates[2],
-            maptype = "Stamen.TonerLite"
-          )
+              sensor = sensors,
+              startdate = dates[1],
+              enddate = dates[2],
+              maptype = "Stamen.TonerLite"
+            )
 
           return(leaf)
 
         })
-
       }
 
-    # Render Bar Plot
-    renderBarPlot <-
-      function(plotType) {
-
-        shiny::renderCachedPlot({
-
-          handleError(
-            AirSensor::pat_isPat(active$pat),
-            "Please Select a Sensor."
-          )
-
-          pat <- active$pat
-          dates <- getDates()
-          if ( plotType == "daily_plot" ) {
-
-            result <-
-              try({
-                plot <-
-                  shiny_barplot(
-                    pat,
-                    period = "1 day",
-                    startdate = dates[1],
-                    enddate = dates[2]
-                  )}, silent = TRUE )
-
-          }  else if ( plotType == "hourly_plot" ) {
-
-            result <-
-              try({
-                plot <-
-                  shiny_barplot(
-                    pat,
-                    period = "1 hour",
-                    startdate = dates[1],
-                    enddate = dates[2]
-                  )}, silent = TRUE)
-
-          }
-          if ( "try-error" %in% class(result) ) {
-            notify("Summary Plot Failed.", duration = 15)
-          } else {
-            return(plot)
-          }
-        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
-      }
-    # == DEPRECATED ==
-    # Render calendar plot
-    # renderCalPlot <-
-    #   function() {
+    # === DEPRECATED ===
+    # # Render Bar Plot
+    # renderBarPlot <-
+    #   function(plotType) {
+    #     shiny::renderCachedPlot({
     #
-    #     shiny::renderPlot({
+    #       handleError(
+    #         AirSensor::pat_isPat(active$pat),
+    #         "Please Select a Sensor."
+    #       )
     #
-    #       # Require active label before loading
-    #       shiny::req(active$label)
+    #       pat <- active$pat
+    #       dates <- getDates()
+    #       if ( plotType == "daily_plot" ) {
     #
-    #       # Create dates from start of year to enddate
-    #       sd <- lubridate::floor_date(active$enddate, "year")
-    #       # NOTE: Use last seen date to insure calendar plot has all annual data
-    #       ed <- lubridate::date(active$pas$lastSeenDate)
-    #
-    #       showLoad({
-    #
-    #         # Load annual pat to now
-    #         pat <-
-    #           try(
-    #             AirSensor::pat_load(
-    #               active$label,
-    #               startdate = sd,
-    #               enddate = ed
-    #             )
-    #           )
-    #
-    #         if ( "try-error" %in% class(pat) ) {
-    #
-    #           handleError("", "Error: Please select a different sensor.")
-    #           notify("Data Creation Failed")
-    #
-    #         }
-    #
-    #         shiny::incProgress(0.65)
-    #
-    #         # Calendar plot
-    #         calendar <-
+    #         result <-
     #           try({
-    #             AirSensor::pat_calendarPlot(pat, ncol = 2) +
-    #               scale_fill_sqamd()
-    #           })
+    #             plot <-
+    #               shiny_barplot(
+    #                 pat,
+    #                 period = "1 day",
+    #                 startdate = dates[1],
+    #                 enddate = dates[2]
+    #               )}, silent = TRUE )
     #
-    #         if ( "try-error" %in% class(calendar) ) {
+    #       }  else if ( plotType == "hourly_plot" ) {
     #
-    #           notify("Calendar Creation Failed")
-    #           handleError("", paste0(active$label, ": Calendar Unavailable"))
+    #         result <-
+    #           try({
+    #             plot <-
+    #               shiny_barplot(
+    #                 pat,
+    #                 period = "1 hour",
+    #                 startdate = dates[1],
+    #                 enddate = dates[2]
+    #               )}, silent = TRUE)
     #
-    #         }
+    #       }
     #
-    #       })
+    #       if ( "try-error" %in% class(result) ) {
+    #         notify("Summary Plot Failed.", duration = 15)
+    #       } else {
+    #         return(plot)
+    #       }
     #
-    #       memory_debug("Calendar")
-    #
-    #       return(calendar)
-    #     })
-    #
+    #     }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
     #   }
 
     # Render Selected mini table
     renderMiniTable <-
       function() {
-
         shiny::renderTable({
 
           if ( is.null(active$label) ||
                active$label == "Select Sensor..." ||
-               active$label == "") {
+               active$label == "" ) {
 
             mini <-
               dplyr::tibble(
@@ -432,45 +372,37 @@ server <-
               )
 
           }
+
           return(mini)
 
-        },align = "c", spacing = "xs")
-
+        }, align = "c", spacing = "xs")
       }
 
     # Render the monitor comparison plot
     renderMonitorComp <-
       function() {
-
         shiny::renderCachedPlot({
+          req(active$pat)
 
           handleError(
             AirSensor::pat_isPat(active$pat),
             "Please select a sensor to compare with the nearest monitor."
           )
 
-          req(active$pat)
-
           showLoad({
-
-            shiny::incProgress(0.66)
-
+            shiny::incProgress(0.6)
             compPlot <- AirSensor::pat_monitorComparison(active$pat)
-
           })
 
           return(compPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
       }
 
     # Render monitor & pas external fit plot
     renderExtFit <-
       function() {
-
         shiny::renderCachedPlot({
-
           req(active$sensor, active$label)
 
           extPlot <- shiny_externalFit(sensor = active$sensor)
@@ -478,44 +410,38 @@ server <-
           return(extPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
       }
 
     # Render Multiplot
     renderMultiplot <-
       function(columns = NULL) {
-
         shiny::renderCachedPlot({
-
-          if ( is.null(columns) ) columns <- 2
+          shiny::req(active$pat)
 
           handleError(
             AirSensor::pat_isPat(active$pat),
             "Please select a sensor."
           )
 
-          shiny::req(active$pat)
+          if ( is.null(columns) ) {
+            columns <- 2
+          }
 
           multiPlot <- AirSensor::pat_multiplot(active$pat, columns = columns)
 
           return(multiPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
       }
 
     # Render rose plot
     renderRose <-
       function() {
-
         shiny::renderCachedPlot({
-
           shiny::req(active$label)
 
           showLoad({
-
             dates <- getDates()
-
             # load sensor
             sensor <- AirSensor::sensor_load(
               startdate = dates[1],
@@ -526,7 +452,6 @@ server <-
                          strftime(dates[1]),
                          strftime(dates[2]),
                          nrow(sensor$data))
-
             # Filter sensor
             sensor <-
               sensor %>%
@@ -543,20 +468,20 @@ server <-
                 enddate=dates[2]
               )
 
+            # Add active worldmet for use later
             active$worldmet <- metData
 
             # filter wind data
             windData <- dplyr::select(metData, c("date", "wd", "ws"))
 
-            result <- try({
-              rose <- AirSensor::sensor_pollutionRose(sensor, windData)
-            }, silent = FALSE)
+            result <-
+              try({
+                rose <- AirSensor::sensor_pollutionRose(sensor, windData)
+                }, silent = FALSE)
 
             if ( "try-error" %in% class(result) ) {
-
               notify("Rose Plot Failed")
               handleError("", paste0(active$label, ": Rose Plot Unavailable"))
-
             }
 
             logger.trace("class(rose) = %s", class(rose))
@@ -567,50 +492,40 @@ server <-
 
           memory_debug("Rose Plot")
 
-        },cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
+        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
       }
 
     # Render video
     renderVideo <-
       function() {
-
         shiny::renderUI({
+          shiny::req(active$enddate, active$community, active$communityId)
 
-          baseUrl <-
-            "http://smoke.mazamascience.com/data/PurpleAir/videos/"
-          year <-
-            strftime(active$enddate, "%Y", tz = TIMEZONE)
-          mm <-
-            strftime(active$enddate, "%m", tz = TIMEZONE)
-          dd <-
-            strftime(active$enddate, "%d", tz = TIMEZONE)
-
-          comm <- active$communityId
+          baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
+          year    <- strftime(active$enddate, "%Y", tz = TIMEZONE)
+          mm      <- strftime(active$enddate, "%m", tz = TIMEZONE)
+          dd      <- strftime(active$enddate, "%d", tz = TIMEZONE)
+          comm    <- active$communityId
 
           url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
 
           tags$video(
-            id="video",
+            id = "video",
             type = "video/mp4",
             src = url,
             controls = "controls"
           )
 
         })
-
       }
 
     # Render Meta table explorer
     renderMetaExplorer <-
       function() {
-
         shiny::renderTable({
-
           req(active$pas, active$label)
 
           pat <- active$pat
-
           community <- active$pat$meta$communityRegion
 
           meta <-
@@ -627,16 +542,14 @@ server <-
           return(meta)
 
         })
-
       }
 
     # Render Data Table Explorer
     renderDataExplorer <-
       function() {
-
         DT::renderDataTable({
-
           req(active$pat)
+          memory_debug("Data Explorer")
 
           showLoad(shiny::incProgress(0.7))
           # Remove unecessary columns
@@ -652,31 +565,25 @@ server <-
             DT::datatable(data, selection = "none") %>%
             DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
 
-          memory_debug("Data Explorer")
-
           return(data)
 
         })
-
       }
 
     renderPatternPlot <-
       function() {
-
         shiny::renderCachedPlot({
+          req(active$pat)
 
           handleError(
             AirSensor::pat_isPat(active$pat),
             "Please select a sensor."
           )
-          req(active$pat)
-
-          dates <- getDates()
 
           showLoad({
-
             shiny::incProgress(0.7)
 
+            dates <- getDates()
             patternPlot <-
               shiny_diurnalPattern(
               sensor = active$sensor,
@@ -689,12 +596,10 @@ server <-
           })
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
       }
 
     renderDygraphPlot <-
       function() {
-
         dygraphs::renderDygraph({
 
           dygraph <-
@@ -706,18 +611,14 @@ server <-
           return(dygraph)
 
         })
-
       }
 
-    renderAuxPlot <-
+    renderLatestPlot <-
       function() {
-
-        shiny::renderCachedPlot({
+        shiny::renderPlot({
 
           showLoad({
-
             latest <- thingspeakLatest()
-
             shiny::incProgress(0.666)
 
             auxPlot <-
@@ -732,45 +633,37 @@ server <-
 
           })
 
-        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
+        })
       }
 
     renderCompTable <-
       function() {
-
         DT::renderDataTable({
           shiny::req(active$pat)
 
           compTable <-
             shiny_comparisonTable(active$pat) %>%
-          DT::datatable(
+            DT::datatable(
               selection = "none",
               colnames = "",
               options = list(dom = 't', bSort = FALSE),
               class = 'cell-border stripe'
-          ) %>%
-          DT::formatRound(columns = 1, digits = 2)
+            ) %>%
+            DT::formatRound(columns = 1, digits = 2)
 
           return(compTable)
 
         })
-
       }
 
     renderMetTable <-
       function() {
-
-        #shiny::renderTable({
         DT::renderDataTable({
+
           showLoad({
-            shiny::req(active$pat, active$label)
-            # dates <- getDates()
-            # metData <- shiny_getMet(active$label, dates[1], dates[2])
-            shiny::req(active$worldmet)
+            shiny::req(active$pat, active$label,active$worldmet)
 
             metData <- active$worldmet
-
             table <-
               shiny_metTable(metData) %>%
               DT::datatable(
@@ -782,33 +675,25 @@ server <-
               DT::formatRound(columns = 1, digits = 2)
 
             shiny::incProgress(0.6)
+
           })
 
           return(table)
 
         })
-
       }
 
     renderDygraphSummary <-
       function() {
-
         dygraphs::renderDygraph({
 
-          shiny::req(active$pat)
-          handleError(
-            AirSensor::pat_isPat(active$pat),
-            "Please Select a Sensor."
-          )
+          shiny::req(active$sensor)
 
           showLoad({
-
           shinyjs::reset("dySummary_plot")
-
           shiny::incProgress(0.7)
 
           dates <- getDates()
-
           result <-
             try({
               dySummary <-
@@ -823,36 +708,37 @@ server <-
             notify("Summary Failed")
             handleError("", paste0(active$label, ": Failed"))
           }
+
           })
 
           return(dySummary)
 
         })
-
       }
 
     renderPatternText <-
       function() {
-
         shiny::renderText({
+
           ed <- active$enddate
           sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-            lubridate::days(active$lookback)
+                lubridate::days(active$lookback)
 
           return(paste0("From ", sd, " to ", ed))
-        })
 
+        })
       }
 
     renderOverlayPlot <-
       function() {
         shiny::renderCachedPlot({
-
           shiny::req(active$pat, active$label)
 
           result <-
-            try({ abPlot <-
-              shiny_internalFit(pat = active$pat, whichPlot = "ab") })
+            try({
+              abPlot <-
+                shiny_internalFit(pat = active$pat, whichPlot = "ab")
+            })
 
           if ( "try-error" %in% class(result) ) {
             handleError("", "")
@@ -861,13 +747,11 @@ server <-
           return(abPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-
       }
 
     renderLMPlot <-
       function() {
         shiny::renderCachedPlot({
-
           shiny::req(active$pat, active$label)
 
           result <-
@@ -881,7 +765,19 @@ server <-
           return(lmPlot)
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+      }
 
+    renderHelpless <-
+      function() {
+        shiny::renderUI({
+
+          if (active$help) {
+            shiny::wellPanel(
+              HTML(helpText())
+            )
+          }
+
+        })
       }
 
 
@@ -890,7 +786,6 @@ server <-
     # Handle download button
     downloadButton <-
       function() {
-
         shiny::downloadHandler(
           filename = function() {
             dates <- getDates()
@@ -901,18 +796,18 @@ server <-
             write.csv(pat$data[1:5], file = file)
           }
         )
-
       }
 
     # Update leaflet function for selected pas, or map click
     updateLeaf <-
       function(label = NULL) {
-
         # If on main tab -> update main leaflet
         if ( active$tab == "main" || active$navtab == "latest") {
-
           # Get data
-          if ( is.null(label) ) ( label <- active$marker )
+          if ( is.null(label) ) {
+            label <- active$marker
+          }
+
           ind <- which(PAS$label == label)
           lng <- PAS$longitude[ind]
           lat <-  PAS$latitude[ind]
@@ -947,12 +842,12 @@ server <-
             )
 
           # Check which to draw on
-          if( active$tab == "main" ) {
+          if ( active$tab == "main" ) {
             proxy <- "leaflet"
             zoom <- input$leaflet_zoom
           }
 
-          if( active$navtab == "latest" ) {
+          if ( active$navtab == "latest" ) {
             proxy <- "latest_leaflet"
             zoom <- input$latest_leaflet_zoom
           }
@@ -966,7 +861,7 @@ server <-
               radius = 11,
               fillOpacity = 0,
               layerId = "selectTmp",
-              color = "#963484",
+              color = "#ffa020",
               options = list(leaflet::pathOptions(interactive = FALSE))
             ) %>%
             leaflet::addPopups(
@@ -1002,7 +897,7 @@ server <-
               group = "pas_markers",
               options = leaflet::pathOptions(interactive = FALSE),
               label = lab_pas,
-              color = "#963484",
+              color = "#ffa020",
               labelOptions = leaflet::labelOptions(
                 noHide = TRUE,
                 direction = "top"
@@ -1036,19 +931,17 @@ server <-
                 lng = lng_ws,
                 lat = lat_ws,
                 group = "ws_markers",
-                label = lab_ws,
+                label = HTML("<b> Nearest Monitor Site </b> <br>",lab_ws),
                 labelOptions = leaflet::labelOptions(
                   noHide = TRUE,
                   direction = "bottom"
                 ),
                 icon = leaflet::makeAwesomeIcon(
-                  icon="asterisk",
-                  library="fa",
-                  markerColor = "lightred",
-                  iconColor = "black",
-                  spin = T
+                  icon = "dot-circle",
+                  library = "fa",
+                  markerColor = "orange",
+                  iconColor = "black"
                 )
-
               )
 
             # If unsuccessful, add error label
@@ -1071,85 +964,9 @@ server <-
         }
 
       }
-    # == DEPRECATED ==
-    # # (f)unction query the url
-    # fquery <-
-    #   function() {
-    #     shiny::reactive({
-    #       # -- Query list based on url
-    #       query <-
-    #         shiny::parseQueryString(session$clientData$url_search)
-    #
-    #       # -- Define updates based on query
-    #       # Update community selection based on query
-    #       shiny::updateSelectInput(
-    #         session,
-    #         inputId = "comm_select",
-    #         selected = query[["communityId"]]
-    #       )
-    #
-    #       # Update selected tab based on query
-    #       shiny::updateTabsetPanel(
-    #         session,
-    #         inputId = "tab_select",
-    #         selected = query[["tb"]]
-    #       )
-    #
-    #       # Update selected pas based on query
-    #       shiny::updateSelectInput(
-    #         session,
-    #         inputId = "pas_select",
-    #         selected = query[["sensorId"]]
-    #       )
-    #
-    #       shiny::updateNavbarPage(
-    #         session,
-    #         inputId = "navtab",
-    #         selected = query[["nav"]]
-    #       )
-    #     })
-    #
-    #   }
-    #
-    # # Create a (n)ew query string
-    # nquery <-
-    #   function() {
-    #
-    #     # Community
-    #     cComm <- active$communityId
-    #
-    #     # Nav tab
-    #     cNav <- active$navtab
-    #     # Current tab
-    #     cTab <- active$tab
-    #
-    #     # Current pas select
-    #     cPas <- active$label
-    #
-    #     # -- Define queries to update based on input
-    #     # Update the community string
-    #     shiny::updateQueryString(
-    #       paste0(
-    #         "?nav=",
-    #         cNav,
-    #         "&",
-    #         "?tb=",
-    #         cTab,
-    #         "&",
-    #         "?communityId=",
-    #         cComm,
-    #         "&",
-    #         "?sensorId=",
-    #         cPas
-    #       )
-    #     )
-    #
-    #   }
-    #
 
     helpText <-
       function() {
-
         shiny::req(active$tab)
 
         if ( active$tab == "main" ) {
@@ -1172,9 +989,8 @@ server <-
     # NOTE: For use with low-hierarchy update functions and features.
 
     # --- LOAD PAT -- VERY IMPORTANT ---
-    # Trigger active pat update based on pas selection, lookback, enddate, de_label
     shiny::observeEvent(
-      ignoreInit = TRUE, #Ignore init value to avoid startup error
+      ignoreInit = TRUE,
       ignoreNULL = TRUE,
       c( active$label,
          active$lookback,
@@ -1182,6 +998,7 @@ server <-
          active$de_label,
          active$latest_label ),
       {
+        shiny::req(active$label)
         result <-
           try({
             active$pat <-
@@ -1240,29 +1057,24 @@ server <-
       shiny::updateSelectInput(
         session,
         inputId = pasInput,
-        choices = getPasLabels(),#SENSORS$meta$monitorID, #getPasLabels(),
+        choices = getPasLabels(),
         selected = active$label
       )
 
-      # === Deprecated ===
-      # # Update the load button
-      # shiny::updateActionButton(
-      #   session,
-      #   inputId = "loadButton",
-      #   label = paste0("Load Latest:", active$label)
-      # )
-      # ===
-      # Watch the active variables to update the URL
-      # nquery()
-
       # Popup notifcation if sensor is not selected
-      if (active$label == "" & active$tab != "main" & active$tab != "anim") {
-        shinyWidgets::sendSweetAlert(
-          session,
-          title = "Please Select a Sensor",
-          type="warning",
-          closeOnClickOutside = TRUE
-        )
+      if ( active$label == "" ) {
+        if ( active$tab != "main" & active$tab != "anim") {
+          shinyWidgets::sendSweetAlert(
+            session,
+            title = "Please Select a Sensor",
+            type = "warning",
+            closeOnClickOutside = TRUE
+          )
+        }
+        shinyjs::hide(id = "dySummary_plot", anim = FALSE)
+      } else {
+        shinyjs::show(id = "dySummary_plot", anim = TRUE)
+        shinyjs::hide(id = "isSelected", anim = FALSE)
       }
 
       # Only allow downloadable data when a label is selected
@@ -1272,13 +1084,12 @@ server <-
         shinyjs::enable(id = "download_data")
       }
 
-
     })
 
     # Trigger leaflet update based on marker and pas selections, and tab change
     shiny::observeEvent(
       c(active$marker, active$tab, active$navtab),
-      updateLeaf()
+        updateLeaf()
     )
     shiny::observeEvent(
       c(active$label, active$tab, active$navtab),
@@ -1291,8 +1102,10 @@ server <-
       {
         if (active$tab == "anim") {
           shinyjs::hide("pas_select", anim = TRUE)
+          shinyjs::hide("lookback_select", anim = TRUE)
         } else {
           shinyjs::show("pas_select", anim = TRUE)
+          shinyjs::show("lookback_select", anim = TRUE)
         }
       }
     )
@@ -1331,36 +1144,6 @@ server <-
       }
     )
 
-    # === Deprecated ===
-    # Popup warning if sensor is not selected
-    # shiny::observe(
-    #   ignoreInit = T,
-    #   ignoreNULL = F,
-    #   {
-    #     if (active$label == "" & active$tab != "main") {
-    #       shinyWidgets::sendSweetAlert(
-    #         session,
-    #         title = "Select a Sensor",
-    #         type="warning",
-    #         closeOnClickOutside = TRUE
-    #       )
-    #     }
-    #   }
-    # )
-
-   # === Deprecated ===
-   # Update once if the selected pas is null i.e On Startup
-   # -- Using a random selected pas ATM
-   # shiny::observeEvent(
-   #   eventExpr = {is.null(active$label)}, once = TRUE,ignoreNULL = FALSE,
-   #   handlerExpr = {
-   #     shiny::updateSelectInput(
-   #       session,
-   #       inputId = "pas_select",
-   #       selected = sample(getPasLabels(), 1)
-   #     )
-   #   })
-
     # ----- Bookmark & Restore -------------------------------------------------
 
     # Exclude inputs for bookmarking
@@ -1395,75 +1178,78 @@ server <-
       )
     )
 
+    # Observe bookmarking button
     shiny::observeEvent(
       c(input$de_bookmark, input$exp_bookmark),
       ignoreInit = TRUE,
       ignoreNULL = TRUE,
-      {session$doBookmark()}
+      {
+        session$doBookmark()
+      }
     )
 
     # Callback on bookmark button click to save important states
-    shiny::onBookmark( function(state) {
-
-      state$values$pas_select <- active$label
-      state$values$date_select <- active$enddate
-      state$values$lookback_select <- active$lookback
-      state$values$tab <- active$tab
-      state$values$nav <- active$navtab
-
-    })
+    shiny::onBookmark(
+      fun = function(state) {
+        state$values$pas_select <- active$label
+        state$values$date_select <- active$enddate
+        state$values$lookback_select <- active$lookback
+        state$values$tab <- active$tab
+        state$values$nav <- active$navtab
+      },
+      session = session
+    )
 
     # Callback on restore after load
-    shiny::onRestored(function(state) {
-
-      # Update the pas
-      shiny::updateSelectInput(
-        session,
-        inputId = "pas_select",
-        selected = state$values$pas_select
-      )
-
-      # Update date input (add a day for some reason)
-      shinyWidgets::updateAirDateInput(
-        session,
-        inputId = "date_select",
-        value = lubridate::ymd(state$values$date_select, tz = TIMEZONE) +
-          lubridate::days(1),
-        clear = TRUE,
-      )
-
-      # Update lookback
-      shinyWidgets::updateRadioGroupButtons(
-        session,
-        inputId = "lookback_select",
-        selected = state$values$lookback_select
-      )
-
-      # Update nav tab
-      shiny::updateNavbarPage(
-        session,
-        inputId = "navtab",
-        selected = state$values$nav
-      )
-
-      # Update tab select
-      shiny::updateTabsetPanel(
-        session,
-        inputId = "tab_select",
-        selected = state$values$tab
-      )
-
-      # Redundant but necessary?
-      active$lookback <- state$values$lookback_select
-      active$enddate <- state$values$date_select
-
-    })
+    shiny::onRestored(
+      fun = function(state) {
+        # Update the pas
+        shiny::updateSelectInput(
+          session,
+          inputId = "pas_select",
+          selected = state$values$pas_select
+        )
+        # Update date input (add a day for some reason)
+        shinyWidgets::updateAirDateInput(
+          session,
+          inputId = "date_select",
+          value = lubridate::ymd(state$values$date_select, tz = TIMEZONE) +
+                  lubridate::days(1),
+          clear = TRUE,
+        )
+        # Update lookback
+        shinyWidgets::updateRadioGroupButtons(
+          session,
+          inputId = "lookback_select",
+          selected = state$values$lookback_select
+        )
+        # Update nav tab
+        shiny::updateNavbarPage(
+          session,
+          inputId = "navtab",
+          selected = state$values$nav
+        )
+        # Update tab select
+        shiny::updateTabsetPanel(
+          session,
+          inputId = "tab_select",
+          selected = state$values$tab
+        )
+        # Redundant but necessary?
+        active$lookback <- state$values$lookback_select
+        active$enddate <- state$values$date_select
+      },
+      session = session
+    )
 
     # Update the url when bookmark button clicked
-    shiny::onBookmarked(function(url) {
-      shiny::updateQueryString(url)
-      shiny::showBookmarkUrlModal(url)
-    })
+    shiny::onBookmarked(
+      fun = function(url) {
+        shiny::updateQueryString(url)
+        shiny::showBookmarkUrlModal(url)
+      },
+      session = session
+    )
 
     # ----- On Flush -----------------------------------------------------------
     shiny::onStop(
@@ -1475,12 +1261,10 @@ server <-
 
     # ----- Outputs ------------------------------------------------------------
 
-    # L Col
-    output$mini_table <- renderMiniTable()
-
     # - Overview Tab -
     output$leaflet <- renderLeaf()
     output$dySummary_plot <- renderDygraphSummary()
+    output$isSelected <- shiny::renderUI({"Please Select a Sensor."})
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
@@ -1488,7 +1272,6 @@ server <-
     output$ws_ext <- renderExtFit()
     output$ws_comp <- renderMonitorComp()
     output$pattern_title <- renderPatternText()
-
 
     # - Raw tab -
     output$rose_plot <- renderRose()
@@ -1509,12 +1292,12 @@ server <-
     output$download_data <- downloadButton()
 
     # - Latest Data -
-    output$aux_plot <- renderAuxPlot()
-    output$latest_leaflet <- renderLeaf()
+    #output$latest_pageTitle <- shiny::renderUI({tags$h4("Latest ", active$latest_label, " Data")})
+    output$latest_plot <- renderLatestPlot()
 
     # - Help text -
-    output$help_text <-
-      shiny::renderUI({ if (active$help) shiny::wellPanel(HTML(helpText())) })
+    output$help_text <- renderHelpless()
+
 
   }
 

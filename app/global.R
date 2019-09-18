@@ -13,7 +13,7 @@ library(AirSensor)
 library(MazamaCoreUtils)
 
 # Version
-VERSION <<- "0.4.6"
+VERSION <<- "0.5"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")

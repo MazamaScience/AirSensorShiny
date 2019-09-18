@@ -29,8 +29,6 @@ ui <- function(request) {
 
         # ------ NavTab 1 - Explore --------------------------------------------
         shiny::tabPanel(
-            # Pad the top of the page
-            tags$style(type="text/css", "body {padding-top: 70px;}"),
 
             title = tags$b("Explore"),
             value = "explore",
@@ -71,7 +69,7 @@ ui <- function(request) {
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
-                            label = tags$h4("Date Range"),
+                            label = tags$h4("Date"),
                             value = c(lubridate::now()-lubridate::days(7),
                                       lubridate::now()),
                             todayButton = FALSE,
@@ -95,7 +93,7 @@ ui <- function(request) {
                             individual = F,
                             checkIcon = list(
                                 yes = tags$i(class = "fa fa-check",
-                                             style = "color: #5cc4ef"))
+                                             style = "color: #008cba"))
 
                         ),
 
@@ -146,6 +144,7 @@ ui <- function(request) {
                                 ),
 
                                 shiny::wellPanel(
+                                    shiny::uiOutput(outputId = "isSelected"),
                                     dygraphs::dygraphOutput(
                                         "dySummary_plot",
                                         height = 330
@@ -178,6 +177,7 @@ ui <- function(request) {
                             shiny::fluidRow(
                                 shiny::column(
                                     width = 6,
+                                    tags$h4("Channel Overlay"),
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ab_comp_plot"
@@ -188,6 +188,7 @@ ui <- function(request) {
 
                                 shiny::column(
                                     width = 6,
+                                    tags$h4("Channel Correlation"),
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "lm_comp_plot"
@@ -262,15 +263,18 @@ ui <- function(request) {
                                     )
                                 )
                             ),
+
                             shiny::fluidRow(
                                 shiny::column(
                                     width = 5,
+                                    tags$h4("Sensor Status"),
                                     shiny::wellPanel(
                                         DT::dataTableOutput(
                                             outputId = "comparison_table"
                                         )
                                     ),
 
+                                    tags$h4("Sensor-Monitor Correlation"),
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ws_ext"
@@ -280,6 +284,7 @@ ui <- function(request) {
 
                                 shiny::column(
                                     width = 7,
+                                    tags$h4("Sensor-Monitor Comparison"),
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ws_comp"
@@ -298,6 +303,7 @@ ui <- function(request) {
                             tags$br(),
                             shiny::column(
                                 width = 12,
+                                tags$h4("5-Day Sensor Timelapse"),
                                 shiny::wellPanel(
                                     shiny::uiOutput(
                                         outputId = "video_out"
@@ -305,6 +311,7 @@ ui <- function(request) {
                                 )
                             )
                         )
+
                     )
                 ),
 
@@ -357,7 +364,7 @@ ui <- function(request) {
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
-                            label = tags$h4("Date Range"),
+                            label = tags$h4("Date"),
                             value = c(lubridate::now()-lubridate::days(7),
                                       lubridate::now()),
                             todayButton = FALSE,
@@ -381,7 +388,7 @@ ui <- function(request) {
                             individual = F,
                             checkIcon = list(
                                 yes = tags$i(class = "fa fa-check",
-                                             style = "color: #5cc4ef"))
+                                             style = "color: #008cba"))
 
                         ),
 
@@ -465,12 +472,13 @@ ui <- function(request) {
                                 size = 7)
                         ),
 
-                        # display selection mini table
-                        shiny::tableOutput(outputId = "latest_mini_table"),
+                        tags$hr(),
 
+                        tags$h4("Get Latest Data"),
                         shiny::actionButton(
                             inputId = "loadButton",
-                            label = "Load Latest"
+                            label = "Load...",
+                            icon = shiny::icon("cloud-download-alt")
                         )
                     ),
 
@@ -492,9 +500,10 @@ ui <- function(request) {
 
                 shiny::column(
                     width = 10,
+                    shiny::uiOutput("latest_pageTitle"),
                     shiny::wellPanel(
                         shiny::plotOutput(
-                            outputId = "aux_plot",
+                            outputId = "latest_plot",
                             height = 850
                         )
                     )
@@ -544,7 +553,24 @@ ui <- function(request) {
             ),
             shiny::column(width = 3)
 
-        )
+        ),
+        # ----- Custom CSS -----------------------------------------------------
+
+        # Pad the top of the page
+        tags$style(
+            type="text/css",
+            "body {
+                padding-top: 70px;
+            }"),
+
+        # Change airdatepicker date selection color
+        tags$style(
+            type="text/css",
+            ".datepicker--cell.-selected-,
+            .datepicker--cell.-selected-.-current- {
+                color:#fff;
+                background:#008cba
+            }")
 
     )
 
