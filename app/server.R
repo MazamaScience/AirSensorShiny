@@ -300,54 +300,6 @@ server <-
         })
       }
 
-    # === DEPRECATED ===
-    # # Render Bar Plot
-    # renderBarPlot <-
-    #   function(plotType) {
-    #     shiny::renderCachedPlot({
-    #
-    #       handleError(
-    #         AirSensor::pat_isPat(active$pat),
-    #         "Please Select a Sensor."
-    #       )
-    #
-    #       pat <- active$pat
-    #       dates <- getDates()
-    #       if ( plotType == "daily_plot" ) {
-    #
-    #         result <-
-    #           try({
-    #             plot <-
-    #               shiny_barplot(
-    #                 pat,
-    #                 period = "1 day",
-    #                 startdate = dates[1],
-    #                 enddate = dates[2]
-    #               )}, silent = TRUE )
-    #
-    #       }  else if ( plotType == "hourly_plot" ) {
-    #
-    #         result <-
-    #           try({
-    #             plot <-
-    #               shiny_barplot(
-    #                 pat,
-    #                 period = "1 hour",
-    #                 startdate = dates[1],
-    #                 enddate = dates[2]
-    #               )}, silent = TRUE)
-    #
-    #       }
-    #
-    #       if ( "try-error" %in% class(result) ) {
-    #         notify("Summary Plot Failed.", duration = 15)
-    #       } else {
-    #         return(plot)
-    #       }
-    #
-    #     }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
-    #   }
-
     # Render Selected mini table
     renderMiniTable <-
       function() {
@@ -389,10 +341,8 @@ server <-
             "Please select a sensor to compare with the nearest monitor."
           )
 
-          showLoad({
-            shiny::incProgress(0.6)
-            compPlot <- AirSensor::pat_monitorComparison(active$pat)
-          })
+          shiny::incProgress(0.6)
+          compPlot <- AirSensor::pat_monitorComparison(active$pat)
 
           return(compPlot)
 
@@ -440,55 +390,52 @@ server <-
         shiny::renderCachedPlot({
           shiny::req(active$label)
 
-          showLoad({
-            dates <- getDates()
-            # load sensor
-            sensor <- AirSensor::sensor_load(
-              startdate = dates[1],
-              enddate = dates[2]
+          dates <- getDates()
+          # load sensor
+          sensor <- AirSensor::sensor_load(
+            startdate = dates[1],
+            enddate = dates[2]
+          )
+
+          logger.trace("sensor_load(%s, %s) returns %d rows of data",
+                       strftime(dates[1]),
+                       strftime(dates[2]),
+                       nrow(sensor$data))
+          # Filter sensor
+          sensor <-
+            sensor %>%
+            AirSensor::sensor_filterMeta(monitorID == active$label)
+
+          logger.trace("sensor '%s' has %s rows of data",
+                       active$label, nrow(sensor$data))
+
+          # Get world met data
+          metData <-
+            shiny_getMet(
+              label=active$label,
+              startdate=dates[1],
+              enddate=dates[2]
             )
 
-            logger.trace("sensor_load(%s, %s) returns %d rows of data",
-                         strftime(dates[1]),
-                         strftime(dates[2]),
-                         nrow(sensor$data))
-            # Filter sensor
-            sensor <-
-              sensor %>%
-              AirSensor::sensor_filterMeta(monitorID == active$label)
+          # Add active worldmet for use later
+          active$worldmet <- metData
 
-            logger.trace("sensor '%s' has %s rows of data",
-                         active$label, nrow(sensor$data))
+          # filter wind data
+          windData <- dplyr::select(metData, c("date", "wd", "ws"))
 
-            # Get world met data
-            metData <-
-              shiny_getMet(
-                label=active$label,
-                startdate=dates[1],
-                enddate=dates[2]
-              )
+          result <-
+            try({
+              rose <- AirSensor::sensor_pollutionRose(sensor, windData)
+            }, silent = FALSE)
 
-            # Add active worldmet for use later
-            active$worldmet <- metData
+          if ( "try-error" %in% class(result) ) {
+            notify("Rose Plot Failed")
+            handleError("", paste0(active$label, ": Rose Plot Unavailable"))
+          }
 
-            # filter wind data
-            windData <- dplyr::select(metData, c("date", "wd", "ws"))
+          logger.trace("class(rose) = %s", class(rose))
 
-            result <-
-              try({
-                rose <- AirSensor::sensor_pollutionRose(sensor, windData)
-                }, silent = FALSE)
-
-            if ( "try-error" %in% class(result) ) {
-              notify("Rose Plot Failed")
-              handleError("", paste0(active$label, ": Rose Plot Unavailable"))
-            }
-
-            logger.trace("class(rose) = %s", class(rose))
-
-            return(rose)
-
-          })
+          return(rose)
 
           memory_debug("Rose Plot")
 
@@ -551,7 +498,6 @@ server <-
           req(active$pat)
           memory_debug("Data Explorer")
 
-          showLoad(shiny::incProgress(0.7))
           # Remove unecessary columns
           data <- active$pat$data[-(6:10)]
 
@@ -580,20 +526,17 @@ server <-
             "Please select a sensor."
           )
 
-          showLoad({
-            shiny::incProgress(0.7)
+          shiny::incProgress(0.7)
 
-            dates <- getDates()
-            patternPlot <-
-              shiny_diurnalPattern(
+          dates <- getDates()
+          patternPlot <-
+            shiny_diurnalPattern(
               sensor = active$sensor,
               startdate = dates[1],
               enddate = dates[2]
             )
 
           return(patternPlot)
-
-          })
 
         }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
       }
@@ -604,9 +547,9 @@ server <-
 
           dygraph <-
             AirSensor::pat_dygraph(
-            pat = active$pat,
-            sampleSize = NULL
-          )
+              pat = active$pat,
+              sampleSize = NULL
+            )
 
           return(dygraph)
 
@@ -617,21 +560,18 @@ server <-
       function() {
         shiny::renderPlot({
 
-          showLoad({
-            latest <- thingspeakLatest()
-            shiny::incProgress(0.666)
+          latest <- thingspeakLatest()
+          shiny::incProgress(0.666)
 
-            auxPlot <-
-              AirSensor::pat_multiplot(
+          auxPlot <-
+            AirSensor::pat_multiplot(
               pat = latest,
               plottype = "all", #"aux",
               sampleSize = NULL,
               columns = 1
             )
 
-            return(auxPlot)
-
-          })
+          return(auxPlot)
 
         })
       }
@@ -659,24 +599,20 @@ server <-
     renderMetTable <-
       function() {
         DT::renderDataTable({
+          shiny::req(active$pat, active$label,active$worldmet)
 
-          showLoad({
-            shiny::req(active$pat, active$label,active$worldmet)
+          metData <- active$worldmet
+          table <-
+            shiny_metTable(metData) %>%
+            DT::datatable(
+              selection = "none",
+              colnames = "",
+              options = list(dom = 't', bSort = FALSE),
+              class = 'cell-border stripe'
+            ) %>%
+            DT::formatRound(columns = 1, digits = 2)
 
-            metData <- active$worldmet
-            table <-
-              shiny_metTable(metData) %>%
-              DT::datatable(
-                selection = "none",
-                colnames = "",
-                options = list(dom = 't', bSort = FALSE),
-                class = 'cell-border stripe'
-              ) %>%
-              DT::formatRound(columns = 1, digits = 2)
-
-            shiny::incProgress(0.6)
-
-          })
+          shiny::incProgress(0.6)
 
           return(table)
 
@@ -686,10 +622,8 @@ server <-
     renderDygraphSummary <-
       function() {
         dygraphs::renderDygraph({
-
           shiny::req(active$sensor)
 
-          showLoad({
           shinyjs::reset("dySummary_plot")
           shiny::incProgress(0.7)
 
@@ -709,8 +643,6 @@ server <-
             handleError("", paste0(active$label, ": Failed"))
           }
 
-          })
-
           return(dySummary)
 
         })
@@ -722,7 +654,7 @@ server <-
 
           ed <- active$enddate
           sd <- lubridate::ymd(active$enddate, tz = TIMEZONE) -
-                lubridate::days(active$lookback)
+            lubridate::days(active$lookback)
 
           return(paste0("From ", sd, " to ", ed))
 
@@ -858,8 +790,8 @@ server <-
             leaflet::addCircleMarkers(
               lng,
               lat,
-              radius = 11,
-              fillOpacity = 0,
+              radius = 10,
+              fillOpacity = 0.95,
               layerId = "selectTmp",
               color = "#ffa020",
               options = list(leaflet::pathOptions(interactive = FALSE))
@@ -892,8 +824,8 @@ server <-
             leaflet::addCircleMarkers(
               lng = lng_pas,
               lat = lat_pas,
-              radius = 11,
-              fillOpacity = 0,
+              radius = 10,
+              fillOpacity = 0.95,
               group = "pas_markers",
               options = leaflet::pathOptions(interactive = FALSE),
               label = lab_pas,
@@ -1074,7 +1006,7 @@ server <-
         shinyjs::hide(id = "dySummary_plot", anim = FALSE)
       } else {
         shinyjs::show(id = "dySummary_plot", anim = TRUE)
-        shinyjs::hide(id = "isSelected", anim = FALSE)
+        shinyjs::hide(id = "sensorIsSelected", anim = FALSE)
       }
 
       # Only allow downloadable data when a label is selected
@@ -1084,12 +1016,20 @@ server <-
         shinyjs::enable(id = "download_data")
       }
 
+      # Only show message in Video tab if community is not selected
+      if ( active$community  == "" |
+           active$community == "all" ) {
+        shinyjs::show(id = "communityIsSelected")
+      } else {
+        shinyjs::hide(id = "communityIsSelected")
+      }
+
     })
 
     # Trigger leaflet update based on marker and pas selections, and tab change
     shiny::observeEvent(
       c(active$marker, active$tab, active$navtab),
-        updateLeaf()
+      updateLeaf()
     )
     shiny::observeEvent(
       c(active$label, active$tab, active$navtab),
@@ -1214,7 +1154,7 @@ server <-
           session,
           inputId = "date_select",
           value = lubridate::ymd(state$values$date_select, tz = TIMEZONE) +
-                  lubridate::days(1),
+            lubridate::days(1),
           clear = TRUE,
         )
         # Update lookback
@@ -1264,7 +1204,7 @@ server <-
     # - Overview Tab -
     output$leaflet <- renderLeaf()
     output$dySummary_plot <- renderDygraphSummary()
-    output$isSelected <- shiny::renderUI({"Please Select a Sensor."})
+    output$sensorIsSelected <- shiny::renderUI({"Please Select a Sensor."})
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
@@ -1282,6 +1222,7 @@ server <-
 
     # - Animation tab -
     output$video_out <- renderVideo()
+    output$communityIsSelected <- shiny::renderUI({"Please Select a Community."})
 
     # - Daily patterns tab -
     output$pattern_plot <- renderPatternPlot()
@@ -1292,7 +1233,6 @@ server <-
     output$download_data <- downloadButton()
 
     # - Latest Data -
-    #output$latest_pageTitle <- shiny::renderUI({tags$h4("Latest ", active$latest_label, " Data")})
     output$latest_plot <- renderLatestPlot()
 
     # - Help text -

@@ -25,6 +25,7 @@ handleError <-
 
   }
 
+# Easy notifications
 notify <-
   function(title = NULL, info = NULL, ...) {
 
@@ -44,7 +45,7 @@ sqamd_break <-
     return(cut(data, breaks = c(0,12, 35, 55, 75, 6000)))
   }
 
-
+# SCAQMD colors for ggplot
 scale_fill_sqamd <- function(...) {
 
   sqamd_cols <-
@@ -63,9 +64,21 @@ scale_fill_sqamd <- function(...) {
 
 }
 
+# Debugger for logging
 memory_debug <-
   function(string = NULL) {
     memoryLines <- capture.output(gc())
     memoryString <- paste(c(paste0(string, ' Memory Usage:'), memoryLines), collapse='\n')
     logger.trace(memoryString)
+  }
+
+loadSpinner <-
+  function(ui_element) {
+    loader <-
+      shinycssloaders::withSpinner(
+        ui_element = ui_element,
+        color = "#008cba",
+        type = 7
+      )
+    return(loader)
   }

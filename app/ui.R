@@ -138,13 +138,13 @@ ui <- function(request) {
                                 # Plot outputs
                                 shiny::wellPanel(
                                     leaflet::leafletOutput(
-                                        outputId = "leaflet",
-                                        height = 420
-                                    )
+                                    outputId = "leaflet",
+                                    height = 420
+                                    ) %>% loadSpinner()
                                 ),
 
                                 shiny::wellPanel(
-                                    shiny::uiOutput(outputId = "isSelected"),
+                                    shiny::uiOutput(outputId = "sensorIsSelected"),
                                     dygraphs::dygraphOutput(
                                         "dySummary_plot",
                                         height = 330
@@ -169,7 +169,7 @@ ui <- function(request) {
                                         shiny::plotOutput(
                                             outputId = "raw_plot",
                                             height = "800"
-                                        )
+                                        ) %>% loadSpinner()
                                     )
                                 )
                             ),
@@ -181,7 +181,7 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ab_comp_plot"
-                                        )
+                                        ) %>% loadSpinner()
 
                                     )
                                 ),
@@ -192,7 +192,7 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "lm_comp_plot"
-                                        )
+                                        ) %>% loadSpinner()
                                     )
                                 )
                             )
@@ -217,7 +217,7 @@ ui <- function(request) {
                                 shiny::wellPanel(
                                     shiny::plotOutput(
                                         outputId = "pattern_plot"
-                                    )
+                                    ) %>% loadSpinner()
                                 ),
 
                                 shiny::fluidRow(
@@ -229,7 +229,7 @@ ui <- function(request) {
                                         shiny::wellPanel(
                                             DT::dataTableOutput(
                                                 outputId = "met_table"
-                                            )
+                                            ) %>% loadSpinner()
                                         )
                                     ),
 
@@ -239,7 +239,7 @@ ui <- function(request) {
                                         shiny::wellPanel(
                                             shiny::plotOutput(
                                                 outputId = "rose_plot"
-                                            )
+                                            ) %>% loadSpinner()
                                         )
                                     )
                                 )
@@ -259,7 +259,7 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         leaflet::leafletOutput(
                                             outputId = "shiny_leaflet_comparison"
-                                        )
+                                        ) %>% loadSpinner()
                                     )
                                 )
                             ),
@@ -271,14 +271,14 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         DT::dataTableOutput(
                                             outputId = "comparison_table"
-                                        )
+                                        ) %>% loadSpinner()
                                     ),
 
                                     tags$h4("Sensor-Monitor Correlation"),
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ws_ext"
-                                        )
+                                        ) %>% loadSpinner()
                                     )
                                 ),
 
@@ -288,7 +288,7 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         shiny::plotOutput(
                                             outputId = "ws_comp"
-                                        )
+                                        ) %>% loadSpinner()
                                     )
                                 )
                             )
@@ -306,8 +306,11 @@ ui <- function(request) {
                                 tags$h4("5-Day Sensor Timelapse"),
                                 shiny::wellPanel(
                                     shiny::uiOutput(
+                                        outputId = "communityIsSelected"
+                                    ),
+                                    shiny::uiOutput(
                                         outputId = "video_out"
-                                    )
+                                    ) %>% loadSpinner()
                                 )
                             )
                         )
@@ -439,7 +442,7 @@ ui <- function(request) {
 
                     DT::dataTableOutput(
                         outputId = "data_explorer"
-                    )
+                    ) %>% loadSpinner()
                 )
             )
         ),
@@ -494,7 +497,6 @@ ui <- function(request) {
                         icon_on = icon("question-circle", class = "regular"),
                         icon_off = icon("question-circle", class = "solid")
                     )
-
                 ),
 
 
@@ -505,7 +507,7 @@ ui <- function(request) {
                         shiny::plotOutput(
                             outputId = "latest_plot",
                             height = 850
-                        )
+                        ) %>% loadSpinner()
                     )
                 )
             )
