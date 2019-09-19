@@ -38,8 +38,8 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . airsensorshiny 1.3.4 . using airsensor; no calendar plot
-VERSION=1.3.4
+# first version . airsensorshiny 1.3.5 . near-final
+VERSION=1.3.5
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
