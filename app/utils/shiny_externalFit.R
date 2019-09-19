@@ -36,8 +36,9 @@
 #'
 
 
-shiny_externalFit <- function(
-  pat = NULL,
+shiny_externalFit <-
+  function(
+  sensor = NULL,
   showPlot = TRUE,
   size = 1,
   pa_color = "purple",
@@ -60,33 +61,24 @@ shiny_externalFit <- function(
 
   # ----- Validate parameters --------------------------------------------------
 
-  if ( !AirSensor::pat_isPat(pat) )
+  if ( !PWFSLSmoke::monitor_isMonitor(sensor) )
     stop("Parameter 'pat' is not a valid 'pa_timeseries' object.")
 
-  if ( AirSensor::pat_isEmpty(pat) )
+  if ( PWFSLSmoke::monitor_isEmpty(sensor) )
     stop("Parameter 'pat' has no data.")
 
   # For easier access
-  meta <- pat$meta
-  data <- pat$data
+  meta <- sensor$meta
+  data <- sensor$data
 
   # ----- Assemble data ---------------------------------------------
 
-  if ( replaceOutliers )
-    pat <- AirSensor::pat_outliers(pat, showPlot = FALSE, replace = TRUE)
+  paHourly_data <- PWFSLSmoke::monitor_extractData(sensor)
 
-  # Get the hourly aggregated PurpleAir data
-  paHourly_data <-
-    pat %>%
-    AirSensor::pat_createAirSensor(period = "1 hour",
-                        channel = channel,
-                        qc_algorithm = qc_algorithm,
-                        min_count = min_count) %>%
-    PWFSLSmoke::monitor_extractData()
   names(paHourly_data) <- c("datetime", "pa_pm25")
 
   # Get the PWFSL monitor data
-  monitorID <- pat$meta$pwfsl_closestMonitorID
+  monitorID <- sensor$meta$pwfsl_closestMonitorID
   tlim <- range(paHourly_data$datetime)
   pwfsl_data <-
     PWFSLSmoke::monitor_load(tlim[1], tlim[2], monitorIDs = monitorID) %>%
@@ -133,8 +125,8 @@ shiny_externalFit <- function(
 
   if ( showPlot ) {
 
-    timezone <- pat$meta$timezone[1]
-    year <- strftime(pat$data$datetime[1], "%Y", tz=timezone)
+    timezone <- meta$timezone[1]
+    year <- strftime(data$datetime[1], "%Y", tz=timezone)
 
     # LH Linear regression plot
     lr_plot <-
@@ -148,7 +140,7 @@ shiny_externalFit <- function(
       ggplot2::stat_smooth(geom = "line", color = lr_lcolor, alpha = lr_lalpha,
                            method = "lm", size = lr_lwd) +
       ggplot2::labs(title = "Correlation",
-                    x = paste0("PurpleAir: \"", pat$meta$label, "\""),
+                    x = paste0("PurpleAir: \"", sensor$meta$monitorID, "\""),
                     y = paste0("PWFSL: ", monitorID)) +
       ggplot2::theme_bw() +
       ggplot2::xlim(xylim) +

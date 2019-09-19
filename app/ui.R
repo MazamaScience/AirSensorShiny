@@ -27,10 +27,8 @@ ui <- function(request) {
         position = "fixed-top",
         windowTitle = "AirShiny (Beta)",
 
-        # ------ NavTab 1 ------------------------------------------------------
+        # ------ NavTab 1 - Explore --------------------------------------------
         shiny::tabPanel(
-            # Pad the top of the page
-            tags$style(type="text/css", "body {padding-top: 70px;}"),
 
             title = tags$b("Explore"),
             value = "explore",
@@ -45,6 +43,12 @@ ui <- function(request) {
                     shiny::wellPanel(
 
                         shinyjs::useShinyjs(),
+                        shinyWidgets::setBackgroundColor(color = "#ecf0f5"),
+
+                        shinybusy::add_busy_bar(
+                            color = "#006687",
+                            centered = TRUE
+                        ),
 
                         shinyWidgets::pickerInput(
                             inputId = "comm_select",
@@ -66,13 +70,15 @@ ui <- function(request) {
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
                             label = tags$h4("Date"),
-                            value = lubridate::now(),
+                            value = c(lubridate::now()-lubridate::days(7),
+                                      lubridate::now()),
                             todayButton = FALSE,
                             addon = "none",
                             inline = TRUE,
+                            separator = " to ",
                             range = FALSE,
-                            minDate = "2018-01-01",
-                            width = "100%"
+                            maxDate = lubridate::now(tzone = TIMEZONE),
+                            minDate = lubridate::ymd(20180102)
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -80,27 +86,241 @@ ui <- function(request) {
                             label = tags$h4("View Past"),
                             choices = c( "3 Days" = 3,
                                          "7 Days" = 7,
+                                         "15 Days" = 15,
                                          "30 Days" = 30 ),
-                            justified = TRUE
+                            justified = T,
+                            direction = "vertical",
+                            individual = F,
+                            checkIcon = list(
+                                yes = tags$i(class = "fa fa-check",
+                                             style = "color: #008cba"))
+
                         ),
+
                         tags$hr(),
                         tags$h5("Bookmark"),
                         shiny::bookmarkButton(
                             label = tags$small("Share..."),
                             icon = shiny::icon("share-square"),
-                            title = "Copy Link to Share"
+                            title = "Copy Link to Share",
+                            id = "exp_bookmark"
                         ),
+
                         tags$br(),
                         tags$br(),
                         tags$br(),
                         tags$em(tags$small("Version ", VERSION))
                     ),
 
-                    # Display selection mini table
-                    # shiny::tableOutput(outputId = "mini_table"),
+                    shiny::tableOutput("debug")
+                ),
 
-                    shiny::tableOutput("debug"),
+                # ------ R Column ----------------------------------------------
+                shiny::column(
+                    width = 8,
 
+                    # ----- Tabs -----
+                    shiny::tabsetPanel(
+                        type = "tabs",
+                        id = "tab_select",
+
+                        # ---- Overview Tab ----
+                        shiny::tabPanel(
+
+                            title = tags$b("Overview"),
+                            icon = shiny::icon("map-marked-alt"),
+                            value = "main",
+
+                            tags$br(),
+
+                            shiny::column(
+                                width = 12,
+                                # Plot outputs
+                                shiny::wellPanel(
+                                    leaflet::leafletOutput(
+                                    outputId = "leaflet",
+                                    height = 420
+                                    ) %>% loadSpinner()
+                                ),
+
+                                shiny::wellPanel(
+                                    shiny::uiOutput(outputId = "sensorIsSelected"),
+                                    dygraphs::dygraphOutput(
+                                        "dySummary_plot",
+                                        height = 330
+                                    )
+                                )
+                            )
+                        ),
+
+                        # ---- Raw data tab ----
+                        shiny::tabPanel(
+                            title = tags$b("Raw Data"),
+                            icon = shiny::icon("database"),
+                            value = "raw",
+
+                            tags$br(),
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 12,
+                                    height = "800",
+                                    tags$h4("Raw Data"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "raw_plot",
+                                            height = "800"
+                                        ) %>% loadSpinner()
+                                    )
+                                )
+                            ),
+
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 6,
+                                    tags$h4("Channel Overlay"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "ab_comp_plot"
+                                        ) %>% loadSpinner()
+
+                                    )
+                                ),
+
+                                shiny::column(
+                                    width = 6,
+                                    tags$h4("Channel Correlation"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "lm_comp_plot"
+                                        ) %>% loadSpinner()
+                                    )
+                                )
+                            )
+                        ),
+
+                        # ----- Daily patterns tab -----
+                        shiny::tabPanel(
+                            title = tags$b("Daily Patterns"),
+                            icon = shiny::icon("chart-bar"),
+                            value = "dp",
+
+                            tags$br(),
+
+                            shiny::column(
+                                width = 12,
+                                tags$h4("Average Daily Patterns"),
+
+                                shiny::textOutput(
+                                    outputId = "pattern_title"
+                                ),
+
+                                shiny::wellPanel(
+                                    shiny::plotOutput(
+                                        outputId = "pattern_plot"
+                                    ) %>% loadSpinner()
+                                ),
+
+                                shiny::fluidRow(
+
+                                    shiny::column(
+                                        width = 5,
+
+                                        tags$h4("Additional NOAA Weather Data"),
+                                        shiny::wellPanel(
+                                            DT::dataTableOutput(
+                                                outputId = "met_table"
+                                            ) %>% loadSpinner()
+                                        )
+                                    ),
+
+                                    shiny::column(
+                                        width = 7,
+                                        tags$h4("Wind Rose Plot"),
+                                        shiny::wellPanel(
+                                            shiny::plotOutput(
+                                                outputId = "rose_plot"
+                                            ) %>% loadSpinner()
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        # ----- Compare tab -----
+                        shiny::tabPanel(
+                            title = tags$b("Compare"),
+                            icon = shiny::icon("balance-scale"),
+                            value = "comp",
+                            tags$br(),
+
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 12,
+                                    shiny::wellPanel(
+                                        leaflet::leafletOutput(
+                                            outputId = "shiny_leaflet_comparison"
+                                        ) %>% loadSpinner()
+                                    )
+                                )
+                            ),
+
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 5,
+                                    tags$h4("Sensor Status"),
+                                    shiny::wellPanel(
+                                        DT::dataTableOutput(
+                                            outputId = "comparison_table"
+                                        ) %>% loadSpinner()
+                                    ),
+
+                                    tags$h4("Sensor-Monitor Correlation"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "ws_ext"
+                                        ) %>% loadSpinner()
+                                    )
+                                ),
+
+                                shiny::column(
+                                    width = 7,
+                                    tags$h4("Sensor-Monitor Comparison"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "ws_comp"
+                                        ) %>% loadSpinner()
+                                    )
+                                )
+                            )
+                        ),
+
+                        # ---- Video tab ----
+                        shiny::tabPanel(
+                            title = tags$b("Community Timelapse"),
+                            icon = shiny::icon("file-video"),
+                            value = "anim",
+
+                            tags$br(),
+                            shiny::column(
+                                width = 12,
+                                tags$h4("5-Day Sensor Timelapse"),
+                                shiny::wellPanel(
+                                    shiny::uiOutput(
+                                        outputId = "communityIsSelected"
+                                    ),
+                                    shiny::uiOutput(
+                                        outputId = "video_out"
+                                    ) %>% loadSpinner()
+                                )
+                            )
+                        )
+
+                    )
+                ),
+
+                # ----- Help Column ------
+                shiny::column(
+                    width = 2,
                     # Help Button
                     shinyWidgets::prettyToggle(
                         status_on = "success",
@@ -114,196 +334,14 @@ ui <- function(request) {
                         icon_off = icon("question-circle", class = "solid")
                     ),
 
-                    shiny::htmlOutput(
+                    shiny::uiOutput(
                         outputId = "help_text"
-                    )
-
-                ),
-
-                # ------ R Column ----------------------------------------------
-                shiny::column(
-                    width = 10,
-
-                    shiny::fluidRow(
-
-                        # ----- Tabs -----
-                        shiny::tabsetPanel(
-                            type = "tabs",
-                            id = "tab_select",
-
-                            # ---- Overview Tab ----
-                            shiny::tabPanel(
-
-                                title = tags$b("Overview"),
-                                icon = shiny::icon("home"),
-                                value = "main",
-
-                                tags$br(),
-
-                                shiny::column(
-                                    width = 11,
-                                    # Plot outputs
-                                    leaflet::leafletOutput(
-                                        outputId = "leaflet",
-                                        height = 400
-                                    ),
-                                    tags$hr(),
-                                    # Summary Plot
-                                    # shiny::plotOutput(
-                                    #     outputId = "summary_plot", height = 300
-                                    # ),
-                                    dygraphs::dygraphOutput(
-                                        "dySummary_plot",
-                                        height = 300
-                                    )
-                                )
-                                # Bar plot
-                                # shiny::column(
-                                #     width = 2,
-                                #     style = "margin-top: 0px;",
-                                #     shiny::plotOutput(
-                                #         outputId = "cal_plot", height = 700,
-                                #         width = "100%"
-                                #     )
-                                # )
-
-                            ),
-
-                            # ---- Raw data tab ----
-                            shiny::tabPanel(
-                                title = tags$b("Raw Data"),
-                                icon = shiny::icon("database"),
-                                value = "raw",
-
-                                tags$br(),
-
-                                shiny::column(
-                                    width = 8,
-                                    height = "800",
-                                    tags$h4("Raw Data"),
-                                    shiny::plotOutput(
-                                        outputId = "raw_plot",
-                                        height = "800"
-                                    )
-                                ),
-
-                                shiny::column(
-                                    width = 4,
-                                    shiny::fluidRow(
-
-                                        shiny::plotOutput(
-                                            outputId = "ab_comp_plot"
-                                        )
-
-                                        # tags$h4("Additional NOAA Weather Data"),
-                                        #
-                                        # DT::dataTableOutput(
-                                        #     outputId = "met_table",
-                                        #     width = "90%"
-                                        # ),
-                                        # tags$hr(),
-                                        # tags$h4("Wind Rose Plot"),
-                                        # shiny::plotOutput(
-                                        #     outputId = "rose_plot"
-                                        # )
-
-                                    )
-                                )
-
-                            ),
-
-                            # ----- Daily patterns tab -----
-                            shiny::tabPanel(
-                                title = tags$b("Daily Patterns"),
-                                icon = shiny::icon("chart-bar"),
-                                value = "dp",
-
-                                tags$br(),
-
-                                shiny::column(
-                                    width = 8,
-                                    tags$h4("Average Daily Patterns"),
-
-                                    shiny::textOutput(
-                                        outputId = "pattern_title"
-                                    ),
-
-                                    shiny::plotOutput(
-                                        outputId = "pattern_plot",
-                                        width = "90%"
-                                    )
-                                ),
-                                shiny::column(
-                                    width = 4,
-                                    shiny::fluidRow(
-
-                                        tags$h4("Additional NOAA Weather Data"),
-
-                                        DT::dataTableOutput(
-                                            outputId = "met_table",
-                                            width = "90%"
-                                        ),
-                                        tags$hr(),
-                                        tags$h4("Wind Rose Plot"),
-                                        shiny::plotOutput(
-                                            outputId = "rose_plot"
-                                        )
-
-                                    )
-                                )
-                            ),
-
-                            # ----- Compare tab -----
-                            shiny::tabPanel(
-                                title = tags$b("Compare"),
-                                icon = shiny::icon("project-diagram"),
-                                value = "comp",
-                                tags$br(),
-                                shiny::fluidRow(
-                                    shiny::column(
-                                        width = 4,
-                                        leaflet::leafletOutput(
-                                            outputId = "shiny_leaflet_comparison"#,
-                                            # height = 420,
-                                            # width = 420
-                                        ),
-                                        tags$hr(),
-                                        DT::dataTableOutput(
-                                            outputId = "comparison_table"
-                                        )
-                                    ),
-                                    shiny::column(
-                                        width = 5,
-                                        shiny::plotOutput(
-                                            outputId = "ws_comp"
-                                        ),
-                                        tags$hr(),
-                                        shiny::plotOutput(
-                                            outputId = "ws_ext"
-                                        )
-                                    )
-                                )
-                            ),
-
-                            # ---- Video tab ----
-                            shiny::tabPanel(
-                                title = tags$b("Community Timelapse"),
-                                icon = shiny::icon("file-video"),
-                                value = "anim",
-
-                                tags$br(),
-
-                                shiny::uiOutput(
-                                    outputId = "video_out"
-                                )
-                            )
-                        )
                     )
                 )
             )
         ),
 
-        # ------ NavTab 2 ------------------------------------------------------
+        # ------ NavTab 2 - Data View ------------------------------------------
 
         shiny::tabPanel(
 
@@ -316,13 +354,6 @@ ui <- function(request) {
                     width = 2,
 
                     shiny::wellPanel(
-
-                        # shinyWidgets::pickerInput(
-                        #     inputId = "de_comm_select",
-                        #     label = tags$h4("Community"),
-                        #     choices = c("All..." = "all",PAS_COMM),
-                        #     options = list(title = "Select community...")
-                        # ),
 
                         shinyWidgets::pickerInput(
                             inputId = "de_pas_select",
@@ -337,14 +368,15 @@ ui <- function(request) {
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
                             label = tags$h4("Date"),
-                            value = lubridate::now(),
+                            value = c(lubridate::now()-lubridate::days(7),
+                                      lubridate::now()),
                             todayButton = FALSE,
                             addon = "none",
                             inline = TRUE,
+                            separator = " to ",
                             range = FALSE,
-                            minDate = "2018-01-01",
-                            width = "100%"
-
+                            maxDate = lubridate::now(tzone = TIMEZONE),
+                            minDate = lubridate::ymd(20180102)
                         ),
 
                         shinyWidgets::radioGroupButtons(
@@ -352,18 +384,29 @@ ui <- function(request) {
                             label = tags$h4("View Past"),
                             choices = c( "3 Days" = 3,
                                          "7 Days" = 7,
+                                         "15 Days" = 15,
                                          "30 Days" = 30 ),
-                            justified = TRUE
+                            justified = T,
+                            direction = "vertical",
+                            individual = F,
+                            checkIcon = list(
+                                yes = tags$i(class = "fa fa-check",
+                                             style = "color: #008cba"))
+
                         ),
 
-                        tags$br(),
+                        tags$hr(),
                         shiny::downloadButton(
-                            outputId = "download_data"
+                            outputId = "download_data",
+                            label = "Download"
+                        ),
+                        shiny::bookmarkButton(
+                            label = tags$small("Share..."),
+                            icon = shiny::icon("share-square"),
+                            title = "Copy Link to Share",
+                            id = "de_bookmark"
                         )
                     ),
-
-                    # Display selection mini table
-                    # shiny::tableOutput(outputId = "mini_table"),
 
                     shiny::tableOutput("de_debug"),
 
@@ -380,13 +423,9 @@ ui <- function(request) {
                         icon_off = icon("question-circle", class = "solid")
                     ),
 
-
-
                     shiny::textOutput(
                         outputId = "de_help_text"
                     )
-
-
                 ),
 
                 # Meta explorer
@@ -400,17 +439,15 @@ ui <- function(request) {
                 # Data explorer
                 shiny::column(
                     width = 10,
-                    # shiny::dataTableOutput(
-                    #     outputId = "data_explorer"
-                    # )
+
                     DT::dataTableOutput(
                         outputId = "data_explorer"
-                    )
+                    ) %>% loadSpinner()
                 )
             )
         ),
 
-        # ------ NavTab 3 ------------------------------------------------------
+        # ------ NavTab 3 - Latest ---------------------------------------------
 
         shiny::tabPanel(
 
@@ -418,19 +455,13 @@ ui <- function(request) {
             value = "latest",
             shiny::fluidRow(
                 shiny::column(
-
                     width = 2,
-
-                    # Latest leaflet display
-                    # leaflet::leafletOutput(
-                    #     outputId = "latest_leaflet", height = 400
-                    # ),
 
                     shiny::wellPanel(
                         shinyWidgets::pickerInput(
                             inputId = "latest_comm_select",
                             label = tags$h4("Community"),
-                            choices = c("All..." = "all",PAS_COMM),
+                            choices = c("All..." = "all", PAS_COMM),
                             options = list(title = "Select community...")
                         ),
 
@@ -440,18 +471,17 @@ ui <- function(request) {
                             choices = "",
                             options = list(
                                 `live-search` = TRUE,
-                                title = "Select sensor...",
+                                title = "Select Sensor...",
                                 size = 7)
                         ),
 
-                        # Display selection mini table
-                        shiny::tableOutput(outputId = "Latest_mini_table"),
+                        tags$hr(),
 
-                        tags$br(),
-
+                        tags$h4("Get Latest Data"),
                         shiny::actionButton(
                             inputId = "loadButton",
-                            label = "Load Latest"
+                            label = "Load...",
+                            icon = shiny::icon("cloud-download-alt")
                         )
                     ),
 
@@ -467,29 +497,23 @@ ui <- function(request) {
                         icon_on = icon("question-circle", class = "regular"),
                         icon_off = icon("question-circle", class = "solid")
                     )
-
                 ),
 
 
                 shiny::column(
                     width = 10,
-
-
-                    # dygraphs::dygraphOutput(
-                    #     outputId = "dygraph_plot"
-                    # ),
-                    #
-
-                    shiny::plotOutput(
-                        outputId = "aux_plot",
-                        height = 850
+                    shiny::uiOutput("latest_pageTitle"),
+                    shiny::wellPanel(
+                        shiny::plotOutput(
+                            outputId = "latest_plot",
+                            height = 850
+                        ) %>% loadSpinner()
                     )
                 )
-
             )
         ),
 
-        # ------ NavTab 4 ------------------------------------------------------
+        # ------ NavTab 4 - About ----------------------------------------------
 
         shiny::tabPanel(
 
@@ -497,7 +521,7 @@ ui <- function(request) {
             value = "about",
             shiny::column(width = 3),
             shiny::column(
-                width = 5,
+                width = 6,
                 fluidRow(
                     tags$h2("About AirShiny"), align = "center"),
                 tags$h3("Purpose"),
@@ -528,9 +552,27 @@ ui <- function(request) {
                     revision at any time depending on the needs of the project."
                 )
 
-            )
+            ),
+            shiny::column(width = 3)
 
-        )
+        ),
+        # ----- Custom CSS -----------------------------------------------------
+
+        # Pad the top of the page
+        tags$style(
+            type="text/css",
+            "body {
+                padding-top: 70px;
+            }"),
+
+        # Change airdatepicker date selection color
+        tags$style(
+            type="text/css",
+            ".datepicker--cell.-selected-,
+            .datepicker--cell.-selected-.-current- {
+                color:#fff;
+                background:#008cba
+            }")
 
     )
 

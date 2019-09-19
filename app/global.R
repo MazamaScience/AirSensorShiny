@@ -13,7 +13,7 @@ library(AirSensor)
 library(MazamaCoreUtils)
 
 # Version
-VERSION <<- "0.4.2"
+VERSION <<- "0.5"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
@@ -23,7 +23,6 @@ R_utils <- list.files('utils', pattern='^shiny_.+\\.R', full.names=TRUE)
 for ( file in R_utils ) {
   source( file.path(getwd(),file) )
 }
-
 
 # ----- Set up logging ---------------------------------------------------------
 
@@ -54,6 +53,11 @@ logger.debug("LOG_DIR = %s", LOG_DIR)
 
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+
+
+# Load SENSORS
+SENSORS <<- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
+
 
 # Helpful conversion list
 CommunityById <- list(
@@ -95,12 +99,15 @@ IdByCommunity <- list(
 TIMEZONE <<- "America/Los_Angeles"
 
 # Define global pas object
-PAS <<- AirSensor::pas_load(archival = TRUE) # TODO:  Should we add "archival = TRUE"?
+PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
 
 # NOTE: These are intended to be temporary "translations"
-PAS$communityRegion[PAS$communityRegion=="SCAH"] <- "Oakland"
-PAS$communityRegion[PAS$communityRegion=="SCUV"] <- "West Los Angeles"
-PAS$communityRegion[PAS$communityRegion=="SCAN"] <- "Richmond"
+PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAH"] <- "Oakland"
+PAS$communityRegion[PAS$communityRegion=="SCUV"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
+PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
+  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAN"] <- "Richmond"
 
 
 # Define global communities
@@ -108,7 +115,7 @@ PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
 main_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   On this page, you can view all of the air quality sensors deployed through the
   US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
@@ -132,7 +139,7 @@ main_helpTxt <<-
 
 comparison_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   Once you select a sensor, the map will display the location of the nearest regulatory
   monitoring station (or AirNow site), and the plots will provide a comparison of the data
@@ -157,7 +164,7 @@ comparison_helpTxt <<-
 
 dailyPatterns_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   This tab illustrates the average daily trends for a single sensor using
   two different plots. The bar plot (on the left) lays out the average PM2.5
@@ -171,7 +178,7 @@ dailyPatterns_helpTxt <<-
 
 raw_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   Here you can view the “raw data” for the selected sensor, during the
   time frame selected. This data has undergone minimal QA/QC allowing
@@ -189,7 +196,7 @@ raw_helpTxt <<-
 
 animation_helpTxt <<-
   shiny::HTML(
-  "<small>
+    "<small>
   <p>
   On this page you can view animations of hourly average PM2.5 mass
   concentrations changing over time. Choose your community and a time
