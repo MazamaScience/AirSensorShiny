@@ -39,15 +39,19 @@ SERVICE_PATH=airsensor-shiny/v1
 SERVICE_PATH_TEST=airsensor-shiny/test
 
 
-# first version . airsensorshiny 1.3.5 . near-final
-VERSION=1.3.5
+# NOTE:  Version associated with R packages and shiny-server code
+SERVER_VERSION=1.3.6
+
+# NOTE:  Version associated with Shiny app
+# first version . airsensorshiny 1.3.6 . near-final
+APP_VERSION=0.5.1
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
 
 desktop_build:
 	-mkdir airsensorshiny/output
-	docker build -t airsensor-shiny-desktop:$(VERSION) \
+	docker build -t airsensor-shiny-desktop:$(APP_VERSION) \
 		-t airsensor-shiny-desktop:latest -f docker/Dockerfile-test .
 
 desktop_up:
@@ -71,7 +75,7 @@ desktop_reboot: desktop_build desktop_down desktop_up
 
 test_build:
 	-mkdir airsensorshiny/test
-	docker build -t airsensor-shiny-test:$(VERSION) \
+	docker build -t airsensor-shiny-test:$(APP_VERSION) \
 		-t airsensor-shiny-test:latest -f docker/Dockerfile-test .
 
 test_up:
@@ -105,5 +109,5 @@ test_reboot: test_build test_down test_up
 # AirSensorShiny DOCKER CORE ---------------------------------------------------
 
 airsensorshiny_build:
-	docker build -t mazamasciece/airsensorshiny:$(VERSION) -f Dockerfile-airsensorshiny .
+	cd docker; docker build -t mazamascience/airsensorshiny:$(SERVER_VERSION) -f Dockerfile-airsensorshiny .
 

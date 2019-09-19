@@ -6,8 +6,8 @@ FROM rocker/shiny:3.6.0
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
 
-LABEL build_date="2019-09-18"
-LABEL version="1.3.5"
+LABEL build_date="2019-09-19"
+LABEL version="1.3.6"
 
 LABEL description="AirShiny Docker Image"
 
@@ -90,16 +90,14 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	shinybusy \
 	shinycssloaders
 
-# Install AirMonitorPlots
+# Install latest versions of Mazama packages
 RUN installGithub.r \
+	MazamaScience/MazamaCoreUtils \
+	MazamaScience/PWFSLSmoke \
 	MazamaScience/AirMonitorPlots
 
-# Install latest MazmamaCore utils
-RUN installGithub.r \
-	MazamaScience/MazamaCoreUtils
-
 # Copy the AirSensor package to image
-COPY /src/AirSensor_0.4.10.tar.gz /
+COPY AirSensor_0.4.10.tar.gz /
 
 # Install the AirSensor package
 RUN R CMD INSTALL AirSensor_0.4.10.tar.gz

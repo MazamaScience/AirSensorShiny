@@ -9,9 +9,13 @@
 # - Mazama Science
 #
 
+# NOTE:  library() packages for access and to make them appear in sessionInfo()
 library(futile.logger)
 library(MazamaCoreUtils)
 library(AirSensor)
+library(PWFSLSmoke)
+library(AirMonitorPlots)
+library(worldmet)
 
 # Version
 VERSION <<- "0.5.1"
