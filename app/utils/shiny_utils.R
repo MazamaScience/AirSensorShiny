@@ -73,12 +73,13 @@ memory_debug <-
   }
 
 loadSpinner <-
-  function(ui_element) {
+  function(ui_element, ...) {
     loader <-
       shinycssloaders::withSpinner(
         ui_element = ui_element,
         color = "#008cba",
-        type = 7
+        type = 7,
+        ...
       )
     return(loader)
   }

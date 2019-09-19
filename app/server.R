@@ -341,7 +341,6 @@ server <-
             "Please select a sensor to compare with the nearest monitor."
           )
 
-          shiny::incProgress(0.6)
           compPlot <- AirSensor::pat_monitorComparison(active$pat)
 
           return(compPlot)
@@ -526,8 +525,6 @@ server <-
             "Please select a sensor."
           )
 
-          shiny::incProgress(0.7)
-
           dates <- getDates()
           patternPlot <-
             shiny_diurnalPattern(
@@ -561,7 +558,6 @@ server <-
         shiny::renderPlot({
 
           latest <- thingspeakLatest()
-          shiny::incProgress(0.666)
 
           auxPlot <-
             AirSensor::pat_multiplot(
@@ -612,8 +608,6 @@ server <-
             ) %>%
             DT::formatRound(columns = 1, digits = 2)
 
-          shiny::incProgress(0.6)
-
           return(table)
 
         })
@@ -625,7 +619,6 @@ server <-
           shiny::req(active$sensor)
 
           shinyjs::reset("dySummary_plot")
-          shiny::incProgress(0.7)
 
           dates <- getDates()
           result <-
@@ -807,6 +800,8 @@ server <-
 
         # If on the comparison tab -> update the comparison leaflet
         if ( active$tab == "comp" ) {
+
+          shiny::req(active$label)
 
           dates <- getDates()
 

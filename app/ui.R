@@ -271,7 +271,7 @@ ui <- function(request) {
                                     shiny::wellPanel(
                                         DT::dataTableOutput(
                                             outputId = "comparison_table"
-                                        ) %>% loadSpinner()
+                                        ) %>% loadSpinner(proxy.height = "200px")
                                     ),
 
                                     tags$h4("Sensor-Monitor Correlation"),
