@@ -9,8 +9,9 @@
 # - Mazama Science
 #
 
-library(AirSensor)
+library(futile.logger)
 library(MazamaCoreUtils)
+library(AirSensor)
 
 # Version
 VERSION <<- "0.5.1"

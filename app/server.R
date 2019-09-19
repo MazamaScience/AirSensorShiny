@@ -340,10 +340,18 @@ server <-
 
           result <-
             try({
+              logger.trace("label = %s, pwfsl_closestMonitorID = %s",
+                           active$pat$meta$label,
+                           active$pat$meta$pwfsl_closestMonitorID)
+              tlim <- range(active$pat$data$datetime)
+              logger.trace("trange = c(%s, %s)",
+                           strftime(tlim[1], tz = "UTC"),
+                           strftime(tlim[2], tz = "UTC"))
               compPlot <- AirSensor::pat_monitorComparison(active$pat)
-              }, silent = TRUE)
+            }, silent = TRUE)
 
           if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
             handleError(
               AirSensor::pat_isPat(active$pat),
               "Please select a sensor to compare with the nearest monitor."
@@ -435,6 +443,7 @@ server <-
             }, silent = FALSE)
 
           if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
             notify("Rose Plot Failed")
             handleError("", paste0(active$label, ": Rose Plot Unavailable"))
           }
@@ -639,6 +648,7 @@ server <-
             }, silent = TRUE)
 
           if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
             notify("Summary Failed")
             handleError("", paste0(active$label, ": Failed"))
           }
@@ -673,6 +683,7 @@ server <-
             })
 
           if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
             handleError("", "")
           }
 
@@ -691,6 +702,7 @@ server <-
               shiny_internalFit(pat = active$pat, whichPlot = "lm") })
 
           if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
             handleError("", "")
           }
 
