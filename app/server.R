@@ -336,12 +336,19 @@ server <-
         shiny::renderCachedPlot({
           req(active$pat)
 
-          handleError(
-            AirSensor::pat_isPat(active$pat),
-            "Please select a sensor to compare with the nearest monitor."
-          )
 
-          compPlot <- AirSensor::pat_monitorComparison(active$pat)
+
+          result <-
+            try({
+              compPlot <- AirSensor::pat_monitorComparison(active$pat)
+              }, silent = TRUE)
+
+          if ( "try-error" %in% class(result) ) {
+            handleError(
+              AirSensor::pat_isPat(active$pat),
+              "Please select a sensor to compare with the nearest monitor."
+            )
+          }
 
           return(compPlot)
 
