@@ -6,7 +6,7 @@ services:
       ports: 
           - "6709:3838"
       volumes: 
-          - /var/www/html/logs/airsensor-shiny/test/app:/var/log/shiny-server/
+          - /var/www/tools.mazamascience.com/html/logs/airsensor-shiny/test/app:/var/log/shiny-server/
       restart: unless-stopped
   
 #networks:
