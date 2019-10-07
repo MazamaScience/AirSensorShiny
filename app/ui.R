@@ -153,6 +153,29 @@ ui <- function(request) {
                             )
                         ),
 
+                        # ---- Calendar tab ----
+
+                        shiny::tabPanel(
+
+                            title = tags$b("Calendar"),
+                            icon = shiny::icon("calendar-alt"),
+                            value = "calendar",
+
+                            tags$br(),
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 12,
+                                    tags$h4("Calendar View"),
+                                    shiny::wellPanel(
+                                        shiny::plotOutput(
+                                            outputId = "calendar_plot",
+                                            height = "800"
+                                        ) %>% loadSpinner()
+                                    )
+                                )
+                            )
+                        ),
+
                         # ---- Raw data tab ----
                         shiny::tabPanel(
                             title = tags$b("Raw Data"),
