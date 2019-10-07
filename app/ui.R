@@ -167,9 +167,9 @@ ui <- function(request) {
                                     width = 12,
                                     tags$h4("Calendar View"),
                                     shiny::wellPanel(
-                                        shiny::plotOutput(
+                                        plotly::plotlyOutput(
                                             outputId = "calendar_plot",
-                                            height = "800"
+                                            height = 700
                                         ) %>% loadSpinner()
                                     )
                                 )
@@ -595,7 +595,15 @@ ui <- function(request) {
             .datepicker--cell.-selected-.-current- {
                 color:#fff;
                 background:#008cba
-            }")
+            }"),
+
+        # Hide plotly toolbar
+        tags$style(
+            type = "text/css",
+            ".modebar{
+                display: none !important;
+            }"
+        )
 
     )
 

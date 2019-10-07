@@ -300,6 +300,18 @@ server <-
         })
       }
 
+    renderCalendar <-
+      function() {
+        plotly::renderPlotly({
+          # calendar <- sensor_calendarPlot(sensor = active$sensor, ncol = 4)
+          calendar <-
+            plotly::ggplotly(
+              p = sensor_calendarPlot(active$sensor, ncol = 4)
+            )
+          return(calendar)
+        })
+      }
+
     # Render Selected mini table
     renderMiniTable <-
       function() {
@@ -1219,6 +1231,9 @@ server <-
     output$leaflet <- renderLeaf()
     output$dySummary_plot <- renderDygraphSummary()
     output$sensorIsSelected <- shiny::renderUI({"Please Select a Sensor."})
+
+    # - Calendar Tab -
+    output$calendar_plot <- renderCalendar()
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()
