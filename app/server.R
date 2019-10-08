@@ -306,8 +306,13 @@ server <-
           # calendar <- sensor_calendarPlot(sensor = active$sensor, ncol = 4)
           calendar <-
             plotly::ggplotly(
-              p = sensor_calendarPlot(active$sensor, ncol = 4)
-            )
+              p = sensor_calendarPlot(active$sensor, ncol = 4) +
+                scale_fill_sqamd()
+            ) %>%
+            plotly::config(displayModeBar = FALSE, showAxisDragHandles = FALSE, showAxisRangeEntryBoxes = FALSE) %>%
+            plotly::layout(xaxis = list(fixedrange=TRUE)) %>%
+            plotly::layout(yaxis = list(fixedrange = TRUE))
+
           return(calendar)
         })
       }

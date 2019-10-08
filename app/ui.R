@@ -586,7 +586,8 @@ ui <- function(request) {
             type="text/css",
             "body {
                 padding-top: 70px;
-            }"),
+            }"
+        ),
 
         # Change airdatepicker date selection color
         tags$style(
@@ -595,13 +596,22 @@ ui <- function(request) {
             .datepicker--cell.-selected-.-current- {
                 color:#fff;
                 background:#008cba
-            }"),
+            }"
+        ),
 
-        # Hide plotly toolbar
+        # Hide plotly toolbar on all plotly plots
         tags$style(
             type = "text/css",
             ".modebar{
                 display: none !important;
+            }"
+        ),
+
+        # Change wellpanel background to match plots
+        tags$style(
+            type = "text/css",
+            ".well {
+                background-color: #fff;
             }"
         )
 
