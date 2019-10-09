@@ -303,17 +303,10 @@ server <-
     renderCalendar <-
       function() {
         plotly::renderPlotly({
-          # calendar <- sensor_calendarPlot(sensor = active$sensor, ncol = 4)
-          calendar <-
-            plotly::ggplotly(
-              p = sensor_calendarPlot(active$sensor, ncol = 4) +
-                scale_fill_sqamd()
-            ) %>%
-            plotly::config(displayModeBar = FALSE, showAxisDragHandles = FALSE, showAxisRangeEntryBoxes = FALSE) %>%
-            plotly::layout(xaxis = list(fixedrange=TRUE)) %>%
-            plotly::layout(yaxis = list(fixedrange = TRUE))
 
-          return(calendar)
+          pp_cal <- shiny_calendarPlot(pat = active$pat)
+
+          return(pp_cal)
         })
       }
 
@@ -352,8 +345,6 @@ server <-
       function() {
         shiny::renderCachedPlot({
           req(active$pat)
-
-
 
           result <-
             try({
