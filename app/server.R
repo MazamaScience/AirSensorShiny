@@ -1052,9 +1052,9 @@ server <-
             closeOnClickOutside = TRUE
           )
         }
-        shinyjs::hide(id = "dySummary_plot", anim = FALSE)
+        shinyjs::hide(id = "summary_barplot", anim = FALSE)
       } else {
-        shinyjs::show(id = "dySummary_plot", anim = TRUE)
+        shinyjs::show(id = "summary_barplot", anim = TRUE)
         shinyjs::hide(id = "sensorIsSelected", anim = FALSE)
       }
 
@@ -1163,7 +1163,13 @@ server <-
         "comparison_table_search",
         "comparison_table_state",
         "de_bookmark",
-        "exp_bookmark"
+        "exp_bookmark",
+        ".clientValue-default-plotlyCrosstalkOpts",
+        "plotly_hover-A",
+        "plotly_relayout-A",
+        "plotly_doubleclick-A",
+        "plotly_click-A",
+        "plotly_afterplot-A"
       )
     )
 

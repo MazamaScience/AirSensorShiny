@@ -78,7 +78,7 @@ loadSpinner <-
       shinycssloaders::withSpinner(
         ui_element = ui_element,
         color = "#008cba",
-        type = 7,
+        type = 6,
         ...
       )
     return(loader)
