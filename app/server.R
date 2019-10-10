@@ -300,6 +300,32 @@ server <-
         })
       }
 
+    renderBarPlotly <-
+      function() {
+        plotly::renderPlotly({
+
+          shiny::req(active$sensor)
+
+          dates <- getDates()
+          result <-
+            try({
+              bp <-
+                shiny_barplotly(
+                  sensor = active$sensor,
+                  startdate = dates[1],
+                  enddate = dates[2]
+                )
+            }, silent = TRUE)
+
+          if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
+            notify("Summary Failed")
+            handleError("", paste0(active$label, ": Failed"))
+          }
+          return(bp)
+        })
+      }
+
     renderCalendar <-
       function() {
         plotly::renderPlotly({
@@ -307,6 +333,7 @@ server <-
           pp_cal <- shiny_calendarPlot(pat = active$pat)
 
           return(pp_cal)
+
         })
       }
 
@@ -1225,7 +1252,8 @@ server <-
 
     # - Overview Tab -
     output$leaflet <- renderLeaf()
-    output$dySummary_plot <- renderDygraphSummary()
+    # output$dySummary_plot <- renderDygraphSummary()
+    output$summary_barplot <- renderBarPlotly()
     output$sensorIsSelected <- shiny::renderUI({"Please Select a Sensor."})
 
     # - Calendar Tab -

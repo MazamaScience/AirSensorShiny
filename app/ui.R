@@ -145,8 +145,12 @@ ui <- function(request) {
 
                                 shiny::wellPanel(
                                     shiny::uiOutput(outputId = "sensorIsSelected"),
-                                    dygraphs::dygraphOutput(
-                                        "dySummary_plot",
+                                    # dygraphs::dygraphOutput(
+                                    #     "dySummary_plot",
+                                    #     height = 330
+                                    # )
+                                    plotly::plotlyOutput(
+                                        "summary_barplot",
                                         height = 330
                                     )
                                 )
