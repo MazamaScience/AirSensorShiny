@@ -18,14 +18,14 @@ ui <- function(request) {
     shiny::navbarPage(
 
         # ------ Nav Bar -------------------------------------------------------
-        title = tags$b("AirShiny (Beta)"),
+        title = tags$b("AirSensor Viewer (Beta)"),
         theme = shinythemes::shinytheme("yeti"),
         inverse = TRUE,
         id = "navtab",
         fluid = TRUE,
         collapsible = TRUE,
         position = "fixed-top",
-        windowTitle = "AirShiny (Beta)",
+        windowTitle = "AirSensor Viewer (Beta)",
 
         # ------ NavTab 1 - Explore --------------------------------------------
         shiny::tabPanel(

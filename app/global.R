@@ -18,7 +18,7 @@ library(AirMonitorPlots)
 library(worldmet)
 
 # Version
-VERSION <<- "0.5.1"
+VERSION <<- "0.6"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
