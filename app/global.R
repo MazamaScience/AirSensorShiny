@@ -118,7 +118,7 @@ PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
 # Define global communities
 PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
-main_helpTxt <<-
+main_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -142,7 +142,7 @@ main_helpTxt <<-
   </small>"
   )
 
-comparison_helpTxt <<-
+comparison_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -167,7 +167,7 @@ comparison_helpTxt <<-
   </small>"
   )
 
-dailyPatterns_helpTxt <<-
+dailyPatterns_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -181,7 +181,7 @@ dailyPatterns_helpTxt <<-
   </small>"
   )
 
-raw_helpTxt <<-
+raw_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -199,7 +199,7 @@ raw_helpTxt <<-
   </small>"
   )
 
-animation_helpTxt <<-
+animation_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -212,4 +212,16 @@ animation_helpTxt <<-
   hours.
   </p>
   </small>"
+  )
+
+calendar_helpText <<-
+  shiny::HTML(
+    "<small>
+    <p>
+    The calendar shows the average daily PM2.5 mass concentrations. The greater
+    the PM2.5 concentration, the darker daily cell shade. If the daily cell is
+    white, a value was not recorded for the day. Hover over each day to view
+    the average daily PM2.5 mass concentration in \u03bcg / m\u00b3.
+    </p>
+    </small>"
   )
