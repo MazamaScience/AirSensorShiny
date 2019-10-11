@@ -56,12 +56,18 @@ logger.debug("LOG_DIR = %s", LOG_DIR)
 
 # ----- Global settings --------------------------------------------------------
 
+# Set Timezone
+TIMEZONE <<- "America/Los_Angeles"
+
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 
 # Load SENSORS
-SENSORS <<- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
+SENSORS <<-
+  AirSensor::sensor_loadYear( collection = "scaqmd",
+                              datestamp = 2019,
+                              timezone = TIMEZONE )#AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
 
 
 # Helpful conversion list
@@ -99,9 +105,6 @@ IdByCommunity <- list(
   "Sycamore Canyon" = "SCHS",
   "Temescal Valley" = "SCTV"
 )
-
-# Set Timezone
-TIMEZONE <<- "America/Los_Angeles"
 
 # Define global pas object
 PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.

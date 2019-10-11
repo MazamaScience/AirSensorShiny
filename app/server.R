@@ -330,7 +330,15 @@ server <-
       function() {
         plotly::renderPlotly({
 
-          pp_cal <- shiny_calendarPlot(pat = active$pat)
+          # shiny::req(active$sensor)
+          dates <- getDates()
+
+          # NOTE: Improve by implementing annual Sensor
+          tmp <- AirSensor::pat_load( label = active$pas$label,
+                                      startdate = paste0(lubridate::year(dates[1]), "0101"),
+                                      enddate = paste0(lubridate::year(dates[2]), "1231") )
+
+          pp_cal <- shiny_calendarPlot(tmp)
 
           return(pp_cal)
 
@@ -765,6 +773,15 @@ server <-
 
     # ----- Helper functions ---------------------------------------------------
 
+    # Overwrite the global sensors list for different years
+    loadAnnualSensors <-
+      function(startdate = NULL) {
+        SENSORS <-
+          AirSensor::sensor_loadYear( collection = "scaqmd",
+                                      datestamp = lubridate::year(startdate) )
+        return(SENSORS)
+      }
+
     # Handle download button
     downloadButton <-
       function() {
@@ -1027,6 +1044,17 @@ server <-
       active$latest_label,
       { active$label <- active$de_label <- active$latest_label }
     )
+
+    # shiny::observeEvent(
+    #   active$enddate,
+    #   {
+    #     # Update sensors on year change
+    #     if ( lubridate::year(active$enddate) != lubridate::year(active$sensor$data$datetime[1]) ) {
+    #       SENSORS <<- loadAnnualSensors(startdate = active$enddate)
+    #       active$sensor <- PWFSLSmoke::monitor_subset(ws_monitor = SENSORS, monitorIDs = active$label)
+    #     }
+    #   }
+    # )
 
     # Global observations
     shiny::observe({
