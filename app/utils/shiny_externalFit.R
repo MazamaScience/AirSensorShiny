@@ -39,6 +39,8 @@
 shiny_externalFit <-
   function(
   sensor = NULL,
+  startdate = NULL,
+  enddate = NULL,
   showPlot = TRUE,
   size = 1,
   pa_color = "purple",
@@ -61,15 +63,20 @@ shiny_externalFit <-
 
   # ----- Validate parameters --------------------------------------------------
 
-  if ( !PWFSLSmoke::monitor_isMonitor(sensor) )
+  if ( !PWFSLSmoke::monitor_isMonitor(sensor) ) {
     stop("Parameter 'pat' is not a valid 'pa_timeseries' object.")
-
-  if ( PWFSLSmoke::monitor_isEmpty(sensor) )
+  }
+  if ( PWFSLSmoke::monitor_isEmpty(sensor) ) {
     stop("Parameter 'pat' has no data.")
+  }
+
+  # Crop to dates
+
+  sensor <- PWFSLSmoke::monitor_subset(ws_monitor = sensor, tlim = c(startdate, enddate))
 
   # For easier access
-  meta <- sensor$meta
-  data <- sensor$data
+  # meta <- sensor$meta
+  # data <- sensor$data
 
   # ----- Assemble data ---------------------------------------------
 
@@ -125,8 +132,8 @@ shiny_externalFit <-
 
   if ( showPlot ) {
 
-    timezone <- meta$timezone[1]
-    year <- strftime(data$datetime[1], "%Y", tz=timezone)
+    timezone <- sensor$meta$timezone[1]
+    year <- strftime(sensor$data$datetime[1], "%Y", tz=timezone)
 
     # LH Linear regression plot
     lr_plot <-
