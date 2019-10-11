@@ -403,8 +403,11 @@ server <-
       function() {
         shiny::renderCachedPlot({
           req(active$sensor, active$label)
+          date <- getDates()
 
-          extPlot <- shiny_externalFit(sensor = active$sensor)
+          extPlot <- shiny_externalFit( sensor = active$sensor,
+                                        startdate = date[1],
+                                        enddate = date[2] )
 
           return(extPlot)
 
@@ -951,15 +954,17 @@ server <-
         shiny::req(active$tab)
 
         if ( active$tab == "main" ) {
-          txt <- main_helpTxt
+          txt <- main_helpText
         } else if ( active$tab == "comp") {
-          txt <- comparison_helpTxt
+          txt <- comparison_helpText
         } else if ( active$tab == "dp" ) {
-          txt <- dailyPatterns_helpTxt
+          txt <- dailyPatterns_helpText
         } else if ( active$tab == "raw" ) {
-          txt <- raw_helpTxt
+          txt <- raw_helpText
         } else if ( active$tab == "anim" ) {
-          txt <- animation_helpTxt
+          txt <- animation_helpText
+        } else if ( active$tab == "calendar" ) {
+          txt <- calendar_helpText
         }
 
         return(txt)
