@@ -1140,44 +1140,6 @@ server <-
 
     # ----- Bookmark & Restore -------------------------------------------------
 
-    # Exclude inputs for bookmarking
-    shiny::setBookmarkExclude(
-      c(isolate(names(input)),
-        "leaflet_zoom",
-        "leaflet_center",
-        "leaflet_bounds",
-        "shiny_leaflet_comparison_groups",
-        "shinyjs-resettable-dySummary_plot",
-        "shiny_leaflet_comparison_center",
-        "shiny_leaflet_comparison_bounds",
-        "dySummary_plot_date_window",
-        "shiny_leaflet_comparison_zoom",
-        "data_explorer_search",
-        "leaflet_click",
-        "data_explorer_rows_current",
-        "data_explorer_rows_all",
-        "data_explorer_cell_clicked",
-        "dySummary_plot_click",
-        "leaflet_marker_click",
-        "data_explorer_state",
-        "leaflet_marker_mouseover",
-        "leaflet_marker_mouseout",
-        "comparison_table_cell_clicked",
-        "comparison_table_rows_all",
-        "comparison_table_rows_current",
-        "comparison_table_search",
-        "comparison_table_state",
-        "de_bookmark",
-        "exp_bookmark",
-        ".clientValue-default-plotlyCrosstalkOpts",
-        "plotly_hover-A",
-        "plotly_relayout-A",
-        "plotly_doubleclick-A",
-        "plotly_click-A",
-        "plotly_afterplot-A"
-      )
-    )
-
     # Observe bookmarking button
     shiny::observeEvent(
       c(input$de_bookmark, input$exp_bookmark),
@@ -1245,6 +1207,9 @@ server <-
     # Update the url when bookmark button clicked
     shiny::onBookmarked(
       fun = function(url) {
+        url <- paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
+                       "?",
+                       stringr::str_match(url, "_values_(.*)")[1] )
         shiny::updateQueryString(url)
         shiny::showBookmarkUrlModal(url)
       },
