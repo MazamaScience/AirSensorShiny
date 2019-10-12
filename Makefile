@@ -106,6 +106,41 @@ test_bounce: test_down test_up
 
 test_reboot: test_build test_down test_up
 
+# AirSensorShiny JOULE version --------------------------------------------------
+
+joule_build:
+	-mkdir airsensorshiny/test
+	docker build -t airsensor-shiny-test:$(APP_VERSION) \
+		-t airsensor-shiny-test:latest -f docker/Dockerfile-test .
+
+joule_up:
+	docker-compose -f docker/docker-compose-test_joule.yml \
+		-p airsensorshinytest up -d
+
+joule_down:
+	docker-compose -f docker/docker-compose-test_joule.yml \
+		-p airsensorshinytest down
+
+joule_container_logs:
+	docker-compose -f docker/docker-compose-test_joule.yml \
+		-p airsensorshinytest logs
+
+joule_trace_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
+
+joule_debug_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
+
+joule_info_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
+
+joule_error_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
+
+joule_bounce: joule_down joule_up
+
+joule_reboot: joule_build joule_down joule_up
+
 # AirSensorShiny DOCKER CORE ---------------------------------------------------
 
 airsensorshiny_build:
