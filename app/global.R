@@ -18,7 +18,7 @@ library(AirMonitorPlots)
 library(worldmet)
 
 # Version
-VERSION <<- "0.5.1"
+VERSION <<- "0.6.0"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
@@ -56,12 +56,18 @@ logger.debug("LOG_DIR = %s", LOG_DIR)
 
 # ----- Global settings --------------------------------------------------------
 
+# Set Timezone
+TIMEZONE <<- "America/Los_Angeles"
+
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 
 # Load SENSORS
-SENSORS <<- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
+SENSORS <<-
+  AirSensor::sensor_loadYear( collection = "scaqmd",
+                              datestamp = 2019,
+                              timezone = TIMEZONE )#AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
 
 
 # Helpful conversion list
@@ -100,9 +106,6 @@ IdByCommunity <- list(
   "Temescal Valley" = "SCTV"
 )
 
-# Set Timezone
-TIMEZONE <<- "America/Los_Angeles"
-
 # Define global pas object
 PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
 
@@ -118,7 +121,7 @@ PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
 # Define global communities
 PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
-main_helpTxt <<-
+main_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -142,7 +145,7 @@ main_helpTxt <<-
   </small>"
   )
 
-comparison_helpTxt <<-
+comparison_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -167,7 +170,7 @@ comparison_helpTxt <<-
   </small>"
   )
 
-dailyPatterns_helpTxt <<-
+dailyPatterns_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -181,7 +184,7 @@ dailyPatterns_helpTxt <<-
   </small>"
   )
 
-raw_helpTxt <<-
+raw_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -199,7 +202,7 @@ raw_helpTxt <<-
   </small>"
   )
 
-animation_helpTxt <<-
+animation_helpText <<-
   shiny::HTML(
     "<small>
   <p>
@@ -212,4 +215,16 @@ animation_helpTxt <<-
   hours.
   </p>
   </small>"
+  )
+
+calendar_helpText <<-
+  shiny::HTML(
+    "<small>
+    <p>
+    The calendar shows the average daily PM2.5 mass concentrations. The greater
+    the PM2.5 concentration, the darker daily cell shade. If the daily cell is
+    white, a value was not recorded for the day. Hover over each day to view
+    the average daily PM2.5 mass concentration in \u03bcg / m\u00b3.
+    </p>
+    </small>"
   )

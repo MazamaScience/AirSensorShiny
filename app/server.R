@@ -300,6 +300,51 @@ server <-
         })
       }
 
+    renderBarPlotly <-
+      function() {
+        plotly::renderPlotly({
+
+          shiny::req(active$sensor)
+
+          dates <- getDates()
+          result <-
+            try({
+              bp <-
+                shiny_barplotly(
+                  sensor = active$sensor,
+                  startdate = dates[1],
+                  enddate = dates[2]
+                )
+            }, silent = TRUE)
+
+          if ( "try-error" %in% class(result) ) {
+            logger.trace(geterrmessage())
+            notify("Summary Failed")
+            handleError("", paste0(active$label, ": Failed"))
+          }
+          return(bp)
+        })
+      }
+
+    renderCalendar <-
+      function() {
+        plotly::renderPlotly({
+
+          # shiny::req(active$sensor)
+          dates <- getDates()
+
+          # NOTE: Improve by implementing annual Sensor
+          tmp <- AirSensor::pat_load( label = active$pas$label,
+                                      startdate = paste0(lubridate::year(dates[1]), "0101"),
+                                      enddate = paste0(lubridate::year(dates[2]), "1231") )
+
+          pp_cal <- shiny_calendarPlot(tmp)
+
+          return(pp_cal)
+
+        })
+      }
+
     # Render Selected mini table
     renderMiniTable <-
       function() {
@@ -336,8 +381,6 @@ server <-
         shiny::renderCachedPlot({
           req(active$pat)
 
-
-
           result <-
             try({
               logger.trace("label = %s, pwfsl_closestMonitorID = %s",
@@ -368,8 +411,11 @@ server <-
       function() {
         shiny::renderCachedPlot({
           req(active$sensor, active$label)
+          date <- getDates()
 
-          extPlot <- shiny_externalFit(sensor = active$sensor)
+          extPlot <- shiny_externalFit( sensor = active$sensor,
+                                        startdate = date[1],
+                                        enddate = date[2] )
 
           return(extPlot)
 
@@ -727,6 +773,15 @@ server <-
 
     # ----- Helper functions ---------------------------------------------------
 
+    # Overwrite the global sensors list for different years
+    loadAnnualSensors <-
+      function(startdate = NULL) {
+        SENSORS <-
+          AirSensor::sensor_loadYear( collection = "scaqmd",
+                                      datestamp = lubridate::year(startdate) )
+        return(SENSORS)
+      }
+
     # Handle download button
     downloadButton <-
       function() {
@@ -916,15 +971,17 @@ server <-
         shiny::req(active$tab)
 
         if ( active$tab == "main" ) {
-          txt <- main_helpTxt
+          txt <- main_helpText
         } else if ( active$tab == "comp") {
-          txt <- comparison_helpTxt
+          txt <- comparison_helpText
         } else if ( active$tab == "dp" ) {
-          txt <- dailyPatterns_helpTxt
+          txt <- dailyPatterns_helpText
         } else if ( active$tab == "raw" ) {
-          txt <- raw_helpTxt
+          txt <- raw_helpText
         } else if ( active$tab == "anim" ) {
-          txt <- animation_helpTxt
+          txt <- animation_helpText
+        } else if ( active$tab == "calendar" ) {
+          txt <- calendar_helpText
         }
 
         return(txt)
@@ -988,6 +1045,17 @@ server <-
       { active$label <- active$de_label <- active$latest_label }
     )
 
+    # shiny::observeEvent(
+    #   active$enddate,
+    #   {
+    #     # Update sensors on year change
+    #     if ( lubridate::year(active$enddate) != lubridate::year(active$sensor$data$datetime[1]) ) {
+    #       SENSORS <<- loadAnnualSensors(startdate = active$enddate)
+    #       active$sensor <- PWFSLSmoke::monitor_subset(ws_monitor = SENSORS, monitorIDs = active$label)
+    #     }
+    #   }
+    # )
+
     # Global observations
     shiny::observe({
 
@@ -1017,9 +1085,9 @@ server <-
             closeOnClickOutside = TRUE
           )
         }
-        shinyjs::hide(id = "dySummary_plot", anim = FALSE)
+        shinyjs::hide(id = "summary_barplot", anim = FALSE)
       } else {
-        shinyjs::show(id = "dySummary_plot", anim = TRUE)
+        shinyjs::show(id = "summary_barplot", anim = TRUE)
         shinyjs::hide(id = "sensorIsSelected", anim = FALSE)
       }
 
@@ -1100,38 +1168,6 @@ server <-
 
     # ----- Bookmark & Restore -------------------------------------------------
 
-    # Exclude inputs for bookmarking
-    shiny::setBookmarkExclude(
-      c(isolate(names(input)),
-        "leaflet_zoom",
-        "leaflet_center",
-        "leaflet_bounds",
-        "shiny_leaflet_comparison_groups",
-        "shinyjs-resettable-dySummary_plot",
-        "shiny_leaflet_comparison_center",
-        "shiny_leaflet_comparison_bounds",
-        "dySummary_plot_date_window",
-        "shiny_leaflet_comparison_zoom",
-        "data_explorer_search",
-        "leaflet_click",
-        "data_explorer_rows_current",
-        "data_explorer_rows_all",
-        "data_explorer_cell_clicked",
-        "dySummary_plot_click",
-        "leaflet_marker_click",
-        "data_explorer_state",
-        "leaflet_marker_mouseover",
-        "leaflet_marker_mouseout",
-        "comparison_table_cell_clicked",
-        "comparison_table_rows_all",
-        "comparison_table_rows_current",
-        "comparison_table_search",
-        "comparison_table_state",
-        "de_bookmark",
-        "exp_bookmark"
-      )
-    )
-
     # Observe bookmarking button
     shiny::observeEvent(
       c(input$de_bookmark, input$exp_bookmark),
@@ -1199,6 +1235,9 @@ server <-
     # Update the url when bookmark button clicked
     shiny::onBookmarked(
       fun = function(url) {
+        url <- paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
+                       "?",
+                       stringr::str_match(url, "_values_(.*)")[1] )
         shiny::updateQueryString(url)
         shiny::showBookmarkUrlModal(url)
       },
@@ -1217,8 +1256,12 @@ server <-
 
     # - Overview Tab -
     output$leaflet <- renderLeaf()
-    output$dySummary_plot <- renderDygraphSummary()
+    # output$dySummary_plot <- renderDygraphSummary()
+    output$summary_barplot <- renderBarPlotly()
     output$sensorIsSelected <- shiny::renderUI({"Please Select a Sensor."})
+
+    # - Calendar Tab -
+    output$calendar_plot <- renderCalendar()
 
     # - Comparison Tab -
     output$shiny_leaflet_comparison <- renderLeaf()

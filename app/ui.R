@@ -18,14 +18,14 @@ ui <- function(request) {
     shiny::navbarPage(
 
         # ------ Nav Bar -------------------------------------------------------
-        title = tags$b("AirShiny (Beta)"),
+        title = tags$b("AirSensor Viewer (Beta)"),
         theme = shinythemes::shinytheme("yeti"),
         inverse = TRUE,
         id = "navtab",
         fluid = TRUE,
         collapsible = TRUE,
         position = "fixed-top",
-        windowTitle = "AirShiny (Beta)",
+        windowTitle = "AirSensor Viewer (Beta)",
 
         # ------ NavTab 1 - Explore --------------------------------------------
         shiny::tabPanel(
@@ -145,9 +145,32 @@ ui <- function(request) {
 
                                 shiny::wellPanel(
                                     shiny::uiOutput(outputId = "sensorIsSelected"),
-                                    dygraphs::dygraphOutput(
-                                        "dySummary_plot",
+                                    plotly::plotlyOutput(
+                                        "summary_barplot",
                                         height = 330
+                                    ) %>% loadSpinner()
+                                )
+                            )
+                        ),
+
+                        # ---- Calendar tab ----
+
+                        shiny::tabPanel(
+
+                            title = tags$b("Calendar"),
+                            icon = shiny::icon("calendar-alt"),
+                            value = "calendar",
+
+                            tags$br(),
+                            shiny::fluidRow(
+                                shiny::column(
+                                    width = 12,
+                                    tags$h4("Calendar View"),
+                                    shiny::wellPanel(
+                                        plotly::plotlyOutput(
+                                            outputId = "calendar_plot",
+                                            height = 700
+                                        ) %>% loadSpinner()
                                     )
                                 )
                             )
@@ -563,7 +586,8 @@ ui <- function(request) {
             type="text/css",
             "body {
                 padding-top: 70px;
-            }"),
+            }"
+        ),
 
         # Change airdatepicker date selection color
         tags$style(
@@ -572,7 +596,24 @@ ui <- function(request) {
             .datepicker--cell.-selected-.-current- {
                 color:#fff;
                 background:#008cba
-            }")
+            }"
+        ),
+
+        # Hide plotly toolbar on all plotly plots
+        tags$style(
+            type = "text/css",
+            ".modebar{
+                display: none !important;
+            }"
+        ),
+
+        # Change wellpanel background to match plots
+        tags$style(
+            type = "text/css",
+            ".well {
+                background-color: #fff;
+            }"
+        )
 
     )
 
