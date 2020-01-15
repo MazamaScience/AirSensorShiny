@@ -229,21 +229,20 @@ server <-
 
         # NOTE: ifelse function does not work here...
         if ( community == "all" )  {
-          sensors <- SENSORS
-
+          labels <- SENSORS$meta$monitorID
+        } else if ( grepl("Richmond|West Los Angeles|Oakland", community) ) {
+          # HACKY: fix to deal with requested communtiy names
+          tmp_com <- if (community=="Richmond") "SCAN" else if (community=="Oakland") "SCAH" else "SCUV"
+          labels <- SENSORS$meta$monitorID[grepl(tmp_com, SENSORS$meta$communityRegion)]
         } else {
-
-          labels <-
-            SENSORS$meta$monitorID[grepl(community,
-                                         SENSORS$meta$communityRegion)]
-
-          sensors <-
-            PWFSLSmoke::monitor_subset(
-              ws_monitor = SENSORS,
-              monitorIDs = labels
-            )
-
+          labels <- SENSORS$meta$monitorID[grepl(community, SENSORS$meta$communityRegion)]
         }
+
+        sensors <-
+          PWFSLSmoke::monitor_subset(
+            ws_monitor = SENSORS,
+            monitorIDs = labels
+          )
 
         return(sensors)
 
