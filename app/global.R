@@ -64,11 +64,11 @@ AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 
 # Load SENSORS
-SENSORS <<-
+SENSORS <<- function(year) {
   AirSensor::sensor_loadYear( collection = "scaqmd",
-                              datestamp = 2019,
-                              timezone = TIMEZONE )#AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
-
+                              datestamp = year,
+                              timezone = TIMEZONE )
+}
 
 # Helpful conversion list
 CommunityById <- list(
@@ -108,14 +108,16 @@ IdByCommunity <- list(
 
 # Define global pas object
 PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
-
+# Define System Year
+SYSYEAR <<- strftime(Sys.Date(), "%Y")
+TMP_SENS <- SENSORS(SYSYEAR)
 # NOTE: These are intended to be temporary "translations"
 PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAH"] <- "Oakland"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCAH"] <- "Oakland"
 PAS$communityRegion[PAS$communityRegion=="SCUV"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
 PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAN"] <- "Richmond"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCAN"] <- "Richmond"
 
 
 # Define global communities
