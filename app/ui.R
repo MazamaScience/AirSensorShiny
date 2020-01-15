@@ -60,7 +60,7 @@ ui <- function(request) {
                         shinyWidgets::pickerInput(
                             inputId = "pas_select",
                             label = tags$h4("Sensor"),
-                            choices = "",
+                            choices = SENSORS$meta$monitorID,
                             options = list(
                                 `live-search` = TRUE,
                                 title = "Select sensor...",
