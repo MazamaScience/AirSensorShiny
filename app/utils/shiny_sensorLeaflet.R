@@ -25,6 +25,7 @@
 #' @param radius Radius (pixels) of monitor circles.
 #' @param opacity Opacity of monitor circles.
 #' @param maptype Optional name of leaflet ProviderTiles to use, e.g. \code{terrain}.
+#' @param pat Optional pat for date range extensions of marker colors.
 #'
 #' @return A leaflet "plot" object which, if not assigned, is rendered in
 #' Rstudio's 'Viewer' tab.
@@ -38,7 +39,8 @@ shiny_sensorLeaflet <- function(
   colorBins = NULL,
   radius = 8,
   opacity = 0.8,
-  maptype = "terrain"
+  maptype = "terrain",
+  pat = NULL
 ) {
 
   # ----- Validate parameters --------------------------------------------------
@@ -95,6 +97,7 @@ shiny_sensorLeaflet <- function(
 
   # ----- Generate colors ------------------------------------------------------
 
+
   # Calcualte average value per sensor
   mean_pm25 <-
     sensor %>%
@@ -102,6 +105,7 @@ shiny_sensorLeaflet <- function(
     sensor_extractData() %>%
     dplyr::select(-datetime) %>%
     colMeans(na.rm = TRUE)
+
 
   # Default bins
   if ( is.null(colorBins) ) {
