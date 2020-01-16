@@ -327,19 +327,14 @@ server <-
         plotly::renderPlotly({
           # shiny::req(active$sensor)
           dates <- getDates()
-
           # NOTE: Improve by implementing annual Sensor
-          tmp <- tryCatch(
-            AirSensor::pat_load( label = active$pas$label,
-                                 startdate = paste0(lubridate::year(dates[1]), "0101"),
-                                 enddate = paste0(lubridate::year(dates[2]), "1231") ),
-            error = handleError(FALSE, paste0(active$label, ": Selected Date Unavailable"))
-            )
-
+          tmp <- AirSensor::pat_load( label = active$pas$label,
+                                     startdate = paste0(lubridate::year(dates[1]), "0101"),
+                                     enddate = paste0(lubridate::year(dates[2]), "1231") )
+          handleError(AirSensor::pat_isPat(tmp) | AirSensor::pat_isEmpty(tmp),
+                      "Calendar failed. Please select a different sensor.")
           pp_cal <- shiny_calendarPlot(tmp)
-
           return(pp_cal)
-
         })
       }
 
@@ -376,32 +371,36 @@ server <-
     # Render the monitor comparison plot
     renderMonitorComp <-
       function() {
-        shiny::renderCachedPlot({
+        shiny::renderPlot({
           req(active$pat)
 
-          result <-
-            try({
               logger.trace("label = %s, pwfsl_closestMonitorID = %s",
                            active$pat$meta$label,
                            active$pat$meta$pwfsl_closestMonitorID)
               tlim <- range(active$pat$data$datetime)
+
               logger.trace("trange = c(%s, %s)",
                            strftime(tlim[1], tz = "UTC"),
                            strftime(tlim[2], tz = "UTC"))
-              compPlot <- AirSensor::pat_monitorComparison(active$pat)
-            }, silent = TRUE)
 
-          if ( "try-error" %in% class(result) ) {
+              # NOTE: ggplot2 does not seem to play well with Shiny and tryCatch
+              compPlot <- AirSensor::pat_monitorComparison(active$pat)
+
+              handleError(
+                ggplot2::is.ggplot(compPlot),
+                "Comparison plot failed. Please try a different sensor."
+              )
+
             logger.trace(geterrmessage())
             handleError(
               AirSensor::pat_isPat(active$pat),
               "Please select a sensor to compare with the nearest monitor."
             )
-          }
+
 
           return(compPlot)
 
-        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+        })#, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
       }
 
     # Render monitor & pas external fit plot
