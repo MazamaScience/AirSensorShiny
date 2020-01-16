@@ -300,24 +300,19 @@ server <-
       function() {
         plotly::renderPlotly({
 
-          shiny::req(active$sensor)
+          shiny::req(active$pat)
 
           dates <- getDates()
-          result <-
-            try({
-              bp <-
-                shiny_barplotly(
-                  sensor = active$sensor,
-                  startdate = dates[1],
-                  enddate = dates[2]
-                )
-            }, silent = TRUE)
+          # NOTE: Use the active$pat instead of the active$sensor to avoid year
+          # NOTE: issues with autoloaded SENSORS
+          tmp_sensor <- AirSensor::pat_createAirSensor(active$pat)
 
-          if ( "try-error" %in% class(result) ) {
-            logger.trace(geterrmessage())
-            notify("Summary Failed")
-            handleError("", paste0(active$label, ": Failed"))
-          }
+          bp <- tryCatch(expr = {shiny_barplotly(tmp_sensor, dates[1], dates[2])},
+                         error = function(e) {
+                           handleError(FALSE, "Summary plot failed. Please select a different sensor or date(s).")
+                         }
+          )
+
           return(bp)
         })
       }
