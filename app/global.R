@@ -126,29 +126,29 @@ PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
 # Define global communities
 PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
-main_helpText <<-
-  shiny::HTML(
-    "<small>
-  <p>
-  On this page, you can view all of the air quality sensors deployed through the
-  US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
-  and Empower California Communities on the Use and Applications of
-  Low-cost Air Monitoring Sensors”. The drop down menus above allow you to
-  view individual participating communities or highlight individual sensors
-  within the pre-selected community. You can control the timeframe shown in
-  the bar plot by (1) choosing a date and (2) choosing a number of days to
-  “look back”.
-  </p>
-  <p>
-  The colors on the map illustrate the most recent hourly average PM2.5 value,
-  for each site. The bar plot (below the map), shows the hourly average PM2.5
-  values throughout the selected timeframe, for the selected site/sensor. The
-  calendar plot (to the right of the map) shows the historic daily averages for
-  the selected site/sensor. Note, the same color scale (in the bottom right)
-  defines the colors in the map, bar chart, and calendar plot.
-  </p>
-  </small>"
-  )
+# main_helpText <<- shiny::includeHTML(path = "app/res/help_overview.html")
+  # shiny::HTML(
+  #   "<small>
+  # <p>
+  # On this page, you can view all of the air quality sensors deployed through the
+  # US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
+  # and Empower California Communities on the Use and Applications of
+  # Low-cost Air Monitoring Sensors”. The drop down menus above allow you to
+  # view individual participating communities or highlight individual sensors
+  # within the pre-selected community. You can control the timeframe shown in
+  # the bar plot by (1) choosing a date and (2) choosing a number of days to
+  # “look back”.
+  # </p>
+  # <p>
+  # The colors on the map illustrate the most recent hourly average PM2.5 value,
+  # for each site. The bar plot (below the map), shows the hourly average PM2.5
+  # values throughout the selected timeframe, for the selected site/sensor. The
+  # calendar plot (to the right of the map) shows the historic daily averages for
+  # the selected site/sensor. Note, the same color scale (in the bottom right)
+  # defines the colors in the map, bar chart, and calendar plot.
+  # </p>
+  # </small>"
+  # )
 
 comparison_helpText <<-
   shiny::HTML(
