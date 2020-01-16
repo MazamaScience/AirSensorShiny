@@ -1,3 +1,8 @@
+# AirSensor DataViewer 0.7
+
+* Year 2020(Y2.02K) bug smashed :)
+* Resolved menu selection bugs. 
+
 # AirShiny 0.4
 
 * Added bookmarks
