@@ -15,10 +15,34 @@ MazamaCoreUtils::logger.debug("------ ui() ------")
 
 ui <- function(request) {
 
+    pas_selector <- shinyWidgets::pickerInput(
+        inputId = "pas_select",
+        label = tags$h4("Sensor"),
+        choices = SENSORS$meta$monitorID,
+        options = list(
+            `live-search` = TRUE,
+            title = "Select sensor...",
+            size = 7)
+    )
+
+    date_selector <- shinyWidgets::airDatepickerInput(
+        inputId = "date_select",
+        label = tags$h4("Date"),
+        value = c(lubridate::now()-lubridate::days(7),
+                  lubridate::now()),
+        todayButton = FALSE,
+        addon = "none",
+        inline = TRUE,
+        separator = " to ",
+        range = FALSE,
+        maxDate = lubridate::now(tzone = TIMEZONE),
+        minDate = lubridate::ymd(20180102)
+    )
+
     shiny::navbarPage(
 
         # ------ Nav Bar -------------------------------------------------------
-        title = tags$b("AirSensor Viewer (Beta)"),
+        title = tags$b("AirSensor DataViewer (Beta)"),
         theme = shinythemes::shinytheme("yeti"),
         inverse = TRUE,
         id = "navtab",
@@ -66,6 +90,8 @@ ui <- function(request) {
                                 title = "Select sensor...",
                                 size = 7)
                         ),
+                        # pas_selector,
+                        # date_selector,
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "date_select",
@@ -368,7 +394,7 @@ ui <- function(request) {
 
         shiny::tabPanel(
 
-            title = tags$b("Data Viewer"),
+            title = tags$b("View Data"),
             value = "dataview",
             shiny::fluidRow(
                 # ------ L Column ----------------------------------------------
@@ -381,12 +407,15 @@ ui <- function(request) {
                         shinyWidgets::pickerInput(
                             inputId = "de_pas_select",
                             label = tags$h4("Sensor"),
-                            choices = "",
+                            choices = SENSORS$meta$monitorID,
                             options = list(
                                 `live-search` = TRUE,
                                 title = "Select sensor...",
                                 size = 7)
                         ),
+
+                        # pas_selector,
+                        # date_selector,
 
                         shinyWidgets::airDatepickerInput(
                             inputId = "de_date_select",
@@ -491,7 +520,7 @@ ui <- function(request) {
                         shinyWidgets::pickerInput(
                             inputId = "latest_pas_select",
                             label = tags$h4("Sensor"),
-                            choices = "",
+                            choices = SENSORS$meta$monitorID,
                             options = list(
                                 `live-search` = TRUE,
                                 title = "Select Sensor...",
