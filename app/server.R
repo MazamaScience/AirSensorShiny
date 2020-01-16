@@ -11,27 +11,24 @@ server <-
     # Define active user selections
     # NOTE: This contains all active data to avoid redundant func and load.
     #       Update the active values only on trigger events.
-    active <-
-      shiny::reactiveValues(
-        pas = NULL,
-        pat = NULL,
-        label = NULL,
-        enddate = NULL,
-        community = NULL,
-        lookback = NULL,
-        marker = NULL,
-        compmarker = NULL,
-        tab = NULL,
-        navtab = NULL,
-        de_label = NULL,
-        latest_load = NULL,
-        latest_community = NULL,
-        latest_label = NULL,
-        communityId = NULL,
-        help = NULL,
-        worldmet = NULL,
-        sensor = NULL
-      )
+    active <- shiny::reactiveValues( pas = NULL,
+                                     pat = NULL,
+                                     label = NULL,
+                                     enddate = NULL,
+                                     community = NULL,
+                                     lookback = NULL,
+                                     marker = NULL,
+                                     compmarker = NULL,
+                                     tab = NULL,
+                                     navtab = NULL,
+                                     de_label = NULL,
+                                     latest_load = NULL,
+                                     latest_community = NULL,
+                                     latest_label = NULL,
+                                     communityId = NULL,
+                                     help = NULL,
+                                     worldmet = NULL,
+                                     sensor = NULL )
 
     # Update the active variable with an input variable
     updateActive <-
@@ -328,14 +325,16 @@ server <-
     renderCalendar <-
       function() {
         plotly::renderPlotly({
-
           # shiny::req(active$sensor)
           dates <- getDates()
 
           # NOTE: Improve by implementing annual Sensor
-          tmp <- AirSensor::pat_load( label = active$pas$label,
-                                      startdate = paste0(lubridate::year(dates[1]), "0101"),
-                                      enddate = paste0(lubridate::year(dates[2]), "1231") )
+          tmp <- tryCatch(
+            AirSensor::pat_load( label = active$pas$label,
+                                 startdate = paste0(lubridate::year(dates[1]), "0101"),
+                                 enddate = paste0(lubridate::year(dates[2]), "1231") ),
+            error = handleError(FALSE, paste0(active$label, ": Selected Date Unavailable"))
+            )
 
           pp_cal <- shiny_calendarPlot(tmp)
 
