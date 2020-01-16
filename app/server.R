@@ -288,8 +288,11 @@ server <-
               sensor = sensors,
               startdate = dates[1],
               enddate = dates[2],
-              maptype = "Stamen.TonerLite"
+              maptype = "Stamen.TonerLite",
+              pat = active$pat
             )
+
+
 
           return(leaf)
 
