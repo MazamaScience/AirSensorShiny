@@ -62,13 +62,13 @@ TIMEZONE <<- "America/Los_Angeles"
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
+# Define System Year
+SYSYEAR <<- strftime(Sys.Date(), "%Y")
 
 # Load SENSORS
-SENSORS <<- function(year) {
-  AirSensor::sensor_loadYear( collection = "scaqmd",
-                              datestamp = year,
+SENSORS <<- AirSensor::sensor_loadYear( collection = "scaqmd",
+                              datestamp = SYSYEAR,
                               timezone = TIMEZONE )
-}
 
 # Helpful conversion list
 CommunityById <- list(
@@ -108,10 +108,11 @@ IdByCommunity <- list(
 
 # Define global pas object
 PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
-# Define System Year
-SYSYEAR <<- strftime(Sys.Date(), "%Y")
-TMP_SENS <- SENSORS(SYSYEAR)
+
 # NOTE: These are intended to be temporary "translations"
+# Create Temp sensor names
+TMP_SENS <- SENSORS
+
 PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
   TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCAH"] <- "Oakland"
 PAS$communityRegion[PAS$communityRegion=="SCUV"] <-
