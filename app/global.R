@@ -18,7 +18,7 @@ library(AirMonitorPlots)
 library(worldmet)
 
 # Version
-VERSION <<- "0.6.0"
+VERSION <<- "0.7"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
@@ -65,6 +65,8 @@ AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 # Define System Year
 SYSYEAR <<- strftime(Sys.Date(), "%Y")
 
+# NOTE: This uses the System's current year for intial Shiny App load out
+# NOTE: See  loadAnnualSensors() in server.R logic for other datestamp loads.
 # Load SENSORS
 SENSORS <<- AirSensor::sensor_loadYear( collection = "scaqmd",
                               datestamp = SYSYEAR,
