@@ -72,6 +72,7 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	MazamaCoreUtils \
 	MazamaSpatialUtils \
 	plyr \
+	plotly \
 	PWFSLSmoke \
 	RColorBrewer \
 	rlang \
