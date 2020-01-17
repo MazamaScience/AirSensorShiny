@@ -11,27 +11,24 @@ server <-
     # Define active user selections
     # NOTE: This contains all active data to avoid redundant func and load.
     #       Update the active values only on trigger events.
-    active <-
-      shiny::reactiveValues(
-        pas = NULL,
-        pat = NULL,
-        label = NULL,
-        enddate = NULL,
-        community = NULL,
-        lookback = NULL,
-        marker = NULL,
-        compmarker = NULL,
-        tab = NULL,
-        navtab = NULL,
-        de_label = NULL,
-        latest_load = NULL,
-        latest_community = NULL,
-        latest_label = NULL,
-        communityId = NULL,
-        help = NULL,
-        worldmet = NULL,
-        sensor = NULL
-      )
+    active <- shiny::reactiveValues( pas = NULL,
+                                     pat = NULL,
+                                     label = NULL,
+                                     enddate = NULL,
+                                     community = NULL,
+                                     lookback = NULL,
+                                     marker = NULL,
+                                     compmarker = NULL,
+                                     tab = NULL,
+                                     navtab = NULL,
+                                     de_label = NULL,
+                                     latest_load = NULL,
+                                     latest_community = NULL,
+                                     latest_label = NULL,
+                                     communityId = NULL,
+                                     help = NULL,
+                                     worldmet = NULL,
+                                     sensor = NULL )
 
     # Update the active variable with an input variable
     updateActive <-
@@ -229,21 +226,20 @@ server <-
 
         # NOTE: ifelse function does not work here...
         if ( community == "all" )  {
-          sensors <- SENSORS
-
+          labels <- SENSORS$meta$monitorID
+        } else if ( grepl("Richmond|West Los Angeles|Oakland", community) ) {
+          # HACKY: fix to deal with requested communtiy names
+          tmp_com <- if (community=="Richmond") "SCAN" else if (community=="Oakland") "SCAH" else "SCUV"
+          labels <- SENSORS$meta$monitorID[grepl(tmp_com, SENSORS$meta$communityRegion)]
         } else {
-
-          labels <-
-            SENSORS$meta$monitorID[grepl(community,
-                                         SENSORS$meta$communityRegion)]
-
-          sensors <-
-            PWFSLSmoke::monitor_subset(
-              ws_monitor = SENSORS,
-              monitorIDs = labels
-            )
-
+          labels <- SENSORS$meta$monitorID[grepl(community, SENSORS$meta$communityRegion)]
         }
+
+        sensors <-
+          PWFSLSmoke::monitor_subset(
+            ws_monitor = SENSORS,
+            monitorIDs = labels
+          )
 
         return(sensors)
 
@@ -292,8 +288,11 @@ server <-
               sensor = sensors,
               startdate = dates[1],
               enddate = dates[2],
-              maptype = "Stamen.TonerLite"
+              maptype = "Stamen.TonerLite",
+              pat = active$pat
             )
+
+
 
           return(leaf)
 
@@ -304,24 +303,19 @@ server <-
       function() {
         plotly::renderPlotly({
 
-          shiny::req(active$sensor)
+          shiny::req(active$pat)
 
           dates <- getDates()
-          result <-
-            try({
-              bp <-
-                shiny_barplotly(
-                  sensor = active$sensor,
-                  startdate = dates[1],
-                  enddate = dates[2]
-                )
-            }, silent = TRUE)
+          # NOTE: Use the active$pat instead of the active$sensor to avoid year
+          # NOTE: issues with autoloaded SENSORS
+          tmp_sensor <- AirSensor::pat_createAirSensor(active$pat)
 
-          if ( "try-error" %in% class(result) ) {
-            logger.trace(geterrmessage())
-            notify("Summary Failed")
-            handleError("", paste0(active$label, ": Failed"))
-          }
+          bp <- tryCatch(expr = {shiny_barplotly(tmp_sensor, dates[1], dates[2])},
+                         error = function(e) {
+                           handleError(FALSE, "Summary plot failed. Please select a different sensor or date(s).")
+                         }
+          )
+
           return(bp)
         })
       }
@@ -329,19 +323,16 @@ server <-
     renderCalendar <-
       function() {
         plotly::renderPlotly({
-
           # shiny::req(active$sensor)
           dates <- getDates()
-
           # NOTE: Improve by implementing annual Sensor
           tmp <- AirSensor::pat_load( label = active$pas$label,
-                                      startdate = paste0(lubridate::year(dates[1]), "0101"),
-                                      enddate = paste0(lubridate::year(dates[2]), "1231") )
-
+                                     startdate = paste0(lubridate::year(dates[1]), "0101"),
+                                     enddate = paste0(lubridate::year(dates[2]), "1231") )
+          handleError(AirSensor::pat_isPat(tmp) | AirSensor::pat_isEmpty(tmp),
+                      "Calendar failed. Please select a different sensor.")
           pp_cal <- shiny_calendarPlot(tmp)
-
           return(pp_cal)
-
         })
       }
 
@@ -378,32 +369,36 @@ server <-
     # Render the monitor comparison plot
     renderMonitorComp <-
       function() {
-        shiny::renderCachedPlot({
+        shiny::renderPlot({
           req(active$pat)
 
-          result <-
-            try({
               logger.trace("label = %s, pwfsl_closestMonitorID = %s",
                            active$pat$meta$label,
                            active$pat$meta$pwfsl_closestMonitorID)
               tlim <- range(active$pat$data$datetime)
+
               logger.trace("trange = c(%s, %s)",
                            strftime(tlim[1], tz = "UTC"),
                            strftime(tlim[2], tz = "UTC"))
-              compPlot <- AirSensor::pat_monitorComparison(active$pat)
-            }, silent = TRUE)
 
-          if ( "try-error" %in% class(result) ) {
+              # NOTE: ggplot2 does not seem to play well with Shiny and tryCatch
+              compPlot <- AirSensor::pat_monitorComparison(active$pat)
+
+              handleError(
+                ggplot2::is.ggplot(compPlot),
+                "Comparison plot failed. Please try a different sensor."
+              )
+
             logger.trace(geterrmessage())
             handleError(
               AirSensor::pat_isPat(active$pat),
               "Please select a sensor to compare with the nearest monitor."
             )
-          }
+
 
           return(compPlot)
 
-        }, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
+        })#, cacheKeyExpr = list(active$label, active$lookback, active$enddate))
       }
 
     # Render monitor & pas external fit plot

@@ -18,7 +18,7 @@ library(AirMonitorPlots)
 library(worldmet)
 
 # Version
-VERSION <<- "0.6.0"
+VERSION <<- "0.7"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
@@ -62,13 +62,15 @@ TIMEZONE <<- "America/Los_Angeles"
 # Set the archive base url
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
+# Define System Year
+SYSYEAR <<- strftime(Sys.Date(), "%Y")
 
+# NOTE: This uses the System's current year for intial Shiny App load out
+# NOTE: See  loadAnnualSensors() in server.R logic for other datestamp loads.
 # Load SENSORS
-SENSORS <<-
-  AirSensor::sensor_loadYear( collection = "scaqmd",
-                              datestamp = 2019,
-                              timezone = TIMEZONE )#AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45)
-
+SENSORS <<- AirSensor::sensor_loadYear( collection = "scaqmd",
+                              datestamp = SYSYEAR,
+                              timezone = TIMEZONE )
 
 # Helpful conversion list
 CommunityById <- list(
@@ -110,40 +112,43 @@ IdByCommunity <- list(
 PAS <<- AirSensor::pas_load(archival = FALSE) # TODO:  Should we add "archival = TRUE"? -> NO.
 
 # NOTE: These are intended to be temporary "translations"
+# Create Temp sensor names
+TMP_SENS <- SENSORS
+
 PAS$communityRegion[PAS$communityRegion=="SCAH"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAH"] <- "Oakland"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCAH"] <- "Oakland"
 PAS$communityRegion[PAS$communityRegion=="SCUV"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCUV"] <- "West Los Angeles"
 PAS$communityRegion[PAS$communityRegion=="SCAN"] <-
-  SENSORS$meta$communityRegion[SENSORS$meta$communityRegion=="SCAN"] <- "Richmond"
+  TMP_SENS$meta$communityRegion[TMP_SENS$meta$communityRegion=="SCAN"] <- "Richmond"
 
 
 # Define global communities
 PAS_COMM <<- na.omit(unique(PAS$communityRegion))
 
-main_helpText <<-
-  shiny::HTML(
-    "<small>
-  <p>
-  On this page, you can view all of the air quality sensors deployed through the
-  US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
-  and Empower California Communities on the Use and Applications of
-  Low-cost Air Monitoring Sensors”. The drop down menus above allow you to
-  view individual participating communities or highlight individual sensors
-  within the pre-selected community. You can control the timeframe shown in
-  the bar plot by (1) choosing a date and (2) choosing a number of days to
-  “look back”.
-  </p>
-  <p>
-  The colors on the map illustrate the most recent hourly average PM2.5 value,
-  for each site. The bar plot (below the map), shows the hourly average PM2.5
-  values throughout the selected timeframe, for the selected site/sensor. The
-  calendar plot (to the right of the map) shows the historic daily averages for
-  the selected site/sensor. Note, the same color scale (in the bottom right)
-  defines the colors in the map, bar chart, and calendar plot.
-  </p>
-  </small>"
-  )
+# main_helpText <<- shiny::includeHTML(path = "app/res/help_overview.html")
+  # shiny::HTML(
+  #   "<small>
+  # <p>
+  # On this page, you can view all of the air quality sensors deployed through the
+  # US EPA funded STAR Grant at South Coast AQMD, entitled “Engage, Educate
+  # and Empower California Communities on the Use and Applications of
+  # Low-cost Air Monitoring Sensors”. The drop down menus above allow you to
+  # view individual participating communities or highlight individual sensors
+  # within the pre-selected community. You can control the timeframe shown in
+  # the bar plot by (1) choosing a date and (2) choosing a number of days to
+  # “look back”.
+  # </p>
+  # <p>
+  # The colors on the map illustrate the most recent hourly average PM2.5 value,
+  # for each site. The bar plot (below the map), shows the hourly average PM2.5
+  # values throughout the selected timeframe, for the selected site/sensor. The
+  # calendar plot (to the right of the map) shows the historic daily averages for
+  # the selected site/sensor. Note, the same color scale (in the bottom right)
+  # defines the colors in the map, bar chart, and calendar plot.
+  # </p>
+  # </small>"
+  # )
 
 comparison_helpText <<-
   shiny::HTML(
