@@ -13,6 +13,7 @@ server <- function(input, output, session) {
   # NOTE: "test" for development
   shiny::callModule(overview_tab, "test", active)
   shiny::callModule(sensor_panel, "test", active)
+  shiny::callModule(calendar_tab, "test", active)
 
   # Update the downstream sensor functions
   # NOTE: Updates the leaflet marker or sensor picker determined by the JS event

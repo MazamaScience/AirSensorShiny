@@ -35,11 +35,27 @@ ui <- function(request) {
             shiny::tabPanel(
               title = tags$b("Overview"),
               icon = shiny::icon("map-marked-alt"),
-              value = "main",
+              value = "overview",
               tags$br(),
               shiny::column(
                 width= 12,
-                overview_tab_ui("test")
+                shiny::wellPanel(
+                overview_tab_ui("test") )
+              )
+            ),
+            # ---- Calendar tab ----
+            shiny::tabPanel(
+              title = tags$b("Calendar"),
+              icon = shiny::icon("calendar-alt"),
+              value = "calendar",
+              tags$br(),
+              shiny::fluidRow(
+                shiny::column(
+                  width = 12,
+                  shiny::wellPanel(
+                    calendar_tab_ui("test")
+                  )
+                )
               )
             )
           )

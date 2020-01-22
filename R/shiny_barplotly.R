@@ -45,7 +45,7 @@ shiny_barplotly <-
         plot.title = ggplot2::element_text( size = 14,
                                             face = "bold",
                                             hjust = 0.5,
-                                            margin = margin(b=0) ),
+                                            margin = ggplot2::margin(b=0) ),
         axis.text.x = ggplot2::element_text(
           angle = ifelse(ddif > 10, 25, 0),
           hjust = 1,
@@ -54,8 +54,8 @@ shiny_barplotly <-
         axis.title.x = ggplot2::element_text(size = 12),
         axis.title.y = ggplot2::element_text(size = 12),
         legend.position = "none",
-        panel.grid.major.y = element_line(color = "grey52"),
-        panel.grid.major.x = element_line(color = "grey52")
+        panel.grid.major.y = ggplot2::element_line(color = "grey52"),
+        panel.grid.major.x = ggplot2::element_line(color = "grey52")
       ) +
       ggplot2::ggtitle(label = label) +
       ggplot2::coord_cartesian(ylim = ylim) +

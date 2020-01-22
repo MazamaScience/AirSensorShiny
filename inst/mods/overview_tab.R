@@ -46,7 +46,7 @@ overview_tab <- function(input, output, session, active) {
 
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
-    shiny_barplotly(sensor = active$sensor, dates[1], dates[2])
+    tryCatch(shiny_barplotly(sensor = active$sensor, dates[1], dates[2]), error = function(e) handleError(FALSE, "HI"))
   })
 
   # NOTE: ShinyJS is used to identify which input to accept and update from.
@@ -79,6 +79,15 @@ overview_tab <- function(input, output, session, active) {
                                    options = list(leaflet::pathOptions(interactive = FALSE)) )
     }
   )
+
+  shiny::observe({
+    # Show/hide barplot
+    if ( active$sensor == "" || is.null(active$sensor) ) {
+      shinyjs::hide("barplotly",anim = FALSE)
+    } else {
+      shinyjs::show("barplotly", anim = TRUE, time = 0.25)
+    }
+  })
 
 }
 
