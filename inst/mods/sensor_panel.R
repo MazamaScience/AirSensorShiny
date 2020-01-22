@@ -5,14 +5,14 @@ sensor_panel_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shinyWidgets::pickerInput(
-      inputId = ns("community-picker"),
+      inputId = ns("community_picker"),
       label = tags$h4("Community"),
       choices = c("All..." = "all", SENSOR_COMMUNITIES),
       options = list(title = "Select community...")
     ),
 
     shinyWidgets::pickerInput(
-      inputId = ns("sensor-picker"),
+      inputId = ns("sensor_picker"),
       label = tags$h4("Sensor"),
       choices = SENSOR_LABELS,
       selected = "",
@@ -23,7 +23,7 @@ sensor_panel_ui <- function(id) {
     ),
 
     shinyWidgets::airDatepickerInput(
-      inputId = ns("date-picker"),
+      inputId = ns("date_picker"),
       label = tags$h4("Date"),
       value = c(lubridate::now()-lubridate::days(7),
                 lubridate::now()),
@@ -73,29 +73,42 @@ sensor_panel <- function(input, output, session, active) {
     eventExpr = active$sensor_labels,
     handlerExpr = {
       shiny::updateSelectInput( session,
-                                "sensor-picker",
+                                "sensor_picker",
                                 choices = active$sensor_labels )
     }
   )
 
   # NOTE: ShinyJS is used to identify which input to accept and update from.
-  #       This is necessary to remove circular and redundant logic/state.
+  #       This is necessary to remove circular and redundant logic/state from
+  #       the leaflet/sensos picker selection.
   # Update the input type on sensor picker mouse enter
   shinyjs::onevent(
     event = "mouseenter",
-    id = "sensor-picker",
+    id = "sensor_picker",
     expr = {
-      active$input_type <- "sensor-picker"
+      active$input_type <- "sensor_picker"
+    }
+  )
+
+  # Dates
+  observeEvent(
+    eventExpr = {input$date_picker; input$lookback_picker},
+    handlerExpr =  {
+      active$ed <- lubridate::ymd(input$date_picker)
+      active$sd <- active$ed - as.numeric(input$lookback_picker)
+      print(active$ed)
+      print(active$sd)
     }
   )
 
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = input$`sensor-picker`,
+    eventExpr = {input$sensor_picker; input$lookback_picker},
     handlerExpr = {
-      active$sensor <- pat_createAirSensor(pat_load( input$`sensor-picker`,
-                                                     startdate = 20200101,
-                                                     enddate = 20200102) )
+      shiny::req(active$ed)
+      active$sensor <- pat_createAirSensor(pat_load( input$sensor_picker,
+                                                     startdate = active$sd, #shiny::isolate(active$sd),
+                                                     enddate = active$ed))#shiny::isolate(active$ed) ))
     }
   )
 }

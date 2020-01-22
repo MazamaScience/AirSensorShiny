@@ -38,15 +38,20 @@ overview_tab <- function(input, output, session, active) {
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
-    shiny_sensorLeaflet( sensor = INIT_SENSORS,
-                         startdate = dates[1],
-                         enddate = dates[2],
-                         maptype = "Stamen.TonerLite" )
+    tryCatch(
+      shiny_sensorLeaflet( sensor = INIT_SENSORS,
+                         startdate = active$sd,
+                         enddate = active$ed,
+                         maptype = "Stamen.TonerLite" ),
+      error = function(e) {
+        print("POOP")
+      })
   })
 
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
-    tryCatch(shiny_barplotly(sensor = active$sensor, dates[1], dates[2]), error = function(e) handleError(FALSE, "HI"))
+    shiny::req(active$ed)
+    tryCatch(shiny_barplotly(sensor = active$sensor, active$sd, active$ed), error = function(e) handleError(FALSE, print(e)))
   })
 
   # NOTE: ShinyJS is used to identify which input to accept and update from.
@@ -68,7 +73,16 @@ overview_tab <- function(input, output, session, active) {
     handlerExpr = {
       print(input$leaflet_marker_click)
       sensor_label <- input$leaflet_marker_click$id
-      active$sensor <- pat_createAirSensor(pat_load(sensor_label, startdate = dates[1], enddate = dates[2]))
+
+      active$sensor <- tryCatch(
+        expr = {
+          pat_createAirSensor(pat_load(sensor_label, startdate = active$sd, enddate = active$ed))
+        },
+        error = function(e) {
+          handleError(FALSE, notify(paste0(input$leaflet_marker_click$id, ": Unavaliable.")))
+        }
+      )
+
       leaflet::leafletProxy("leaflet") %>%
         leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
                                    lat = input$leaflet_marker_click$lat,

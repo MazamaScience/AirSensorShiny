@@ -8,7 +8,9 @@ server <- function(input, output, session) {
   # Instantiate global reactive values
   active <- shiny::reactiveValues( sensor = NULL,
                                    sensor_labels = NULL,
-                                   input_type = NULL )
+                                   input_type = NULL,
+                                   end_date = NULL,
+                                   days = NULL )
   # Module Call
   # NOTE: "test" for development
   shiny::callModule(overview_tab, "test", active)
@@ -26,10 +28,10 @@ server <- function(input, output, session) {
               "leaflet" = {
                 shiny::updateSelectInput(
                   session,
-                  "test-sensor-picker",
+                  "test-sensor_picker",
                   selected = active$sensor$meta$monitorID )
               },
-              "sensor-picker" = {
+              "sensor_picker" = {
                 leaflet::addCircleMarkers(
                   map = leaflet::leafletProxy("test-leaflet"),
                   lng = active$sensor$meta$longitude,
