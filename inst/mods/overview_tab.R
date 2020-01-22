@@ -33,16 +33,18 @@ overview_tab_ui <- function(id) {
 #' @examples
 overview_tab <- function(input, output, session, active) {
 
-  # TMP DEBUG DATES
-  dates <- c(20200101, 20200102)
+
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
     tryCatch(
-      shiny_sensorLeaflet( sensor = INIT_SENSORS,
-                         startdate = active$sd,
-                         enddate = active$ed,
-                         maptype = "Stamen.TonerLite" ),
+      expr = {
+      # For coloring the markers based on the date
+      shiny_sensorLeaflet( sensor = sensors,
+                           startdate = active$sd,
+                           enddate = active$ed,
+                           maptype = "Stamen.TonerLite" )
+      },
       error = function(e) {
         print("POOP")
       })
@@ -51,7 +53,9 @@ overview_tab <- function(input, output, session, active) {
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
     shiny::req(active$ed)
-    tryCatch(shiny_barplotly(sensor = active$sensor, active$sd, active$ed), error = function(e) handleError(FALSE, print(e)))
+    tryCatch(
+      shiny_barplotly(sensor = active$sensor, active$sd, active$ed),
+      error = function(e) handleError(FALSE, print(e)))
   })
 
   # NOTE: ShinyJS is used to identify which input to accept and update from.

@@ -7,9 +7,10 @@ shiny_barplotly <-
       enddate = "2019-09-04"
       ylim = NULL
     }
+
+    # Create POSIXct times for ggplot
     xlim <- c(as.POSIXct(startdate), as.POSIXct(enddate))
     if ( grepl("-", startdate ) | grepl("-", enddate) ) {
-      # posixct limits
       startdate <- stringr::str_remove_all(startdate, "-")
       enddate <- stringr::str_remove_all(enddate, "-")
     }
@@ -46,7 +47,8 @@ shiny_barplotly <-
       ) +
       scale_fill_sqamd() +
       ggplot2::theme_minimal() +
-      ggplot2::scale_x_datetime(date_breaks = "1 day",limits = xlim) +
+      ggplot2::scale_x_datetime( date_breaks = "1 day",
+                                 limits = xlim ) +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
                                             face = "bold",
