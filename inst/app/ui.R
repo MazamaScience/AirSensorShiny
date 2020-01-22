@@ -8,7 +8,7 @@ ui <- function(request) {
     title = tags$b("AirSensor DataViewer (Beta)"),
     theme = shinythemes::shinytheme("yeti"),
     inverse = TRUE,
-    id = "navtab",
+    id = "navbar",
     fluid = TRUE,
     collapsible = TRUE,
     position = "fixed-top",
@@ -22,7 +22,7 @@ ui <- function(request) {
         shiny::column(
           width = 2,
           shiny::wellPanel(
-            sensor_panel_ui("test")
+            panel_mod_ui("test")
           )
         ),
         shiny::column(
@@ -39,9 +39,7 @@ ui <- function(request) {
               tags$br(),
               shiny::column(
                 width= 12,
-                shiny::wellPanel(
-                overview_tab_ui("test") )
-              )
+                overview_mod_ui("test") )
             ),
             # ---- Calendar tab ----
             shiny::tabPanel(
@@ -53,7 +51,7 @@ ui <- function(request) {
                 shiny::column(
                   width = 12,
                   shiny::wellPanel(
-                    calendar_tab_ui("test")
+                    calendar_mod_ui("test")
                   )
                 )
               )
@@ -62,8 +60,14 @@ ui <- function(request) {
         )
       )
     ),
+    shiny::tabPanel(
+      title = tags$b("View Data"),
+      value = "dv"
+    ),
     # Use ShinyJS
-    shinyjs::useShinyjs(debug = TRUE)
+    shinyjs::useShinyjs(debug = TRUE),
+
+    tags$style(type="text/css", "body {padding-top: 70px;}")
   )
 
 }

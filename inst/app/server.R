@@ -9,13 +9,39 @@ server <- function(input, output, session) {
   active <- shiny::reactiveValues( sensor = NULL,
                                    sensor_labels = NULL,
                                    input_type = NULL,
-                                   end_date = NULL,
-                                   days = NULL )
+                                   year = as.numeric(strftime(Sys.time(), "%Y")),
+                                   ed = NULL,
+                                   sd = NULL,
+                                   days = NULL,
+                                   annual_sensors = NULL,
+                                   community = NULL )
   # Module Call
   # NOTE: "test" for development
-  shiny::callModule(overview_tab, "test", active)
-  shiny::callModule(sensor_panel, "test", active)
-  shiny::callModule(calendar_tab, "test", active)
+  shiny::callModule(overview_mod, "test", active)
+  shiny::callModule(panel_mod, "test", active)
+  shiny::callModule(calendar_mod, "test", active)
+
+
+
+  # Initialization annual sensor load
+  # NOTE: This action is only preformed on the startup after loading the System's
+  #       year datestamp.
+  observeEvent(
+    once = TRUE,
+    eventExpr = active$year,
+    handlerExpr = {
+      active$annual_sensors <- AirSensor::sensor_loadYear(datestamp = active$year)
+    }
+  )
+  # Year Logic
+  year <- eventReactive(active$sd, as.numeric(strftime(active$sd, "%Y")))
+  observe({
+    if (year() != active$year) {
+      print("YEAR CHANGE")
+      active$year <- year()
+      active$annual_sensors <- AirSensor::sensor_loadYear(datestamp = active$year)
+    }
+  })
 
   # Update the downstream sensor functions
   # NOTE: Updates the leaflet marker or sensor picker determined by the JS event
@@ -24,6 +50,7 @@ server <- function(input, output, session) {
     eventExpr = active$sensor,
     handlerExpr = {
       print(active$input_type) # DEBUG
+      shiny::req(active$input_type)
       switch( EXPR = active$input_type,
               "leaflet" = {
                 shiny::updateSelectInput(
@@ -44,4 +71,5 @@ server <- function(input, output, session) {
               } )
     }
   )
+
 }
