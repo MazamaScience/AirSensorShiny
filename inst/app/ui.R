@@ -55,6 +55,15 @@ ui <- function(request) {
                   )
                 )
               )
+            ),
+            # ---- Raw data tab ----
+            shiny::tabPanel(
+              title = tags$b("Raw Data"),
+              icon = shiny::icon("database"),
+              value = "raw",
+
+              tags$br(),
+              raw_mod_ui("test")
             )
           )
         )
