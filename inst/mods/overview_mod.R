@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples
-overview_tab_ui <- function(id) {
+overview_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     leaflet::leafletOutput(
@@ -31,16 +31,14 @@ overview_tab_ui <- function(id) {
 #' @export
 #'
 #' @examples
-overview_tab <- function(input, output, session, active) {
-
-
-
+overview_mod <- function(input, output, session, active) {
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
+    shiny::req(active$annual_sensors)
     tryCatch(
       expr = {
       # For coloring the markers based on the date
-      shiny_sensorLeaflet( sensor = sensors,
+      shiny_sensorLeaflet( sensor = active$annual_sensors,
                            startdate = active$sd,
                            enddate = active$ed,
                            maptype = "Stamen.TonerLite" )
@@ -49,15 +47,13 @@ overview_tab <- function(input, output, session, active) {
         print("POOP")
       })
   })
-
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
-    shiny::req(active$ed)
+    shiny::req(active$sensor)
     tryCatch(
       shiny_barplotly(sensor = active$sensor, active$sd, active$ed),
       error = function(e) handleError(FALSE, print(e)))
   })
-
   # NOTE: ShinyJS is used to identify which input to accept and update from.
   #       This is necessary to remove circular and redundant logic/state.
   # Update the input type on leaflet mouse enter
@@ -68,8 +64,7 @@ overview_tab <- function(input, output, session, active) {
       active$input_type <- "leaflet"
     }
   )
-
-  # Update leaflet ob marker click
+  # Update leaflet on marker click
   # NOTE: Updates the active sensor
   # NOTE: Adds marker highlight on click
   shiny::observeEvent(
@@ -86,7 +81,6 @@ overview_tab <- function(input, output, session, active) {
           handleError(FALSE, notify(paste0(input$leaflet_marker_click$id, ": Unavaliable.")))
         }
       )
-
       leaflet::leafletProxy("leaflet") %>%
         leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
                                    lat = input$leaflet_marker_click$lat,
@@ -97,7 +91,6 @@ overview_tab <- function(input, output, session, active) {
                                    options = list(leaflet::pathOptions(interactive = FALSE)) )
     }
   )
-
   shiny::observe({
     # Show/hide barplot
     if ( active$sensor == "" || is.null(active$sensor) ) {

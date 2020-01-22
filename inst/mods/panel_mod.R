@@ -1,7 +1,7 @@
 #' Sensor Panel User Interface
 #'
 #' @param id
-sensor_panel_ui <- function(id) {
+panel_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shinyWidgets::pickerInput(
@@ -66,7 +66,7 @@ sensor_panel_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-sensor_panel <- function(input, output, session, active) {
+panel_mod <- function(input, output, session, active) {
 
   # Update the active sensor picker choices when sensor labels is updated
   observeEvent(
@@ -77,7 +77,6 @@ sensor_panel <- function(input, output, session, active) {
                                 choices = active$sensor_labels )
     }
   )
-
   # NOTE: ShinyJS is used to identify which input to accept and update from.
   #       This is necessary to remove circular and redundant logic/state from
   #       the leaflet/sensos picker selection.
@@ -89,7 +88,6 @@ sensor_panel <- function(input, output, session, active) {
       active$input_type <- "sensor_picker"
     }
   )
-
   # Dates
   observeEvent(
     eventExpr = {input$date_picker; input$lookback_picker},
@@ -101,14 +99,46 @@ sensor_panel <- function(input, output, session, active) {
     }
   )
 
+  # Sensor picker
+  # NOTE: This is the sensor loading event handler.
+  # NOTE: V important
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$lookback_picker},
+    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
       shiny::req(active$ed)
-      active$sensor <- pat_createAirSensor(pat_load( input$sensor_picker,
-                                                     startdate = active$sd, #shiny::isolate(active$sd),
-                                                     enddate = active$ed))#shiny::isolate(active$ed) ))
+      tryCatch(
+        expr= {
+          active$sensor <- pat_createAirSensor(pat_load( input$sensor_picker,
+                                                         startdate = active$sd,
+                                                         enddate = active$ed ))
+        },
+        error = function(e) {
+          handleError(FALSE, e)
+          notify()
+        }
+      )
+    }
+  )
+
+  # Communities
+  observeEvent(
+    ignoreInit = TRUE,
+    eventExpr = {input$community_picker},
+    handlerExpr = {
+      tryCatch(
+        expr = {
+          active$sensor_labels <- INIT_SENSORS$meta$monitorID[INIT_SENSORS$meta$communityRegion==input$community_picker]
+          active$community <- input$community_picker
+          print(input$community_picker)
+          print(active$sensor_labels)
+          shiny::updateSelectInput( session,
+                                    "sensor_picker",
+                                    choices = c("All",active$sensor_labels) )
+
+        },
+        error = {}
+      )
     }
   )
 }
