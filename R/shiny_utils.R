@@ -18,10 +18,12 @@ showLoad <-
 # Error message handling
 handleError <-
   function(expr, msg) {
-
+    MazamaCoreUtils::logger.debug(msg)
+    MazamaCoreUtils::logger.trace(msg)
     shiny::validate(
       shiny::need(expr, msg)
     )
+
 
   }
 
