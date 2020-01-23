@@ -1,6 +1,7 @@
 #' Sensor Panel User Interface
 #'
 #' @param id
+#' @export
 panel_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -70,11 +71,11 @@ panel_mod <- function(input, output, session, active) {
 
   # Update the active sensor picker choices when sensor labels is updated
   observeEvent(
-    eventExpr = active$sensor_labels,
+    eventExpr = active$label_sensors,
     handlerExpr = {
       shiny::updateSelectInput( session,
                                 "sensor_picker",
-                                choices = active$sensor_labels )
+                                choices = active$label_sensors )
     }
   )
   # NOTE: ShinyJS is used to identify which input to accept and update from.
@@ -108,22 +109,25 @@ panel_mod <- function(input, output, session, active) {
     handlerExpr = {
       shiny::req(active$ed)
       shiny::req(active$input_type)
-
       tryCatch(
         expr = {
-          active$pat <- pat_load( switch(active$input_type, "leaflet" = input$leaflet_marker_click$id, "sensor_picker" = input$sensor_picker),
+          label <- switch( active$input_type,
+                           "leaflet" = input$leaflet_marker_click$id,
+                           "sensor_picker" = input$sensor_picker )
+          active$pat <- pat_load( label,
                                   startdate = active$sd,
-                                  enddate = active$ed )
+                                  enddate = active$ed ) # %>% showLoad()
           AirSensor::pat_isPat(active$pat)
           active$sensor <- pat_createAirSensor( active$pat,
                                                 period = "1 hour",
                                                 qc_algorithm = "hourly_AB_01" )
         },
         error = function(e) {
-          handleError(FALSE, e)
           notify()
+          active$pat <- active$sensor <- NULL
+
         }
-      ) %>% showLoad()
+      )
     }
   )
 
@@ -134,14 +138,18 @@ panel_mod <- function(input, output, session, active) {
     handlerExpr = {
       tryCatch(
         expr = {
-          active$sensor_labels <- INIT_SENSORS$meta$monitorID[INIT_SENSORS$meta$communityRegion==input$community_picker]
-          active$community <- input$community_picker
-          print(input$community_picker)
-          print(active$sensor_labels)
-          shiny::updateSelectInput( session,
-                                    "sensor_picker",
-                                    choices = c("All",active$sensor_labels) )
-
+          shiny::req(input$community_picker)
+          # Calculate the selected community location
+          if ( grepl("[aA]ll", input$community_picker) ) {
+            community_sensors <- active$meta_sensors
+          } else {
+            community_sensors <- active$meta_sensors[active$meta_sensors$communityRegion == input$community_picker,]
+          }
+          bbox <- lapply(community_sensors[c('longitude', 'latitude')], function(x) c(min = min(x), max = max(x)))
+          # Change leaflet bounds to community
+          leaflet::leafletProxy('leaflet') %>%
+            leaflet::fitBounds(lng1 = bbox$longitude[[1]], lng2 = bbox$longitude[[2]],
+                               lat1 = bbox$latitude[[1]], lat2 = bbox$latitude[[2]])
         },
         error = {}
       )
