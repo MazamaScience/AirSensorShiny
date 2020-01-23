@@ -1,3 +1,18 @@
+#' Start Application
+#'
+#' @param port port of web application
+startApplication <- function(port = 4242, appFolder = 'inst/app') {
+
+  R_files <- list.files('R', pattern='^shiny_.+\\.R', full.names=TRUE)
+  module_files <- list.files('inst/mods', full.names = TRUE)
+  AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+  # Load R functions
+  lapply(R_files,  source)
+  # Load Modules
+  lapply(module_files, source)
+
+  shiny::runApp(appFolder, port, launch.browser = TRUE)
+}
 library(futile.logger)
 library(MazamaCoreUtils)
 library(AirSensor)
@@ -5,20 +20,13 @@ library(PWFSLSmoke)
 library(AirMonitorPlots)
 library(worldmet)
 
-#' Start Application
-#'
-#' @param port port of web application
-#'
-#' @export
-startApplication <- function(port = 4242, appFolder = 'inst/app') {
-  shiny::runApp(appFolder, port, launch.browser = TRUE)
-}
-
+R_files <- list.files('R', pattern='^shiny_.+\\.R', full.names=TRUE)
+module_files <- list.files('inst/mods', full.names = TRUE)
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 # Load R functions
-lapply(list.files('R', pattern='^shiny_.+\\.R', full.names=TRUE),  source)
+lapply(R_files,  source)
 # Load Modules
-lapply(list.files('inst/mods', full.names = TRUE), source)
+lapply(module_files, source)
 
 # Instantiate Sensor information
 INIT_SENSORS <- AirSensor::sensor_load(days =1)
