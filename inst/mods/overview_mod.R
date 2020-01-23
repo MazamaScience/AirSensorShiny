@@ -104,15 +104,27 @@ overview_mod <- function(input, output, session, active) {
   #   }
   # )
 
-  # Handle Leaflet Marker Click Input Event
+  # Handle Leaflet Marker Highlighting
+  # NOTE: This handles the marker click AND the active date changes (new dates
+  #       load new pat which load new time averaged marker colors, hence a
+  #       leaflet redraw).
   shiny::observeEvent(
-    eventExpr = input$leaflet_marker_click,
+    ignoreInit = T,
+    eventExpr = {input$leaflet_marker_click; active$ed; active$sd},
     handlerExpr = {
+      shiny::req(active$sensor, active$input_type)
       print(input$leaflet_marker_click)
+
+      loc <- switch( active$input_type,
+                     'leaflet' = c(lng = input$leaflet_marker_click$lng,
+                                   lat = input$leaflet_marker_click$lat),
+                     'sensor-picker' = c(lng = active$sensor$meta$longitude,
+                                         lat = active$sensor$meta$latitude) )
+
       # Highlight the marker
       leaflet::leafletProxy("leaflet") %>%
-        leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
-                                   lat = input$leaflet_marker_click$lat,
+        leaflet::addCircleMarkers( lng = loc[[1]],
+                                   lat = loc[[2]],
                                    radius = 10,
                                    fillOpacity = 0.95,
                                    layerId = "selectTmp",
