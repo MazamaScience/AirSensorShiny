@@ -38,20 +38,16 @@ raw_mod_ui <- function(id) {
 }
 
 raw_mod <- function(input, output, session, active) {
-
-  output$raw_plot <- shiny::renderCachedPlot({
+  output$raw_plot <- shiny::renderPlot({
     shiny::req(active$pat)
-
-    handleError(
-      AirSensor::pat_isPat(active$pat),
-      "Please select a sensor."
+    tryCatch(
+      expr = {
+        AirSensor::pat_multiplot(active$pat, columns = 2)
+      },
+      error = function(e) {
+        handleError(FALSE, e)
+        notify()
+      }
     )
-
-    multiPlot <- AirSensor::pat_multiplot(active$pat, columns = 2)
-
-    return(multiPlot)
-
-  }, cacheKeyExpr = list(active$ed, active$ed, active$sensor$meta$monitorID))
-
-
+  })
 }

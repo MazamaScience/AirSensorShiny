@@ -99,19 +99,22 @@ panel_mod <- function(input, output, session, active) {
     }
   )
 
-  # Sensor picker
+  # SENSOR PICKER AND LEAFLET LOAD EVENT TRIGGER
   # NOTE: This is the sensor loading event handler.
   # NOTE: V important
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker},
+    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker; input$leaflet_marker_click},
     handlerExpr = {
       shiny::req(active$ed)
+      shiny::req(active$input_type)
+
       tryCatch(
-        expr= {
-          active$pat <- pat_load( input$sensor_picker,
+        expr = {
+          active$pat <- pat_load( switch(active$input_type, "leaflet" = input$leaflet_marker_click$id, "sensor_picker" = input$sensor_picker),
                                   startdate = active$sd,
                                   enddate = active$ed )
+          AirSensor::pat_isPat(active$pat)
           active$sensor <- pat_createAirSensor( active$pat,
                                                 period = "1 hour",
                                                 qc_algorithm = "hourly_AB_01" )
@@ -120,7 +123,7 @@ panel_mod <- function(input, output, session, active) {
           handleError(FALSE, e)
           notify()
         }
-      )
+      ) %>% showLoad()
     }
   )
 
