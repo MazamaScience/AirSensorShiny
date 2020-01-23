@@ -41,7 +41,7 @@ overview_mod <- function(input, output, session, active) {
       shiny_sensorLeaflet( sensor = active$annual_sensors,
                            startdate = active$sd,
                            enddate = active$ed,
-                           maptype = "Stamen.TonerLite" )
+                           maptype = "OpenStreetMap" )
       },
       error = function(e) {
         print("POOP")
@@ -73,9 +73,15 @@ overview_mod <- function(input, output, session, active) {
       print(input$leaflet_marker_click)
       sensor_label <- input$leaflet_marker_click$id
 
-      active$sensor <- tryCatch(
+      tryCatch(
         expr = {
-          pat_createAirSensor(pat_load(sensor_label, startdate = active$sd, enddate = active$ed))
+          active$pat <- pat_load( sensor_label,
+                                  startdate = active$sd,
+                                  enddate = active$ed )
+          print(str(active$pat))
+          active$sensor <- pat_createAirSensor( active$pat,
+                                                period = "1 hour",
+                                                qc_algorithm = "hourly_AB_01" )
         },
         error = function(e) {
           handleError(FALSE, notify(paste0(input$leaflet_marker_click$id, ": Unavaliable.")))

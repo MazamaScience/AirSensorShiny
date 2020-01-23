@@ -14,12 +14,14 @@ server <- function(input, output, session) {
                                    sd = NULL,
                                    days = NULL,
                                    annual_sensors = NULL,
-                                   community = NULL )
+                                   community = NULL,
+                                   pat = NULL )
   # Module Call
   # NOTE: "test" for development
   shiny::callModule(overview_mod, "test", active)
   shiny::callModule(panel_mod, "test", active)
   shiny::callModule(calendar_mod, "test", active)
+  shiny::callModule(raw_mod, "test", active)
 
 
 
@@ -47,7 +49,7 @@ server <- function(input, output, session) {
   # NOTE: Updates the leaflet marker or sensor picker determined by the JS event
   #       handler -- i.e. mouse events.
   shiny::observeEvent(
-    eventExpr = active$sensor,
+    eventExpr = {active$sensor; active$pat},
     handlerExpr = {
       print(active$input_type) # DEBUG
       shiny::req(active$input_type)

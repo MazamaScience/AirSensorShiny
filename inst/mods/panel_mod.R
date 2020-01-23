@@ -109,9 +109,12 @@ panel_mod <- function(input, output, session, active) {
       shiny::req(active$ed)
       tryCatch(
         expr= {
-          active$sensor <- pat_createAirSensor(pat_load( input$sensor_picker,
-                                                         startdate = active$sd,
-                                                         enddate = active$ed ))
+          active$pat <- pat_load( input$sensor_picker,
+                                  startdate = active$sd,
+                                  enddate = active$ed )
+          active$sensor <- pat_createAirSensor( active$pat,
+                                                period = "1 hour",
+                                                qc_algorithm = "hourly_AB_01" )
         },
         error = function(e) {
           handleError(FALSE, e)

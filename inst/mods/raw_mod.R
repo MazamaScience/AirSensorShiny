@@ -14,7 +14,6 @@ raw_mod_ui <- function(id) {
         )
       )
     ),
-
     shiny::fluidRow(
       shiny::column(
         width = 6,
@@ -23,10 +22,8 @@ raw_mod_ui <- function(id) {
           shiny::plotOutput(
             outputId = ns("channels_plot")
           ) %>% loadSpinner()
-
         )
       ),
-
       shiny::column(
         width = 6,
         tags$h4("Channel Correlation"),
@@ -41,4 +38,20 @@ raw_mod_ui <- function(id) {
 }
 
 raw_mod <- function(input, output, session, active) {
+
+  output$raw_plot <- shiny::renderCachedPlot({
+    shiny::req(active$pat)
+
+    handleError(
+      AirSensor::pat_isPat(active$pat),
+      "Please select a sensor."
+    )
+
+    multiPlot <- AirSensor::pat_multiplot(active$pat, columns = 2)
+
+    return(multiPlot)
+
+  }, cacheKeyExpr = list(active$ed, active$ed, active$sensor$meta$monitorID))
+
+
 }
