@@ -1,3 +1,6 @@
+#' TAB: Raw Data Module User Interface
+#'
+#' @param id
 raw_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -8,7 +11,7 @@ raw_mod_ui <- function(id) {
         tags$h4("Raw Data"),
         shiny::wellPanel(
           shiny::plotOutput(
-            outputId = ns("raw_plot"),
+            outputId = ns("multi_plot"),
             height = "800"
           ) %>% loadSpinner()
         )
@@ -20,7 +23,7 @@ raw_mod_ui <- function(id) {
         tags$h4("Channel Overlay"),
         shiny::wellPanel(
           shiny::plotOutput(
-            outputId = ns("channels_plot")
+            outputId = ns("ch_overlay_plot")
           ) %>% loadSpinner()
         )
       ),
@@ -29,7 +32,7 @@ raw_mod_ui <- function(id) {
         tags$h4("Channel Correlation"),
         shiny::wellPanel(
           shiny::plotOutput(
-            outputId = ns("correlation_plot")
+            outputId = ns("ch_correlation_plot")
           ) %>% loadSpinner()
         )
       )
@@ -37,8 +40,16 @@ raw_mod_ui <- function(id) {
   )
 }
 
+#' TAB: Raw Data Module Logic
+#'
+#' @param input
+#' @param output
+#' @param session
+#' @param active
 raw_mod <- function(input, output, session, active) {
-  output$raw_plot <- shiny::renderPlot({
+
+  # Multiplot
+  output$multi_plot <- shiny::renderPlot({
     shiny::req(active$pat)
     tryCatch(
       expr = {
@@ -47,6 +58,30 @@ raw_mod <- function(input, output, session, active) {
       error = function(e) {
         handleError(FALSE, e)
         notify()
+      }
+    )
+  })
+  # Channel Overlay plot
+  output$ch_overlay_plot <- shiny::renderPlot({
+    shiny::req(active$pat)
+    tryCatch(
+      expr = {
+        shiny_internalFit(active$pat, whichPlot = 'ab')
+      },
+      error = function(e) {
+        handleError(FALSE, e)
+      }
+    )
+  })
+  # Channel Correlation plot
+  output$ch_correlation_plot <- shiny::renderPlot({
+    shiny::req(active$pat)
+    tryCatch(
+      expr = {
+        shiny_internalFit(active$pat, whichPlot = 'lm')
+      },
+      error = function(e) {
+        handleError(FALSE, e)
       }
     )
   })
