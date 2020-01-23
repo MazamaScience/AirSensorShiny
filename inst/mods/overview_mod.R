@@ -103,12 +103,31 @@ overview_mod <- function(input, output, session, active) {
   #                                  options = list(leaflet::pathOptions(interactive = FALSE)) )
   #   }
   # )
+
+  # Handle Leaflet Marker Click Input Event
+  shiny::observeEvent(
+    eventExpr = input$leaflet_marker_click,
+    handlerExpr = {
+      print(input$leaflet_marker_click)
+      # Highlight the marker
+      leaflet::leafletProxy("leaflet") %>%
+        leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
+                                   lat = input$leaflet_marker_click$lat,
+                                   radius = 10,
+                                   fillOpacity = 0.95,
+                                   layerId = "selectTmp",
+                                   color = "#ffa020",
+                                   options = list(leaflet::pathOptions(interactive = FALSE)) )
+    }
+  )
+
+  # Animate the bar plot on startup
   shiny::observe({
     # Show/hide barplot
     if ( active$sensor == "" || is.null(active$sensor) ) {
       shinyjs::hide("barplotly",anim = FALSE)
     } else {
-      shinyjs::show("barplotly", anim = TRUE, time = 0.25)
+      shinyjs::show("barplotly", anim = TRUE, time = 0.3)
     }
   })
 
