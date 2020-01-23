@@ -7,7 +7,7 @@ server <- function(input, output, session) {
 
   # Instantiate global reactive values
   active <- shiny::reactiveValues( sensor = NULL,
-                                   sensor_labels = NULL,
+                                   label_sensors = NULL,
                                    input_type = NULL,
                                    year = as.numeric(strftime(Sys.time(), "%Y")),
                                    ed = NULL,
@@ -15,7 +15,8 @@ server <- function(input, output, session) {
                                    days = NULL,
                                    annual_sensors = NULL,
                                    community = NULL,
-                                   pat = NULL )
+                                   pat = NULL,
+                                   meta_sensors = NULL )
   # Module Call
   # NOTE: "test" for development
   shiny::callModule(overview_mod, "test", active)
@@ -33,6 +34,7 @@ server <- function(input, output, session) {
     eventExpr = active$year,
     handlerExpr = {
       active$annual_sensors <- AirSensor::sensor_loadYear(datestamp = active$year)
+      active$meta_sensors <- active$annual_sensors$meta
     }
   )
   # Year Logic
@@ -73,33 +75,4 @@ server <- function(input, output, session) {
               } )
     }
   )
-
-  # Sensor picker
-  # NOTE: This is the sensor loading event handler.
-  # NOTE: V important
-  observeEvent(
-    ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker; input$leaflet_marker_click},
-    handlerExpr = {
-      shiny::req(active$ed)
-      shiny::req(active$input_type)
-
-      tryCatch(
-        expr = {
-          active$pat <- pat_load( switch(active$input_type, "leaflet" = input$leaflet_marker_click$id, "sensor_picker" = input$sensor_picker),
-                                  startdate = active$sd,
-                                  enddate = active$ed )
-          AirSensor::pat_isPat(active$pat)
-          active$sensor <- pat_createAirSensor( active$pat,
-                                                period = "1 hour",
-                                                qc_algorithm = "hourly_AB_01" )
-        },
-        error = function(e) {
-          handleError(FALSE, e)
-          notify()
-        }
-      ) %>% showLoad()
-    }
-  )
-
 }
