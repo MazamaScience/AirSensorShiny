@@ -19,4 +19,5 @@ shiny_getNOAA <-
     logger.trace("windData goes from %s to %s local time",
                  strftime(timeRange[1]),
                  strftime(timeRange[2]))
+    return(siteData)
   }
