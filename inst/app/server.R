@@ -19,10 +19,13 @@ server <- function(input, output, session) {
                                    meta_sensors = NULL )
   # Module Call
   # NOTE: "test" for development
-  shiny::callModule(overview_mod, "test", active)
-  shiny::callModule(panel_mod, "test", active)
-  shiny::callModule(calendar_mod, "test", active)
-  shiny::callModule(raw_mod, "test", active)
+  shiny::callModule(overview_mod, "explore", active)
+  shiny::callModule(panel_mod, "explore", active)
+  shiny::callModule(calendar_mod, "explore", active)
+  shiny::callModule(raw_mod, "explore", active)
+  # shiny::callModule(panel_mod,"dv", active)
+  shiny::callModule(dataview_mod, "dv", active)
+  shiny::callModule(pattern_mod, "explore", active)
 
 
 
@@ -59,12 +62,18 @@ server <- function(input, output, session) {
               "leaflet" = {
                 shiny::updateSelectInput(
                   session,
-                  "test-sensor_picker",
-                  selected = active$sensor$meta$monitorID )
+                  "explore-sensor_picker",
+                  selected = active$sensor$meta$monitorID
+                )
+                shiny::updateSelectInput(
+                  session,
+                  "dv-sensor_picker",
+                  selected = active$sensor$meta$monitorID
+                )
               },
               "sensor_picker" = {
                 leaflet::addCircleMarkers(
-                  map = leaflet::leafletProxy("test-leaflet"),
+                  map = leaflet::leafletProxy("explore-leaflet"),
                   lng = active$sensor$meta$longitude,
                   lat = active$sensor$meta$latitude,
                   radius = 10,
