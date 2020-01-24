@@ -87,6 +87,7 @@ panel_mod <- function(input, output, session, active) {
     id = "sensor_picker",
     expr = {
       active$input_type <- "sensor_picker"
+      print("Mouse Enter: Sensor Picker")
     }
   )
   # Dates
@@ -100,20 +101,19 @@ panel_mod <- function(input, output, session, active) {
     }
   )
 
-  # SENSOR PICKER AND LEAFLET LOAD EVENT TRIGGER
+  # SENSOR PICKER LOAD EVENT TRIGGER
   # NOTE: This is the sensor loading event handler.
   # NOTE: V important
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker; input$leaflet_marker_click},
+    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
       shiny::req(active$ed)
       shiny::req(active$input_type)
       tryCatch(
         expr = {
-          label <- switch( active$input_type,
-                           "leaflet" = input$leaflet_marker_click$id,
-                           "sensor_picker" = input$sensor_picker )
+          label <- input$sensor_picker
+          print(label)
           active$pat <- pat_load( label,
                                   startdate = active$sd,
                                   enddate = active$ed ) # %>% showLoad()

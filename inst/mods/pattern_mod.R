@@ -32,15 +32,39 @@ pattern_mod_ui <- function(id) {
 
 pattern_mod <- function(input, output, session, active) {
 
-  active$noaa <-  eventReactive(active$sensor, shiny_getNOAA(active$sensor, active$sd, active$ed))
-
   output$daily_pattern_plot <- shiny::renderPlot({
-    sd <- as.numeric(stringr::str_remove_all(active$sd, '-'))
-    ed <- as.numeric(stringr::str_remove_all(active$ed, '-'))
-    shiny::req(active$sensor, active$ed, active$sd)
-    shiny_diurnalPattern(active$sensor, startdate = sd, enddate = ed)
+    shiny::req(active$sensor)
+    tryCatch(
+      expr = {
+        AirMonitorPlots::ggplot_pm25Diurnal( ws_data = active$sensor,
+                                             offsetBreaks = TRUE ) +
+          AirMonitorPlots::stat_meanByHour(output = "scaqmd")
+      },
+      error = function(e) {}
+    )
   })
   output$noaa_table <- shiny::renderDataTable({
-
+    tryCatch(
+      expr = {
+        shiny::req(active$sensor, active$ed)
+        active$noaa <- shiny_getNOAA(active$sensor, active$sd, active$ed)
+        print(active$noaa)
+        DT::datatable(active$noaa)
+      },
+      error = function(e) {}
+    )
   })
+
+  output$wind_plot  <- shiny::renderPlot({
+    tryCatch(
+      expr = {
+        shiny::req(active$noaa, active$sensor)
+        wind <- dplyr::select(active$noaa, c("date", "wd", "ws"))
+        AirSensor::sensor_pollutionRose(active$sensor, wind)
+      },
+      error = function(e) {
+      }
+    )
+  })
+
 }
