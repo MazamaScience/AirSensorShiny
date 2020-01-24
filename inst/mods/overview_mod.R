@@ -114,13 +114,11 @@ overview_mod <- function(input, output, session, active) {
     handlerExpr = {
       shiny::req(active$sensor, active$input_type)
       print(input$leaflet_marker_click)
-
       loc <- switch( active$input_type,
                      'leaflet' = c(lng = input$leaflet_marker_click$lng,
                                    lat = input$leaflet_marker_click$lat),
                      'sensor-picker' = c(lng = active$sensor$meta$longitude,
                                          lat = active$sensor$meta$latitude) )
-
       # Highlight the marker
       leaflet::leafletProxy("leaflet") %>%
         leaflet::addCircleMarkers( lng = loc[[1]],

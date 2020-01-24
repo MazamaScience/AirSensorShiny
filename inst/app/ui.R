@@ -22,7 +22,7 @@ ui <- function(request) {
         shiny::column(
           width = 2,
           shiny::wellPanel(
-            panel_mod_ui("test")
+            panel_mod_ui("explore")
           )
         ),
         shiny::column(
@@ -39,7 +39,7 @@ ui <- function(request) {
               tags$br(),
               shiny::column(
                 width= 12,
-                overview_mod_ui("test") )
+                overview_mod_ui("explore") )
             ),
             # ---- Calendar tab ----
             shiny::tabPanel(
@@ -51,7 +51,7 @@ ui <- function(request) {
                 shiny::column(
                   width = 12,
                   shiny::wellPanel(
-                    calendar_mod_ui("test")
+                    calendar_mod_ui("explore")
                   )
                 )
               )
@@ -63,7 +63,16 @@ ui <- function(request) {
               value = "raw",
 
               tags$br(),
-              raw_mod_ui("test")
+              raw_mod_ui("explore")
+            ),
+            # ----- Daily patterns tab -----
+            shiny::tabPanel(
+              title = tags$b("Daily Patterns"),
+              icon = shiny::icon("chart-bar"),
+              value = "dp",
+
+              tags$br(),
+              pattern_mod_ui("explore")
             )
           )
         )
@@ -71,7 +80,15 @@ ui <- function(request) {
     ),
     shiny::tabPanel(
       title = tags$b("View Data"),
-      value = "dv"
+      value = "dv",
+      shiny::fluidRow(
+        shiny::column(
+          width = 2,
+          shiny::wellPanel(
+            panel_mod_ui("dv")
+          )
+        ), dataview_mod_ui("dv")
+      )
     ),
     # Use ShinyJS
     shinyjs::useShinyjs(debug = TRUE),
