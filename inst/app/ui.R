@@ -73,6 +73,22 @@ ui <- function(request) {
 
               tags$br(),
               pattern_mod_ui("explore")
+            ),
+            # ----- Compare tab -----
+            shiny::tabPanel(
+              title = tags$b("Compare"),
+              icon = shiny::icon("balance-scale"),
+              value = "comp",
+              tags$br(),
+              comparison_mod_ui("explore")
+            ),
+            # ---- Video tab ----
+            shiny::tabPanel(
+              title = tags$b("Community Timelapse"),
+              icon = shiny::icon("file-video"),
+              value = "anim",
+              tags$br(),
+              video_mod_ui("explore")
             )
           )
         )

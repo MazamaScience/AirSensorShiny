@@ -8,7 +8,7 @@ server <- function(input, output, session) {
   # Instantiate global reactive values
   active <- shiny::reactiveValues( sensor = NULL,
                                    label_sensors = NULL,
-                                   input_type = NULL,
+                                   input_type = "sensor_picker",
                                    year = as.numeric(strftime(Sys.time(), "%Y")),
                                    ed = NULL,
                                    sd = NULL,
