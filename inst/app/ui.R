@@ -13,7 +13,7 @@ ui <- function(request) {
     collapsible = TRUE,
     position = "fixed-top",
     windowTitle = "AirSensor Viewer (Beta)",
-    # ------ NavTab 1 - Explore --------------------------------------------
+    # ------ Explore Page ------------------------------------------------------
     shiny::tabPanel(
       title = tags$b("Explore"),
       value = "explore",
@@ -86,7 +86,7 @@ ui <- function(request) {
             shiny::tabPanel(
               title = tags$b("Community Timelapse"),
               icon = shiny::icon("file-video"),
-              value = "anim",
+              value = "animation",
               tags$br(),
               video_mod_ui("explore")
             )
@@ -94,6 +94,8 @@ ui <- function(request) {
         )
       )
     ),
+
+    #----- View Data Page ------------------------------------------------------
     shiny::tabPanel(
       title = tags$b("View Data"),
       value = "dv",
@@ -104,6 +106,17 @@ ui <- function(request) {
             panel_mod_ui("dv")
           )
         ), dataview_mod_ui("dv")
+      )
+    ),
+    # ----- About Page ---------------------------------------------------------
+    shiny::tabPanel(
+      title = tags$b("About"),
+      value = "about",
+      shiny::fluidRow(
+        shiny::column(
+          width = 10,
+          shiny::includeHTML(file.path(getwd(),"../html/about.html"))
+        )
       )
     ),
     # Use ShinyJS
