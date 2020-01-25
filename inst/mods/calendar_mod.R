@@ -17,15 +17,12 @@ calendar_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-calendar_mod <- function(input, output, session, active) {
+calendar_mod <- function(input, output, session) {
 
   output$calendar <- plotly::renderPlotly({
     tryCatch(
       expr = {
-        tmp <-pat_load( active$sensor$meta$monitorID,
-                        startdate = as.numeric(paste0(active$year, "0101")),
-                        enddate = as.numeric(paste0(active$year+1, "0101")) )
-        shiny_calendarPlot(tmp)
+        annual_pat() %...>% shiny_calendarPlot()
       },
       error = function(e) {
         handleError(FALSE, notify("Internal Error"))

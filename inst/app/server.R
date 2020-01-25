@@ -5,83 +5,93 @@
 #' @param session
 server <- function(input, output, session) {
 
-  # Instantiate global reactive values
-  active <- shiny::reactiveValues( sensor = NULL,
-                                   label_sensors = NULL,
-                                   input_type = "sensor_picker",
-                                   year = as.numeric(strftime(Sys.time(), "%Y")),
-                                   ed = NULL,
-                                   sd = NULL,
-                                   days = NULL,
-                                   annual_sensors = NULL,
-                                   community = NULL,
-                                   pat = NULL,
-                                   meta_sensors = NULL )
-  # Module Call
-  # NOTE: "test" for development
-  shiny::callModule(overview_mod, "explore", active)
-  shiny::callModule(panel_mod, "explore", active)
-  shiny::callModule(calendar_mod, "explore", active)
-  shiny::callModule(raw_mod, "explore", active)
-  # shiny::callModule(panel_mod,"dv", active)
-  shiny::callModule(dataview_mod, "dv", active)
-  shiny::callModule(pattern_mod, "explore", active)
+
+  library(future)
+  library(promises)
+  plan(multiprocess)
 
 
-
-  # Initialization annual sensor load
-  # NOTE: This action is only preformed on the startup after loading the System's
-  #       year datestamp.
-  observeEvent(
-    once = TRUE,
-    eventExpr = active$year,
-    handlerExpr = {
-      active$annual_sensors <- AirSensor::sensor_loadYear(datestamp = active$year)
-      active$meta_sensors <- active$annual_sensors$meta
+  pat <<- eventReactive(
+    eventExpr = {
+      input$`explore-sensor_picker`; input$`explore-date_picker`; input$`explore-lookback_picker`
+    },
+    valueExpr = {
+      label <- input$`explore-sensor_picker`
+      ed <- lubridate::ymd(input$`explore-date_picker`)
+      sd <- ed - as.numeric(input$`explore-lookback_picker`)
+      print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
+      future({
+        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+        tryCatch(
+          expr = {
+            pat_load( label,
+                      startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+                      enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+          },
+          error = function(e) {
+            print(e)
+          }
+        )
+      })
     }
   )
-  # Year Logic
-  year <- eventReactive(active$sd, as.numeric(strftime(active$sd, "%Y")))
-  observe({
-    if (year() != active$year) {
-      print("YEAR CHANGE")
-      active$year <- year()
-      active$annual_sensors <- AirSensor::sensor_loadYear(datestamp = active$year)
+
+  annual_pat <<- eventReactive(
+    eventExpr = {
+      input$`explore-sensor_picker`; input$`explore-date_picker`; input$`explore-lookback_picker`
+    },
+    valueExpr = {
+      label <- input$`explore-sensor_picker`
+      print("load annual pat")
+      yr <- as.numeric(strftime(input$`explore-date_picker`, "%Y"))
+      ed <- paste0(yr, "1231")
+      sd <- paste0(yr,"0101")
+      print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
+      future({
+        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+        tryCatch(
+          expr = {
+            pat_load( label,
+                      startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+                      enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+          }, error = function(e) print(e) )
+      })
     }
+  )
+
+  annual_sensors <<- eventReactive(
+    eventExpr = {
+      input$`explore-date-picker`; input$`explore-lookback_picker`
+    },
+    valueExpr = {
+      tmp <- as.numeric(strftime(input$`explore-date_picker`, "%Y"))
+      paste0("load annual sensors: ", tmp)
+      future({
+        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+        tryCatch(
+          expr = {
+            sensor_loadYear(datestamp = tmp )
+          },
+          error = function(e) {e}
+        )
+      })
+    }
+  )
+
+  sensor <<- reactive({
+    tryCatch(
+      expr = {
+        pat() %...>% pat_createAirSensor()
+      },
+      error = function(e) print(e)
+    )
   })
 
-  # Update the downstream sensor functions
-  # NOTE: Updates the leaflet marker or sensor picker determined by the JS event
-  #       handler -- i.e. mouse events.
-  shiny::observeEvent(
-    eventExpr = {active$sensor; active$pat},
-    handlerExpr = {
-      print(active$input_type) # DEBUG
-      shiny::req(active$input_type)
-      switch( EXPR = active$input_type,
-              "leaflet" = {
-                shiny::updateSelectInput(
-                  session,
-                  "explore-sensor_picker",
-                  selected = active$sensor$meta$monitorID
-                )
-                shiny::updateSelectInput(
-                  session,
-                  "dv-sensor_picker",
-                  selected = active$sensor$meta$monitorID
-                )
-              },
-              "sensor_picker" = {
-                leaflet::addCircleMarkers(
-                  map = leaflet::leafletProxy("explore-leaflet"),
-                  lng = active$sensor$meta$longitude,
-                  lat = active$sensor$meta$latitude,
-                  radius = 10,
-                  fillOpacity = 0.95,
-                  layerId = "selectTmp",
-                  color = "#ffa020",
-                  options = list(leaflet::pathOptions(interactive = FALSE)) )
-              } )
-    }
-  )
+  shiny::callModule(panel_mod,"explore")
+  shiny::callModule(overview_mod, "explore")
+  shiny::callModule(calendar_mod, "explore")
+  shiny::callModule(raw_mod, "explore")
+  shiny::callModule(pattern_mod, "explore")
+
+
 }

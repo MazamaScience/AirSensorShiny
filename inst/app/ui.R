@@ -39,7 +39,12 @@ ui <- function(request) {
               tags$br(),
               shiny::column(
                 width= 12,
-                overview_mod_ui("explore") )
+                overview_mod_ui("explore"),
+                plotly::plotlyOutput(
+                  outputId = "barplotly",
+                  height = 330
+                )
+              )
             ),
             # ---- Calendar tab ----
             shiny::tabPanel(

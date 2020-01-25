@@ -67,103 +67,86 @@ panel_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-panel_mod <- function(input, output, session, active) {
-
-  # Update the active sensor picker choices when sensor labels is updated
-  observeEvent(
-    eventExpr = active$label_sensors,
-    handlerExpr = {
-      shiny::updateSelectInput( session,
-                                "sensor_picker",
-                                choices = active$label_sensors )
-    }
-  )
-  # NOTE: ShinyJS is used to identify which input to accept and update from.
-  #       This is necessary to remove circular and redundant logic/state from
-  #       the leaflet/sensos picker selection.
-  # Update the input type on sensor picker mouse enter
-  shinyjs::onevent(
-    event = "mouseenter",
-    id = "sensor_picker",
-    expr = {
-      active$input_type <- "sensor_picker"
-      print("Mouse Enter: Sensor Picker")
-    }
-  )
-  # Dates
-  observeEvent(
-    eventExpr = {input$date_picker; input$lookback_picker},
-    handlerExpr =  {
-      active$ed <- lubridate::ymd(input$date_picker)
-      active$sd <- active$ed - as.numeric(input$lookback_picker)
-      print(active$ed)
-      print(active$sd)
-    }
-  )
-
-  # SENSOR PICKER LOAD EVENT TRIGGER
-  # NOTE: This is the sensor loading event handler.
-  # NOTE: V important
-  observeEvent(
-    ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$lookback_picker; input$date_picker},
-    handlerExpr = {
-      shiny::req(active$ed)
-      shiny::req(active$input_type)
-      tryCatch(
-        expr = {
-          label <- input$sensor_picker
-          print(label)
-          active$pat <- pat_load( label,
-                                  startdate = active$sd,
-                                  enddate = active$ed ) # %>% showLoad()
-          AirSensor::pat_isPat(active$pat)
-          active$sensor <- pat_createAirSensor( active$pat,
-                                                period = "1 hour",
-                                                qc_algorithm = "hourly_AB_01" )
-        },
-        error = function(e) {
-          notify()
-          active$pat <- active$sensor <- NULL
-
-        }
-      )
-    }
-  )
-
+panel_mod <- function(input, output, session) {
   # Communities
   observeEvent(
     ignoreInit = TRUE,
     eventExpr = {input$community_picker},
     handlerExpr = {
-      tryCatch(
-        expr = {
-          shiny::req(input$community_picker)
-          # Calculate the selected community location
-          if ( grepl("[aA]ll", input$community_picker) ) {
-            community_sensors <- active$meta_sensors
-          } else {
-            community_sensors <- active$meta_sensors[active$meta_sensors$communityRegion == input$community_picker,]
-          }
-          bbox <- lapply(community_sensors[c('longitude', 'latitude')], function(x) c(min = min(x), max = max(x)))
-          # Change leaflet bounds to community
-          leaflet::leafletProxy('leaflet') %>%
-            leaflet::fitBounds(lng1 = bbox$longitude[[1]], lng2 = bbox$longitude[[2]],
-                               lat1 = bbox$latitude[[1]], lat2 = bbox$latitude[[2]])
-        },
-        error = {}
-      )
+      annual_sensors() %...>%
+        ( function(s) {
+          tryCatch(
+            expr = {
+              # Calculate the selected community location
+              if ( grepl("[aA]ll", input$community_picker) ) {
+                community_sensors <- s$meta
+              } else {
+                community_sensors <- s$meta[s$meta$communityRegion == input$community_picker,]
+              }
+              bbox <- lapply( community_sensors[c('longitude', 'latitude')],
+                              function(x) c(min = min(x), max = max(x)) )
+              # Change leaflet bounds to community
+              leaflet::leafletProxy('leaflet') %>%
+                leaflet::fitBounds( lng1 = bbox$longitude[[1]],
+                                    lng2 = bbox$longitude[[2]],
+                                    lat1 = bbox$latitude[[1]],
+                                    lat2 = bbox$latitude[[2]] )
+            },
+            error = {}
+          )
+        } )
     }
   )
 }
 
 
 if (F) {
+
+  # Promises Tester
+  library(future)
+  library(promises)
+  plan(multiprocess)
   ui <- shiny::fluidPage(
-    left_panel_ui("test")
+    panel_mod_ui("test"),
+    shiny::textOutput("result")
   )
   server <- function(input, output, session) {
-    callModule(left_panel, "test")
+    active <- shiny::reactiveValues( sensor = NULL,
+                                     label_sensors = NULL,
+                                     input_type = "sensor_picker",
+                                     year = as.numeric(strftime(Sys.time(), "%Y")),
+                                     ed = NULL,
+                                     sd = NULL,
+                                     days = NULL,
+                                     annual_sensors = NULL,
+                                     community = NULL,
+                                     pat = NULL,
+                                     meta_sensors = NULL )
+
+    s <- reactiveVal(NULL)
+    m <- reactiveVal(NULL)
+
+    callModule(panel_mod, "test", active)
+
+    output$result <- shiny::renderText(str(s()))
+
+    observeEvent(input$`test-sensor_picker`, {
+
+      label <- input$`test-sensor_picker`
+      future({
+        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+        pat_load(label, 20190101, 20200101)
+        }) %...>% s
+      print("DOING STUFF")
+
+    future({
+      setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+      pat_load(label, 20190101, 20200101) %>% pat_createAirSensor()
+    }) %...>% m
+    print("DOING OTHER STUFF")
+  })
+
+
   }
 
   shinyApp(ui, server)
