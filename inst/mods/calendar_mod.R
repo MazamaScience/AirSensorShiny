@@ -22,6 +22,7 @@ calendar_mod <- function(input, output, session) {
   output$calendar <- plotly::renderPlotly({
     tryCatch(
       expr = {
+        while(!resolved(annual_pat())) {cat(".")}
         annual_pat() %...>% shiny_calendarPlot()
       },
       error = function(e) {

@@ -18,36 +18,39 @@ dataview_mod_ui <- function(id) {
   )
 }
 
-dataview_mod <- function(input, output, session, active) {
+dataview_mod <- function(input, output, session) {
 
   output$meta_table <- shiny::renderTable({
-    req(active$pat)
-    observeEvent(input$sensor_picker, print("HIT"))
 
-    meta <- data.frame( "Sensor" = active$pat$meta$label,
-                        "Community" = active$pat$meta$communityRegion,
-                        "Sensor Type" = active$pat$meta$sensorType,
-                        "Longitude" = active$pat$meta$longitude,
-                        "Latitude" = active$pat$meta$latitude,
-                        "State" = active$pat$meta$stateCode,
-                        "Country" = active$pat$meta$countryCode,
-                        "Timezone" = active$pat$meta$timezone )
-    return(meta)
+    pat() %...>%
+      ( function(p) {
+            data.frame( "Sensor" = p$meta$label,
+                        "Community" = p$meta$communityRegion,
+                        "Sensor Type" = p$meta$sensorType,
+                        "Longitude" = p$meta$longitude,
+                        "Latitude" = p$meta$latitude,
+                        "State" = p$meta$stateCode,
+                        "Country" = p$meta$countryCode,
+                        "Timezone" = p$meta$timezone )
+      } )
   })
 
   output$data_table <- DT::renderDataTable({
-    shiny::req(active$pat)
+
     memory_debug("Data Explorer")
     # Remove unecessary columns
-    data <- active$pat$data[-(6:10)]
-    names(data) <- c( "Datetime",
-                      "PM2.5 Ch. A (\u03bcg / m\u00b)",
-                      "PM2.5 Ch. B (\u03bcg / m\u00b)",
-                      "Temperature (F)",
-                      "Relative Humidity (%)" )
-    data <-
-      DT::datatable(data, selection = "none") %>%
-      DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
-    return(data)
+    pat() %...>%
+      ( function(p) {
+        data <- p$data[-(6:10)]
+        names(data) <- c( "Datetime",
+                          "PM2.5 Ch. A (\u03bcg / m\u00b)",
+                          "PM2.5 Ch. B (\u03bcg / m\u00b)",
+                          "Temperature (F)",
+                          "Relative Humidity (%)" )
+
+        DT::datatable(data, selection = "none", options = list(pageLength = 25) ) %>%
+          DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+
+      } )
   })
 }

@@ -12,11 +12,11 @@ overview_mod_ui <- function(id) {
     leaflet::leafletOutput(
       outputId = ns("leaflet"),
       height = 420
-    ),
+    ) %>% loadSpinner(),
     plotly::plotlyOutput(
       outputId = ns("barplotly"),
       height = 330
-    )
+    )%>% loadSpinner()
   )
 }
 
@@ -30,22 +30,41 @@ overview_mod <- function(input, output, session) {
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
+    waitress$inc(10)
     ed <- lubridate::ymd(input$date_picker)
     sd <- ed - as.numeric(input$lookback_picker)
-
+    while(!resolved(annual_sensors())) {cat("|")}
     # For coloring the markers based on the date
     annual_sensors() %...>%
-      shiny_sensorLeaflet( startdate = sd,
-                           enddate = ed,
-                           maptype = "OpenStreetMap" )
-
+      ( function(s) {
+        tryCatch(
+          expr = {
+            shiny_sensorLeaflet( sensor = s,
+                                 startdate = sd,
+                                 enddate = ed,
+                                 maptype = "OpenStreetMap" )
+          },
+          error = function (e) {
+          }
+        )
+      } )
   })
+
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
+
     ed <- lubridate::ymd(input$date_picker)
     sd <- ed - as.numeric(input$lookback_picker)
+    while(!resolved(sensor())) {cat("/")}
     sensor() %...>%
-      shiny_barplotly(sd, ed)
+      ( function(s) {
+        tryCatch(
+          expr = {
+            shiny_barplotly(s, sd, ed)
+          },
+          error = function(e) print("shits fucked")
+        )
+      } )
   })
 
   # Update leaflet on marker click
@@ -74,6 +93,7 @@ overview_mod <- function(input, output, session) {
     eventExpr = {input$sensor_picker; input$date_picker; input$lookback_picker},
     handlerExpr = {
       print("Update leaflet marker from sensor picker")
+      while(!resolved(sensor())) {cat("/")}
       sensor() %...>%
         ( function(s) {
           tryCatch(
