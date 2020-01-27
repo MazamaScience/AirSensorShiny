@@ -1,0 +1,17 @@
+#' Start Application
+#'
+#' @param port port of web application
+run_app <- function(port = 4242, appFolder = 'inst/app') {
+
+  R_files <- list.files('R', pattern='^shiny_.+\\.R', full.names=TRUE)
+  module_files <- list.files('inst/mods', full.names = TRUE)
+  AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+  # Load R functions
+  lapply(R_files,  source)
+  # Load Modules
+  lapply(module_files, source)
+
+  for ( f in c(R_files, module_files) ) source(f)
+
+  shiny::runApp(appFolder, port, launch.browser = TRUE)
+}
