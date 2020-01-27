@@ -30,7 +30,6 @@ overview_mod <- function(input, output, session) {
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
-    waitress$inc(10)
     ed <- lubridate::ymd(input$date_picker)
     sd <- ed - as.numeric(input$lookback_picker)
     while(!resolved(annual_sensors())) {cat("|")}
@@ -42,7 +41,7 @@ overview_mod <- function(input, output, session) {
             shiny_sensorLeaflet( sensor = s,
                                  startdate = sd,
                                  enddate = ed,
-                                 maptype = "OpenStreetMap" )
+                                 maptype = "OpenStreetMap")
           },
           error = function (e) {
           }
@@ -62,7 +61,7 @@ overview_mod <- function(input, output, session) {
           expr = {
             shiny_barplotly(s, sd, ed)
           },
-          error = function(e) print("shits fucked")
+          error = function(e) print("Plotly barplot failed")
         )
       } )
   })
@@ -73,17 +72,24 @@ overview_mod <- function(input, output, session) {
   shiny::observeEvent(
     eventExpr = input$leaflet_marker_click,
     handlerExpr = {
-      print(input$leaflet_marker_click)
-      sensor_label <- input$leaflet_marker_click$id
-      leaflet::leafletProxy("leaflet") %>%
-        leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
-                                   lat = input$leaflet_marker_click$lat,
-                                   radius = 10,
-                                   fillOpacity = 0.95,
-                                   layerId = "selectTmp",
-                                   color = "#ffa020",
-                                   options = list(leaflet::pathOptions(interactive = FALSE)) )
-      shiny::updateSelectInput(session, "sensor_picker", selected = sensor_label)
+      tryCatch(
+        expr ={ print(input$leaflet_marker_click)
+          sensor_label <- input$leaflet_marker_click$id
+          leaflet::leafletProxy("leaflet") %>%
+            leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
+                                       lat = input$leaflet_marker_click$lat,
+                                       radius = 10,
+                                       fillOpacity = 0.95,
+                                       layerId = "tmp",
+                                       color = "#ffa020",
+                                       options = list(leaflet::pathOptions(interactive = FALSE), bubblingMouseEvents = TRUE) )
+          # Handle hightlighted marker re-click
+          if ( sensor_label != 'tmp' ) {
+            shiny::updateSelectInput(session, "sensor_picker", selected = sensor_label)
+          }
+        },
+        error = function(e) {}
+      )
     }
   )
 
@@ -103,7 +109,7 @@ overview_mod <- function(input, output, session) {
                                            lat = s$meta$latitude,
                                            radius = 10,
                                            fillOpacity = 0.95,
-                                           layerId = "selectTmp",
+                                           layerId = "tmp",
                                            color = "#ffa020",
                                            options = list(leaflet::pathOptions(interactive = FALSE)) )
             },

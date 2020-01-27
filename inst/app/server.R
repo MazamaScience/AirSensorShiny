@@ -24,6 +24,13 @@ server <- function(input, output, session) {
   })
 
   # Module Call
+  ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
+  ##               and database loading.
+  ## Overview Module:
+  ## Calendar Module:
+  ## Raw Module:
+  ## Pattern Module:
+  ## Data View Module:
   shiny::callModule(panel_mod,"global")
   shiny::callModule(overview_mod, "global")
   shiny::callModule(calendar_mod, "global")

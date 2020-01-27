@@ -2,14 +2,14 @@
 #'
 #' @param request
 ui <- function(request) {
-
   shiny::fluidPage(
     # ------ Panel Module -Column ----------------------------------------------
     shiny::column(
       width = 2,
       shiny::wellPanel(
         panel_mod_ui("global")
-      )
+      ),
+      shiny::tags$footer(id = "ver", paste0("Version: ", VERSION))
     ),
     shiny::navbarPage(
       # ------ Nav Bar ---------------------------------------------------------
@@ -41,10 +41,6 @@ ui <- function(request) {
                 shiny::column(
                   width= 12,
                   overview_mod_ui("global"),
-                  # plotly::plotlyOutput(
-                  #   outputId = "barplotly",
-                  #   height = 330
-                  # )
                 )
               ),
               # ---- Calendar tab ----
@@ -107,7 +103,6 @@ ui <- function(request) {
         value = "dv",
         shiny::fluidRow(
           dataview_mod_ui("global")
-
         )
       ),
       # ----- About Page -------------------------------------------------------
@@ -117,15 +112,17 @@ ui <- function(request) {
         shiny::fluidRow(
           shiny::column(
             width = 10,
-            shiny::includeHTML(file.path(getwd(),"../html/about.html"))
+            shiny::includeHTML(file.path(getwd(),"../www/about.html"))
           )
         )
-      ),
-      # Use ShinyJS
-      shinyjs::useShinyjs(debug = TRUE),
-      waiter::use_waiter(),
+      )
+    ),
 
-      tags$style(type="text/css", "body {padding-top: 70px;}")
-    )
+    # Use ShinyJS
+    shinyjs::useShinyjs(debug = TRUE),
+
+    tags$style(type="text/css", "body {padding-top: 70px;}"),
+    tags$style(type="text/css", "footer {padding-left: 5%; color: #808080; font-size: 11px}"),
+    tags$style(type="text/css", ".well {background-color: #fff}")
   )
 }
