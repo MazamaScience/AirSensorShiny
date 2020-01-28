@@ -44,13 +44,16 @@ overview_mod <- function(input, output, session) {
                                  maptype = "OpenStreetMap")
           },
           error = function (e) {
-          }
+          },
+          finally = print("YUP")
         )
       } )
   })
 
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
+
+    shiny::req(input$sensor_picker)
 
     ed <- lubridate::ymd(input$date_picker)
     sd <- ed - as.numeric(input$lookback_picker)
@@ -61,7 +64,7 @@ overview_mod <- function(input, output, session) {
           expr = {
             shiny_barplotly(s, sd, ed)
           },
-          error = function(e) print("Plotly barplot failed")
+          error = function(e) logger.error(e)
         )
       } )
   })

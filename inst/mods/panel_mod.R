@@ -56,7 +56,7 @@ panel_mod_ui <- function(id) {
       label = tags$small("Share..."),
       icon = shiny::icon("share-square"),
       title = "Copy Link to Share",
-      id = ns("bookmark-button")
+      id = ns("bookmark_button")
     )
   )
 }
@@ -195,6 +195,10 @@ panel_mod <- function(input, output, session) {
         } )
     }
   )
+
+  # Bookmarking Support
+  observeEvent(input$bookmark_button, session$doBookmark())
+
 }
 
 

@@ -165,7 +165,7 @@ shiny_sensorLeaflet <- function(
       layerId = sensor$meta$monitorID,
       options = leaflet::markerOptions(riseOnHover = TRUE,
                                        interactive = TRUE,
-                                       keyboard = TRUE)
+                                       keyboard = TRUE, riseOffset = 500)
     )
 
   # ----- Return ---------------------------------------------------------------

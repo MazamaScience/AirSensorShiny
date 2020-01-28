@@ -18,7 +18,7 @@ SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
 SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
 
 # Version
-VERSION <<- "0.9c"
+VERSION <<- "0.9c (beta)"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")

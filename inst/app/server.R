@@ -36,6 +36,59 @@ server <- function(input, output, session) {
   shiny::callModule(calendar_mod, "global")
   shiny::callModule(raw_mod, "global")
   shiny::callModule(pattern_mod, "global")
+  shiny::callModule(comparison_mod, "global")
+  shiny::callModule(video_mod, "global")
   shiny::callModule(dataview_mod, "global")
+
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+  onBookmark(
+    fun = function (state) {
+    state$values$sensor <- input$`global-sensor_picker`
+    state$values$community <- input$`global-community_picker`
+    state$values$date <- input$`global-date_picker`
+    state$values$lookback <- input$`global-lookback_picker`
+    state$values$tab <- input$tab_select
+  })
+  onBookmarked(
+    fun = function(url) {
+    updateQueryString(
+      paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
+              "?",
+              stringr::str_match(url, "_values_(.*)")[1] )
+    )
+  })
+  shiny::onRestored(
+    fun = function(state) {
+
+      # restore the panel selections
+      shinyWidgets::updatePickerInput(
+        session,
+        inputId = "global-sensor_picker",
+        selected = state$values$sensor
+      )
+      shinyWidgets::updatePickerInput(
+        session,
+        inputId = "global-community_picker",
+        selected = state$values$community
+      )
+      shinyWidgets::updateAirDateInput(
+        session,
+        inputId = "global-date_picker",
+        value = state$values$date
+      )
+      shinyWidgets::updateRadioGroupButtons(
+        session,
+        inputId = "global-lookback_picker",
+        selected = state$values$lookback
+      )
+    }
+  )
+
+
+
 
 }
