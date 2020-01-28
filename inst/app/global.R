@@ -7,6 +7,10 @@ library(worldmet)
 library(future)
 library(promises)
 
+R <- list.files(file.path(paste0(getwd(), '/../../R')), full.names = TRUE)
+mods <- list.files(file.path(paste0(getwd(), '/../mods')), full.names = TRUE)
+lapply(c(R, mods), source)
+
 # Asynchronous Processing Plan
 future::plan(future::multiprocess)
 
