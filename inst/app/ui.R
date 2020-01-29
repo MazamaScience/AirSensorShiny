@@ -7,6 +7,7 @@ ui <- function(request) {
     shiny::column(
       width = 2,
       shiny::wellPanel(
+        id = "panel",
         panel_mod_ui("global")
       ),
       shiny::tags$footer(id = "ver", paste0("Version: ", VERSION))
@@ -31,7 +32,7 @@ ui <- function(request) {
             # ----- Tabs -----
             shiny::tabsetPanel(
               type = "tabs",
-              id = "tab_select",
+              id = "tab",
               # ---- Overview Tab ----
               shiny::tabPanel(
                 title = tags$b("Overview"),
@@ -88,11 +89,17 @@ ui <- function(request) {
               shiny::tabPanel(
                 title = tags$b("Community Timelapse"),
                 icon = shiny::icon("file-video"),
-                value = "animation",
+                value = "anim",
                 tags$br(),
                 video_mod_ui("global")
               )
             )
+          ),
+          # HELP
+          shiny::column(
+            width = 2,
+            help_mod_ui("global")
+
           )
         )
       ),

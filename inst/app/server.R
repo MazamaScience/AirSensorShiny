@@ -35,6 +35,8 @@ server <- function(input, output, session) {
       } )
   })
 
+  tab <<- eventReactive(input$tab, input$tab)
+
   # Module Call
   ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
   ##               and database loading.
@@ -51,6 +53,7 @@ server <- function(input, output, session) {
   shiny::callModule(comparison_mod, "global")
   shiny::callModule(video_mod, "global")
   shiny::callModule(dataview_mod, "global")
+  shiny::callModule(help_mod, "global")
 
   observe({
     # Trigger this observer every time an input changes
