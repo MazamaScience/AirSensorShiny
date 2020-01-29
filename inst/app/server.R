@@ -18,7 +18,6 @@ server <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
-            notify("Sensor Unavliable", "Please select a different Sensor or Date range.")
           }
         )
       } )
@@ -30,7 +29,6 @@ server <- function(input, output, session) {
         future({
           sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d")
           ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d")
-
           shiny_getNOAA(s, sd, ed)
         })
       } )
@@ -93,12 +91,11 @@ server <- function(input, output, session) {
   observeEvent(
     eventExpr = input$bookmark_button,
     handlerExpr = {
-      shinytoastr::toastr_info("Link Copied!", position = "bottom-left", showDuration = 0)
+      shinytoastr::toastr_info("Link Copied!", position = "bottom-center")
     }
   )
   shiny::onRestored(
     fun = function(state) {
-
       # restore the panel selections
       shinyWidgets::updatePickerInput(
         session,

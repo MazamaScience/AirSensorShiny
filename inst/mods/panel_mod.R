@@ -76,20 +76,20 @@ panel_mod <- function(input, output, session) {
       label <- input$sensor_picker
       ed <- lubridate::ymd(input$date_picker)
       sd <- ed - as.numeric(input$lookback_picker)
-      print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        tryCatch(
-          expr = {
-            pat_load( label,
-                      startdate = as.numeric(stringr::str_remove_all(sd, "-")),
-                      enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
-          },
-          error = function(e) {
-            e
-          }
-        )
-      })
+
+        pat_load( label,
+                  startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+      }) %...!%
+        ( function(e) {
+          logger.error(paste0( "\n Download PAT - ERROR:",
+                               "\n Input Selection: ", label,
+                               "\n Date Selection: ", sd, "-", ed ))
+          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          return(NULL)
+        } )
     }
   )
 
@@ -112,13 +112,17 @@ panel_mod <- function(input, output, session) {
       print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        tryCatch(
-          expr = {
             pat_load( label,
                       startdate = as.numeric(stringr::str_remove_all(sd, "-")),
                       enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
-          }, error = function(e) print(e) )
-      })
+      }) %...!%
+        ( function(e) {
+          logger.error(paste0( "\n Downlaod ANNUAL PAT - ERROR:",
+                               "\n Input Selection: ", label,
+                               "\n Date Selection: ", sd, "-", ed ))
+          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          return(NULL)
+        } )
     }
   )
   # Reactive Annual SENSOR loading handler.
@@ -135,13 +139,14 @@ panel_mod <- function(input, output, session) {
       paste0("load annual sensors: ", tmp)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        tryCatch(
-          expr = {
             sensor_loadYear(datestamp = tmp )
-          },
-          error = function(e) {e}
-        )
-      })
+      }) %...!%
+        ( function(e) {
+          logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
+                               "\n Date Selection: ", tmp ))
+          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          return(NULL)
+        } )
     }
   )
 
@@ -190,57 +195,4 @@ panel_mod <- function(input, output, session) {
     }
   )
 
-}
-
-
-if (F) {
-
-  # Promises Tester
-  library(future)
-  library(promises)
-  plan(multiprocess)
-  ui <- shiny::fluidPage(
-    panel_mod_ui("test"),
-    shiny::textOutput("result")
-  )
-  server <- function(input, output, session) {
-    active <- shiny::reactiveValues( sensor = NULL,
-                                     label_sensors = NULL,
-                                     input_type = "sensor_picker",
-                                     year = as.numeric(strftime(Sys.time(), "%Y")),
-                                     ed = NULL,
-                                     sd = NULL,
-                                     days = NULL,
-                                     annual_sensors = NULL,
-                                     community = NULL,
-                                     pat = NULL,
-                                     meta_sensors = NULL )
-
-    s <- reactiveVal(NULL)
-    m <- reactiveVal(NULL)
-
-    callModule(panel_mod, "test", active)
-
-    output$result <- shiny::renderText(str(s()))
-
-    observeEvent(input$sensor_picker, {
-
-      label <- input$`sensor_picker`
-      future({
-        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        pat_load(label, 20190101, 20200101)
-        }) %...>% s
-      print("DOING STUFF")
-
-    future({
-      setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-      pat_load(label, 20190101, 20200101) %>% pat_createAirSensor()
-    }) %...>% m
-    print("DOING OTHER STUFF")
-  })
-
-
-  }
-
-  shinyApp(ui, server)
 }
