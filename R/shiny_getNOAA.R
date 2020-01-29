@@ -1,12 +1,18 @@
 # Get world met data
 shiny_getNOAA <-
-  function(sensor, startdate, enddate ) {
+  function(sensor, startdate = NULL, enddate = NULL ) {
     logger.trace("loading wind data")
 
     # Find wind data readings from the closest NOAA site
     year <- lubridate::year(enddate)
     lon <- sensor$meta$longitude
     lat <- sensor$meta$latitude
+
+    startdate <- lubridate::ymd(startdate)
+    enddate <- lubridate::ymd(enddate)
+
+    # if ( is.null(startdate) ) startdate <- lubridate::ymd(range(sensor$data$datetime)[1])
+    # if ( is.null(enddate) ) enddate <- lubridate::ymd(range(sensor$data$datetime)[2])
 
     closestSite <- worldmet::getMeta(lon = lon, lat = lat, n = 1,
                                      plot = FALSE)[1,]

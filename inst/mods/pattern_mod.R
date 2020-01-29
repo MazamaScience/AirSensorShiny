@@ -4,7 +4,7 @@ pattern_mod_ui <- function(id) {
     shiny::wellPanel(
       shiny::plotOutput(
         outputId = ns("daily_pattern_plot")
-      )
+      ) %>% loadSpinner()
     ),
     shiny::fluidRow(
       shiny::column(
@@ -45,28 +45,36 @@ pattern_mod <- function(input, output, session) {
         )
       } )
   })
-  # output$noaa_table <- shiny::renderDataTable({
-  #   tryCatch(
-  #     expr = {
-  #       shiny::req(active$sensor, active$ed)
-  #       active$noaa <- shiny_getNOAA(active$sensor, active$sd, active$ed)
-  #       print(active$noaa)
-  #       DT::datatable(active$noaa)
-  #     },
-  #     error = function(e) {}
-  #   )
-  # })
+  output$noaa_table <- DT::renderDT({
+    noaa() %...>%
+      ( function(n) {
+      tryCatch(
+        expr = {
+          data <- shiny_noaa_table(n)
+          DT::datatable(
+            data = data,
+            selection = "none",
+            colnames = "",
+            options = list(dom = 't', bSort = FALSE),
+            class = 'cell-border stripe'
+          ) %>%
+            DT::formatRound(columns = 1, digits = 2)
+        },
+        error = function(e) {}
+      )
+    } )
+  })
 
+  # NOTE: Look into finding a better method than "nesting" promises
   output$wind_plot  <- shiny::renderPlot({
-    sensor() %...>%
+     sensor() %...>%
       ( function(s) {
         tryCatch(
           expr = {
-            # wind <- shiny_getNOAA(s) %>% dplyr::select(c("date", "wd", "ws"))
-            # AirSensor::sensor_pollutionRose(s)
-            "WOOSH"
+            noaa() %...>% ( function(n) AirSensor::sensor_pollutionRose(s, n) )
           },
           error = function(e) {
+            e
           }
         )
       } )

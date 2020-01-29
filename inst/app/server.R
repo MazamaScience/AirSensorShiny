@@ -23,6 +23,18 @@ server <- function(input, output, session) {
       } )
   })
 
+  noaa <<- reactive({
+    sensor() %...>%
+      ( function(s) {
+        future({
+          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d")
+          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d")
+
+          shiny_getNOAA(s, sd, ed)
+        })
+      } )
+  })
+
   # Module Call
   ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
   ##               and database loading.
