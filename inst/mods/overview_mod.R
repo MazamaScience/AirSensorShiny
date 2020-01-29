@@ -45,7 +45,7 @@ overview_mod <- function(input, output, session) {
           },
           error = function (e) {
           },
-          finally = print("YUP")
+          finally = print("Annual Sensors Loaded")
         )
       } )
   })

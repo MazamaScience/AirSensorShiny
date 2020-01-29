@@ -8,7 +8,8 @@ ui <- function(request) {
       width = 2,
       shiny::wellPanel(
         id = "panel",
-        panel_mod_ui("global")
+        panel_mod_ui("global"),
+        shiny::uiOutput("bookmark")
       ),
       shiny::tags$footer(id = "ver", paste0("Version: ", VERSION))
     ),
@@ -21,7 +22,7 @@ ui <- function(request) {
       fluid = TRUE,
       collapsible = TRUE,
       position = "fixed-top",
-      windowTitle = "AirSensor Viewer (Beta)",
+      windowTitle = "AirSensor DataViewer",
       # ------ Explore Page ----------------------------------------------------
       shiny::tabPanel(
         title = tags$b("Explore"),
@@ -127,9 +128,26 @@ ui <- function(request) {
 
     # Use ShinyJS
     shinyjs::useShinyjs(debug = TRUE),
+    rclipboard::rclipboardSetup(),
+    shinytoastr::useToastr(),
 
     tags$style(type="text/css", "body {padding-top: 70px;}"),
     tags$style(type="text/css", "footer {padding-left: 5%; color: #808080; font-size: 11px}"),
-    tags$style(type="text/css", ".well {background-color: #fff}")
+    tags$style(type="text/css", ".well {background-color: #fff}"),
+    tags$head(
+      tags$script(
+        'var dimension = [0, 0];
+         $(document).on("shiny:connected", function(e) {
+            dimension[0] = window.innerWidth;
+            dimension[1] = window.innerHeight;
+            Shiny.onInputChange("dimension", dimension);
+        });
+        $(window).resize(function(e) {
+            dimension[0] = window.innerWidth;
+            dimension[1] = window.innerHeight;
+            Shiny.onInputChange("dimension", dimension);
+        });'
+      )
+    ),
   )
 }

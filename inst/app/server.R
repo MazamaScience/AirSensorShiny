@@ -17,7 +17,8 @@ server <- function(input, output, session) {
             pat_createAirSensor(p)
           },
           error = function(e) {
-            print("ERROR creating Sensor object")
+            logger.error(e)
+            notify("Sensor Unavliable", "Please select a different Sensor or Date range.")
           }
         )
       } )
@@ -55,27 +56,46 @@ server <- function(input, output, session) {
   shiny::callModule(dataview_mod, "global")
   shiny::callModule(help_mod, "global")
 
+  # ----- Bookmarking -----
   observe({
     # Trigger this observer every time an input changes
     reactiveValuesToList(input)
     session$doBookmark()
   })
   onBookmark(
-    fun = function (state) {
-    state$values$sensor <- input$`global-sensor_picker`
-    state$values$community <- input$`global-community_picker`
-    state$values$date <- input$`global-date_picker`
-    state$values$lookback <- input$`global-lookback_picker`
-    state$values$tab <- input$tab_select
-  })
+    fun = function(state) {
+      state$values$sensor <- input$`global-sensor_picker`
+      state$values$community <- input$`global-community_picker`
+      state$values$date <- input$`global-date_picker`
+      state$values$lookback <- input$`global-lookback_picker`
+      state$values$tab <- input$tab
+      state$values$page <- input$navbar
+    }
+  )
   onBookmarked(
     fun = function(url) {
-    updateQueryString(
-      paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
-              "?",
-              stringr::str_match(url, "_values_(.*)")[1] )
-    )
-  })
+      clean_url <- paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
+                           "?",
+                           stringr::str_match(url, "_values_(.*)")[1] )
+      updateQueryString(clean_url)
+      # Update URL for share button copy event
+      output$bookmark <- shiny::renderUI({
+        rclipboard::rclipButton(
+          label = tags$small("Share..."),
+          icon = shiny::icon("share-square"),
+          inputId = "bookmark_button",
+          clipText = clean_url
+        )
+      })
+    }
+  )
+  # Show "Link Copied!" toastr notification on bookmark button click
+  observeEvent(
+    eventExpr = input$bookmark_button,
+    handlerExpr = {
+      shinytoastr::toastr_info("Link Copied!", position = "bottom-left", showDuration = 0)
+    }
+  )
   shiny::onRestored(
     fun = function(state) {
 
@@ -100,10 +120,16 @@ server <- function(input, output, session) {
         inputId = "global-lookback_picker",
         selected = state$values$lookback
       )
+      shiny::updateTabsetPanel(
+        session = session,
+        inputId = "tab",
+        selected = state$values$tab
+      )
+      shiny::updateNavbarPage(
+        session = session,
+        inputId = "navbar",
+        selected = state$values$page
+      )
     }
   )
-
-
-
-
 }

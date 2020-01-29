@@ -30,7 +30,7 @@ panel_mod_ui <- function(id) {
                 lubridate::now()),
       todayButton = FALSE,
       addon = "none",
-      inline = TRUE,
+      inline = FALSE,
       separator = " to ",
       range = FALSE,
       maxDate = lubridate::now(),
@@ -51,12 +51,6 @@ panel_mod_ui <- function(id) {
         yes = tags$i(class = "fa fa-check",
                      style = "color: #008cba"))
 
-    ),
-    shiny::bookmarkButton(
-      label = tags$small("Share..."),
-      icon = shiny::icon("share-square"),
-      title = "Copy Link to Share",
-      id = ns("bookmark_button")
     )
   )
 }
@@ -92,7 +86,7 @@ panel_mod <- function(input, output, session) {
                       enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
           },
           error = function(e) {
-            print(e)
+            e
           }
         )
       })
@@ -181,7 +175,7 @@ panel_mod <- function(input, output, session) {
               # May be useful
               not_community_sensors <- !(s$meta$monitorID %in% community_sensors$monitorID)
 
-              # TODO: Restrict the available sensors to selected communtiy
+              # TODO: Restrict the available sensors to selected community
               # NOTE: updating the selection to only have the selected community's
               #       sensors throws an error when selecting a sensor outside of
               #       the community sensors.
@@ -195,9 +189,6 @@ panel_mod <- function(input, output, session) {
         } )
     }
   )
-
-  # Bookmarking Support
-  observeEvent(input$bookmark_button, session$doBookmark())
 
 }
 
