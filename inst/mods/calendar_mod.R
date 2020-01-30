@@ -20,13 +20,14 @@ calendar_mod_ui <- function(id) {
 calendar_mod <- function(input, output, session) {
 
   output$calendar <- plotly::renderPlotly({
+    shiny::req(input$sensor_picker)
     tryCatch(
       expr = {
         while(!resolved(annual_pat())) {cat(".")}
         annual_pat() %...>% shiny_calendarPlot()
       },
       error = function(e) {
-        handleError(FALSE, notify("Internal Error"))
+        logger.error(e)
       }
     )
 

@@ -33,51 +33,58 @@ pattern_mod_ui <- function(id) {
 pattern_mod <- function(input, output, session) {
 
   output$daily_pattern_plot <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     sensor() %...>%
-      ( function(s) {
+      (function(s) {
         tryCatch(
           expr = {
             AirMonitorPlots::ggplot_pm25Diurnal( ws_data = s,
                                                  offsetBreaks = TRUE ) +
               AirMonitorPlots::stat_meanByHour(output = "scaqmd")
           },
-          error = function(e) {}
+          error = function(e) {
+            logger.error(e)
+          }
         )
-      } )
+      })
   })
   output$noaa_table <- DT::renderDT({
+    shiny::req(input$sensor_picker)
     noaa() %...>%
-      ( function(n) {
-      tryCatch(
-        expr = {
-          data <- shiny_noaa_table(n)
-          DT::datatable(
-            data = data,
-            selection = "none",
-            colnames = "",
-            options = list(dom = 't', bSort = FALSE),
-            class = 'cell-border stripe'
-          ) %>%
-            DT::formatRound(columns = 1, digits = 2)
-        },
-        error = function(e) {}
-      )
-    } )
+      (function(n) {
+        tryCatch(
+          expr = {
+            data <- shiny_noaa_table(n)
+            DT::datatable(
+              data = data,
+              selection = "none",
+              colnames = "",
+              options = list(dom = 't', bSort = FALSE),
+              class = 'cell-border stripe'
+            ) %>%
+              DT::formatRound(columns = 1, digits = 2)
+          },
+          error = function(e) {
+            logger.error(e)
+          }
+        )
+      })
   })
 
   # NOTE: Look into finding a better method than "nesting" promises
   output$wind_plot  <- shiny::renderPlot({
-     sensor() %...>%
-      ( function(s) {
+    shiny::req(input$sensor_picker)
+    sensor() %...>%
+      (function(s) {
         tryCatch(
           expr = {
             noaa() %...>% ( function(n) AirSensor::sensor_pollutionRose(s, n) )
           },
           error = function(e) {
-            e
+            logger.error(e)
           }
         )
-      } )
+      })
   })
 
 }

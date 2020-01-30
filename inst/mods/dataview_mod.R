@@ -21,26 +21,26 @@ dataview_mod_ui <- function(id) {
 dataview_mod <- function(input, output, session) {
 
   output$meta_table <- shiny::renderTable({
-
+    shiny::req(input$sensor_picker)
     pat() %...>%
-      ( function(p) {
-            data.frame( "Sensor" = p$meta$label,
-                        "Community" = p$meta$communityRegion,
-                        "Sensor Type" = p$meta$sensorType,
-                        "Longitude" = p$meta$longitude,
-                        "Latitude" = p$meta$latitude,
-                        "State" = p$meta$stateCode,
-                        "Country" = p$meta$countryCode,
-                        "Timezone" = p$meta$timezone )
-      } )
+      (function(p) {
+        data.frame( "Sensor" = p$meta$label,
+                    "Community" = p$meta$communityRegion,
+                    "Sensor Type" = p$meta$sensorType,
+                    "Longitude" = p$meta$longitude,
+                    "Latitude" = p$meta$latitude,
+                    "State" = p$meta$stateCode,
+                    "Country" = p$meta$countryCode,
+                    "Timezone" = p$meta$timezone )
+      })
   })
 
   output$data_table <- DT::renderDataTable({
-
+    shiny::req(input$sensor_picker)
     memory_debug("Data Explorer")
     # Remove unecessary columns
     pat() %...>%
-      ( function(p) {
+      (function(p) {
         data <- p$data[-(6:10)]
         names(data) <- c( "Datetime",
                           "PM2.5 Ch. A (\u03bcg / m\u00b)",
@@ -50,7 +50,7 @@ dataview_mod <- function(input, output, session) {
 
         DT::datatable(data, selection = "none", options = list(pageLength = 25) ) %>%
           DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
-
-      } )
+      })
   })
+
 }

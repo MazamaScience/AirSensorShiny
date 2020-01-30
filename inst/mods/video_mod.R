@@ -12,23 +12,22 @@ video_mod_ui <- function(id) {
 }
 
 video_mod <- function(input, output, session) {
-  output$video <- shiny::renderUI({
-    ed <- input$date_picker
 
+  output$video <- shiny::renderUI({
+    shiny::req(input$community_picker)
+    ed <- input$date_picker
     baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
     year    <- strftime(ed, "%Y")
     mm      <- strftime(ed, "%m")
     dd      <- strftime(ed, "%d")
     comm    <- input$community_picker
-
     url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
-
     tags$video(
       id = "video",
       type = "video/mp4",
       src = url,
       controls = "controls"
     )
-
   })
+
 }

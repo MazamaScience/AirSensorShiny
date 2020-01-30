@@ -50,35 +50,37 @@ raw_mod <- function(input, output, session) {
 
   # Multiplot
   output$multi_plot <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     tryCatch(
       expr = {
         pat() %...>% AirSensor::pat_multiplot(columns = 2)
       },
       error = function(e) {
-        handleError(FALSE, e)
-        notify()
+        logger.error(e)
       }
     )
   })
   #Channel Overlay plot
   output$ch_overlay_plot <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     tryCatch(
       expr = {
         pat() %...>% shiny_internalFit(whichPlot = 'ab')
       },
       error = function(e) {
-        handleError(FALSE, e)
+        logger.error(e)
       }
     )
   })
   # # Channel Correlation plot
   output$ch_correlation_plot <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     tryCatch(
       expr = {
         pat() %...>% shiny_internalFit(whichPlot = 'lm')
       },
       error = function(e) {
-        handleError(FALSE, e)
+        logger.error(e)
       }
     )
   })

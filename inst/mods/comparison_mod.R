@@ -45,11 +45,12 @@ comparison_mod_ui <- function(id) {
 
 comparison_mod <- function(input, output, session) {
   output$comparison_leaflet <- leaflet::renderLeaflet({
+    shiny::req(input$sensor_picker)
     sensor() %...>%
-      ( function(s) {
-
+      (function(s) {
         tryCatch(
           expr = {
+            shiny::req(input$sensor_picker)
             dr <- range(s$data$datetime)
             nearby <- s$meta$pwfsl_closestMonitorID
             dist <- s$meta$pwfsl_closestDistance
@@ -63,38 +64,50 @@ comparison_mod <- function(input, output, session) {
               leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
                                      lat = c(mon$meta$latitude,s$meta$latitude) )
           },
-          error = function(e) {}
+          error = function(e) {
+            logger.error(e)
+          }
         )
-      } )
+      })
   })
 
   output$sensor_monitor_correlation <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     sensor() %...>%
-      ( function(s) {
+      (function(s) {
         tryCatch(
           expr = {
+            shiny::req(input$sensor_picker)
             shiny_externalFit(sensor = s)
           },
-          error = function(e) {}
+          error = function(e) {
+            logger.error(e)
+          }
         )
-      } )
+      })
   })
 
   output$sensor_monitor_comparison <- shiny::renderPlot({
+    shiny::req(input$sensor_picker)
     pat() %...>%
-      ( function(p) {
+      (function(p) {
         tryCatch( expr = {
+          shiny::req(input$sensor_picker)
           pat_monitorComparison(pat = p)
         },
-        error = function(e) {}
+        error = function(e) {
+          logger.error(e)
+        }
         )
-      } )
+      })
   })
 
   output$sensor_status_table <- DT::renderDT({
+    shiny::req(input$sensor_picker)
     pat() %...>%
-      ( function(p) {
+      (function(p) {
         tryCatch( expr = {
+          shiny::req(input$sensor_picker)
           DT::datatable(
             shiny_comparisonTable(p),
             selection = "none",
@@ -104,9 +117,11 @@ comparison_mod <- function(input, output, session) {
           ) %>%
             DT::formatRound(columns = 1, digits = 2)
         },
-        error = function(e) {}
+        error = function(e) {
+          logger.error(e)
+        }
         )
-      } )
+      })
   })
 
 }

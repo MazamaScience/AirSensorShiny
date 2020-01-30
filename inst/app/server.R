@@ -11,27 +11,34 @@ server <- function(input, output, session) {
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
   sensor <<- reactive({
     pat() %...>%
-      ( function(p) {
-        tryCatch(
-          expr = {
-            pat_createAirSensor(p)
-          },
-          error = function(e) {
-            logger.error(e)
-          }
-        )
-      } )
+      (function(p) {
+        future({
+          pat_createAirSensor(p)
+        }) %...!%
+          (function(e) {
+            logger.error(paste0("\n Create AirSensor - ERROR"))
+            return(NULL)
+          })
+      })
   })
 
+  # Reactive NOAA loading.
+  # NOTE: Creates the NOAA data from the worldmet package.
+  # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
   noaa <<- reactive({
     sensor() %...>%
-      ( function(s) {
+      (function(s) {
         future({
           sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d")
           ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d")
           shiny_getNOAA(s, sd, ed)
-        })
-      } )
+        }) %...!%
+          (function(e) {
+            logger.error(paste0("\n Download NOAA worldmet - ERROR",
+                                "\n Date Selection: ", sd, "-", ed ))
+            return(NULL)
+          })
+      })
   })
 
   tab <<- eventReactive(input$tab, input$tab)
@@ -56,7 +63,7 @@ server <- function(input, output, session) {
 
   # ----- Bookmarking -----
   observe({
-    # Trigger this observer every time an input changes
+    # Trigger url update every time an input changes
     reactiveValuesToList(input)
     session$doBookmark()
   })
@@ -70,6 +77,7 @@ server <- function(input, output, session) {
       state$values$page <- input$navbar
     }
   )
+  # Update the URL to something reasonable
   onBookmarked(
     fun = function(url) {
       clean_url <- paste0( stringr::str_match(url, "http:(.+)/\\/?")[1],
@@ -91,9 +99,10 @@ server <- function(input, output, session) {
   observeEvent(
     eventExpr = input$bookmark_button,
     handlerExpr = {
-      shinytoastr::toastr_info("Link Copied!", position = "bottom-center")
+      shinytoastr::toastr_info("Link Copied!", position = "bottom-left", showDuration = 0)
     }
   )
+  # On Restore
   shiny::onRestored(
     fun = function(state) {
       # restore the panel selections
@@ -117,11 +126,13 @@ server <- function(input, output, session) {
         inputId = "global-lookback_picker",
         selected = state$values$lookback
       )
+      # Restore tab
       shiny::updateTabsetPanel(
         session = session,
         inputId = "tab",
         selected = state$values$tab
       )
+      # Restore nav page
       shiny::updateNavbarPage(
         session = session,
         inputId = "navbar",
@@ -129,4 +140,30 @@ server <- function(input, output, session) {
       )
     }
   )
+  # Show modal asking to select and sensor/community
+  observeEvent(
+    eventExpr = {input$tab},
+    handlerExpr = {
+      if ( input$tab != "overview" && input$tab != "anim" ) {
+        if ( is.null(input$`global-sensor_picker`) || input$`global-sensor_picker` == "") {
+          shinyWidgets::sendSweetAlert(
+            session,
+            title = "Please Select a Sensor",
+            type = "warning",
+            closeOnClickOutside = TRUE
+          )
+        }
+      } else if ( input$tab == "anim" ) {
+        if ( is.null(input$`global-community_picker`) || input$`global-community_picker` == "" ) {
+          shinyWidgets::sendSweetAlert(
+            session,
+            title = "Please Select a Community",
+            type = "warning",
+            closeOnClickOutside = TRUE
+          )
+        }
+      }
+    }
+  )
+
 }

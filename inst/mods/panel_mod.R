@@ -83,13 +83,13 @@ panel_mod <- function(input, output, session) {
                   startdate = as.numeric(stringr::str_remove_all(sd, "-")),
                   enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
       }) %...!%
-        ( function(e) {
+        (function(e) {
           logger.error(paste0( "\n Download PAT - ERROR:",
                                "\n Input Selection: ", label,
                                "\n Date Selection: ", sd, "-", ed ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
           return(NULL)
-        } )
+        })
     }
   )
 
@@ -112,17 +112,17 @@ panel_mod <- function(input, output, session) {
       print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-            pat_load( label,
-                      startdate = as.numeric(stringr::str_remove_all(sd, "-")),
-                      enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+        pat_load( label,
+                  startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
       }) %...!%
-        ( function(e) {
+        (function(e) {
           logger.error(paste0( "\n Downlaod ANNUAL PAT - ERROR:",
                                "\n Input Selection: ", label,
                                "\n Date Selection: ", sd, "-", ed ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
           return(NULL)
-        } )
+        })
     }
   )
   # Reactive Annual SENSOR loading handler.
@@ -139,14 +139,14 @@ panel_mod <- function(input, output, session) {
       paste0("load annual sensors: ", tmp)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-            sensor_loadYear(datestamp = tmp )
+        sensor_loadYear(datestamp = tmp )
       }) %...!%
-        ( function(e) {
+        (function(e) {
           logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
                                "\n Date Selection: ", tmp ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = 'bottom-center')
+          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
           return(NULL)
-        } )
+        })
     }
   )
 
@@ -159,7 +159,7 @@ panel_mod <- function(input, output, session) {
     handlerExpr = {
       shinyWidgets::updatePickerInput(session = session, inputId = 'sensor_picker', selected = NULL)
       annual_sensors() %...>%
-        ( function(s) {
+        (function(s) {
           tryCatch(
             expr = {
               # Calculate the selected community location
@@ -191,7 +191,7 @@ panel_mod <- function(input, output, session) {
             },
             error = function(e) {print("Error in community pick")}
           )
-        } )
+        })
     }
   )
 
