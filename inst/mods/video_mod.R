@@ -20,8 +20,8 @@ video_mod <- function(input, output, session) {
     year    <- strftime(ed, "%Y")
     mm      <- strftime(ed, "%m")
     dd      <- strftime(ed, "%d")
-    comm    <- input$community_picker
-    url <- paste0(baseUrl, year, "/", comm, "_", year, mm, dd, ".mp4" )
+    id    <- com2id(input$community_picker)
+    url <- paste0(baseUrl, year, "/", id, "_", year, mm, dd, ".mp4" )
     tags$video(
       id = "video",
       type = "video/mp4",

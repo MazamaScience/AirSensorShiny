@@ -59,6 +59,7 @@ server <- function(input, output, session) {
   shiny::callModule(video_mod, "global")
   shiny::callModule(dataview_mod, "global")
   shiny::callModule(help_mod, "global")
+  shiny::callModule(latest_mod, "global")
 
   # ----- Bookmarking -----
   observe({
@@ -162,6 +163,17 @@ server <- function(input, output, session) {
           )
         }
       }
+      # Remind the user that their selection is void
+      pat() %...>%
+        (function(p) {
+          if ( !pat_isPat(p) ) {
+            shinytoastr::toastr_warning( title = "Oops!",
+                                         message = "Please Select a valid sensor.",
+                                         position = "bottom-left" )
+          }
+
+        })
+
     }
   )
 

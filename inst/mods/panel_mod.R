@@ -8,7 +8,8 @@ panel_mod_ui <- function(id) {
     shinyWidgets::pickerInput(
       inputId = ns("community_picker"),
       label = tags$h4("Community"),
-      choices = c("All..." = "all", SENSOR_COMMUNITIES),
+      choices = c("All..." = "all",
+                  id2com(SENSOR_COMMUNITIES)),
       options = list(title = "Select community...")
     ),
 
@@ -50,16 +51,16 @@ panel_mod_ui <- function(id) {
       checkIcon = list(
         yes = tags$i(class = "fa fa-check",
                      style = "color: #008cba"))
-
     ),
+    # Download and Share
     shiny::fluidRow(
       shiny::column(
-        6,
-      shiny::downloadButton("download", label = tags$small("Download"))
+        width = 6,
+        shiny::downloadButton(ns("download"), label = tags$small("Download"))
       ),
       shiny::column(
-        6,
-      shiny::uiOutput("bookmark")
+        width = 6,
+        shiny::uiOutput("bookmark")
       )
     )
   )
@@ -73,12 +74,40 @@ panel_mod_ui <- function(id) {
 #' @param active
 panel_mod <- function(input, output, session) {
 
+  output$download <- shiny::downloadHandler(
+    filename = function() {
+      label <- input$sensor_picker
+      ed <- lubridate::ymd(input$date_picker)
+      sd <- ed - as.numeric(input$lookback_picker)
+      paste0(label,sd,"_",ed,".csv")
+    },
+    content = function(file) {
+      label <- input$sensor_picker
+      ed <- lubridate::ymd(input$date_picker)
+      sd <- ed - as.numeric(input$lookback_picker)
+      tryCatch(
+        expr = {
+          p <- AirSensor::pat_load(label, sd, ed)
+          write.csv(p$data[1:5], file = file)
+        },
+        error = function(e) {
+          logger.error(e)
+          shinytoastr::toastr_error( title = "Oops! Download Failed.",
+                                     message = "Try a different date or sensor.",
+                                     position = "bottom-left" )
+          return(write.csv(NULL))
+        }
+      )
+    }
+  )
+
   # Reactive PAT loading handler.
   # NOTE: - VIP -
   #       Downloads the PAT in range of selected date picker and lookback from
   #       the set archive server, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  pat <<- eventReactive(ignoreNULL = TRUE,
+  pat <<- eventReactive(
+    ignoreNULL = TRUE,
     eventExpr = {
       input$sensor_picker; input$date_picker; input$lookback_picker
     },
@@ -98,7 +127,10 @@ panel_mod <- function(input, output, session) {
           logger.error(paste0( "\n Download PAT - ERROR:",
                                "\n Input Selection: ", label,
                                "\n Date Selection: ", sd, "-", ed ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
+          shinytoastr::toastr_error( title = "Oops! Sensor Unavaliable.",
+                                     message = "Please try a different sensor or date.",
+                                     position = "bottom-left",
+                                     showDuration = 0 )
           return(NULL)
         })
     }
@@ -191,7 +223,7 @@ panel_mod <- function(input, output, session) {
               if ( grepl("[aA]ll", input$community_picker) ) {
                 community_sensors <- s$meta
               } else {
-                community_sensors <- s$meta[s$meta$communityRegion == input$community_picker,]
+                community_sensors <- s$meta[id2com(s$meta$communityRegion) == input$community_picker,]
               }
               bbox <- lapply( community_sensors[c('longitude', 'latitude')],
                               function(x) c(min = min(x), max = max(x)) )

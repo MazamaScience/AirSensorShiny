@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<small>
-  <p>
-  Once you select a sensor, the map will display the location of the nearest regulatory
-  monitoring station (or AirNow site), and the plots will provide a comparison of the data
-  from that sensor and the nearest regulatory monitoring site. The time series provides a
-  qualitative comparison of the hourly-averaged data, while the scatter plot provides some
-  additional statistics to better assess this comparison. In terms of the data displayed in the
-  scatter plot – on the horizontal axis (or x-axis) the data from the low-cost air quality sensor
-  is plotted, while on the vertical axis (or y-axis) the data from the regulatory monitoring
-  station (or AirNow site) is plotted.
-  </p>
-  <p>
-  In terms of the statistics shared in the scatterplot, a slope close to 1.0 indicates that the
-  low-cost sensor and the reference reflect similar levels. A slope greater than 1.0 indicates
-  higher values are seen at the regulatory monitoring site and vice versa for a slope of less
-  than 1.0. The intercept can be an indicator of bias, particularly if the slope is close to 1.0,
-  but the intercept is either greater or less than zero. Finally, R2 provides an indication of how
-  well the trends agree between the two sites; an R2 closer to 1.0 indicates more agreement
-  and an R2 closer to 0.0 indicates less agreement.
-  </p>
-  </small>
+<ul>
+  <li>
+    Select a sensor to compare to the nearest reference site by clicking on the map or by using the drop down menus in the
+panel on the left, then select a timeframe using the ‘Date’ and ‘View Past’ options.
+  </li>
+  <li>
+  The plots below the map illustrate how well the sensor and nearest reference site (with continuous PM2.5) agree with each
+other (in the ‘Sensor-Monitor Correlation’ plot) and how the trends between the sensor and the reference site compare
+(in the ‘Sensor-Monitor Comparison’ plot). Note the distance between the reference site location and the sensor location
+by viewing the map and stated difference in the Title of the Sensor-Monitor Comparison plot.
+  </li>
+  <li>
+    In terms of the statistics, a slope close to 1.0 indicates that the low-cost sensor and the reference site are reflecting similar
+levels. A slope greater than 1.0 indicates that higher values are seen at the regulatory monitoring site and vice versa for a
+slope of less than 1.0. The intercept can be an indicator of bias. The coefficient of determination R2 tells us how well the
+trends agree between the two sites; an R2 closer to 1.0 indicates more agreement and an R2 closer to 0.0 indicates less
+agreement.
+  </li>
+  <li>
+    The sensor status table provides insight into how well the sensor is functioning. For example, if the percent of data
+recovered is small, then this may be an indication of a performance issue with the sensor.
+  </li>
+</ul>

@@ -112,6 +112,16 @@ ui <- function(request) {
           dataview_mod_ui("global")
         )
       ),
+      shiny::tabPanel(
+        title = tags$b("Latest Data"),
+        value = "latest",
+        shiny::fluidRow(
+          shiny::column(
+            width = 10,
+            latest_mod_ui("global")
+          )
+        )
+      ),
       # ----- About Page -------------------------------------------------------
       shiny::tabPanel(
         title = tags$b("About"),
