@@ -66,6 +66,7 @@ comparison_mod <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
+            return(NULL)
           }
         )
       })
@@ -82,6 +83,7 @@ comparison_mod <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
+            return(NULL)
           }
         )
       })
@@ -97,6 +99,7 @@ comparison_mod <- function(input, output, session) {
         },
         error = function(e) {
           logger.error(e)
+          return(NULL)
         }
         )
       })
@@ -119,6 +122,7 @@ comparison_mod <- function(input, output, session) {
         },
         error = function(e) {
           logger.error(e)
+          return(NULL)
         }
         )
       })

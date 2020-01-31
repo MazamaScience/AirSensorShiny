@@ -18,7 +18,7 @@ future::plan(future::multiprocess)
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 # Instantiate Sensor information
-INIT_SENSORS <- AirSensor::sensor_load(days =1)
+INIT_SENSORS <- AirSensor::sensor_load(days = 1)
 SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
 SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
 

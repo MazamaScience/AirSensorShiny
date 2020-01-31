@@ -8,8 +8,7 @@ ui <- function(request) {
       width = 2,
       shiny::wellPanel(
         id = "panel",
-        panel_mod_ui("global"),
-        shiny::uiOutput("bookmark")
+        panel_mod_ui("global")
       ),
       shiny::tags$footer(id = "ver", paste0("Version: ", VERSION))
     ),
@@ -134,6 +133,7 @@ ui <- function(request) {
     tags$style(type="text/css", "body {padding-top: 70px;}"),
     tags$style(type="text/css", "footer {padding-left: 5%; color: #808080; font-size: 11px}"),
     tags$style(type="text/css", ".well {background-color: #fff}"),
+    tags$style(type="text/css", "#panel {min-height: 600px; min-width:236px;}"),
     tags$head(
       tags$script(
         'var dimension = [0, 0];

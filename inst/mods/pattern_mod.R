@@ -44,6 +44,7 @@ pattern_mod <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
+            return(NULL)
           }
         )
       })
@@ -66,6 +67,7 @@ pattern_mod <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
+            return(NULL)
           }
         )
       })
@@ -76,14 +78,20 @@ pattern_mod <- function(input, output, session) {
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-        tryCatch(
-          expr = {
-            noaa() %...>% ( function(n) AirSensor::sensor_pollutionRose(s, n) )
-          },
-          error = function(e) {
-            logger.error(e)
-          }
-        )
+            noaa() %...>% ( function(n) {
+              tryCatch(
+                expr = AirSensor::sensor_pollutionRose(s, n),
+                error = function(e) {
+                  shinytoastr::toastr_warning(
+                    title = "Wind Rose Plot Error",
+                    message = "Wind Rose Plot failed to render. Please try a different sensor or date.",
+                    position = "bottom-left"
+                  )
+                  logger.error(e)
+                  return(NULL)
+                }
+              )
+            })
       })
   })
 

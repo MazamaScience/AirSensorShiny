@@ -24,32 +24,48 @@ dataview_mod <- function(input, output, session) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        data.frame( "Sensor" = p$meta$label,
-                    "Community" = p$meta$communityRegion,
-                    "Sensor Type" = p$meta$sensorType,
-                    "Longitude" = p$meta$longitude,
-                    "Latitude" = p$meta$latitude,
-                    "State" = p$meta$stateCode,
-                    "Country" = p$meta$countryCode,
-                    "Timezone" = p$meta$timezone )
+        tryCatch(
+          expr = {
+            data.frame( "Sensor" = p$meta$label,
+                        "Community" = p$meta$communityRegion,
+                        "Sensor Type" = p$meta$sensorType,
+                        "Longitude" = p$meta$longitude,
+                        "Latitude" = p$meta$latitude,
+                        "State" = p$meta$stateCode,
+                        "Country" = p$meta$countryCode,
+                        "Timezone" = p$meta$timezone )
+          },
+          error = function(e) {
+            logger.error(e)
+            return(NULL)
+          }
+        )
       })
   })
 
   output$data_table <- DT::renderDataTable({
     shiny::req(input$sensor_picker)
     memory_debug("Data Explorer")
-    # Remove unecessary columns
+    # Remove unnecessary columns
     pat() %...>%
       (function(p) {
-        data <- p$data[-(6:10)]
-        names(data) <- c( "Datetime",
-                          "PM2.5 Ch. A (\u03bcg / m\u00b)",
-                          "PM2.5 Ch. B (\u03bcg / m\u00b)",
-                          "Temperature (F)",
-                          "Relative Humidity (%)" )
+        tryCatch(
+          expr = {
+            data <- p$data[-(6:10)]
+            names(data) <- c( "Datetime",
+                              "PM2.5 Ch. A (\u03bcg / m\u00b)",
+                              "PM2.5 Ch. B (\u03bcg / m\u00b)",
+                              "Temperature (F)",
+                              "Relative Humidity (%)" )
 
-        DT::datatable(data, selection = "none", options = list(pageLength = 25) ) %>%
-          DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+            DT::datatable(data, selection = "none", options = list(pageLength = 25) ) %>%
+              DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
+          },
+          error = function(e) {
+            logger.error(e)
+            return(NULL)
+          }
+        )
       })
   })
 

@@ -17,7 +17,7 @@ server <- function(input, output, session) {
         }) %...!%
           (function(e) {
             logger.error(paste0("\n Create AirSensor - ERROR"))
-            return(NULL)
+            return(PWFSLSmoke::createEmptyMonitor())
           })
       })
   })
@@ -34,8 +34,7 @@ server <- function(input, output, session) {
           shiny_getNOAA(s, sd, ed)
         }) %...!%
           (function(e) {
-            logger.error(paste0("\n Download NOAA worldmet - ERROR",
-                                "\n Date Selection: ", sd, "-", ed ))
+            logger.error(paste0("\n Download NOAA worldmet - ERROR"))
             return(NULL)
           })
       })
@@ -144,7 +143,7 @@ server <- function(input, output, session) {
   observeEvent(
     eventExpr = {input$tab},
     handlerExpr = {
-      if ( input$tab != "overview" && input$tab != "anim" ) {
+      if ( input$tab != "overview" & input$tab != "anim" ) {
         if ( is.null(input$`global-sensor_picker`) || input$`global-sensor_picker` == "") {
           shinyWidgets::sendSweetAlert(
             session,

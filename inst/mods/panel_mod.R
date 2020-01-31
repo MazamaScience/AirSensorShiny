@@ -28,7 +28,7 @@ panel_mod_ui <- function(id) {
       label = tags$h4("Date"),
       value = c(lubridate::now()-lubridate::days(7),
                 lubridate::now()),
-      todayButton = FALSE,
+      todayButton = TRUE,
       addon = "none",
       inline = FALSE,
       separator = " to ",
@@ -51,6 +51,16 @@ panel_mod_ui <- function(id) {
         yes = tags$i(class = "fa fa-check",
                      style = "color: #008cba"))
 
+    ),
+    shiny::fluidRow(
+      shiny::column(
+        6,
+      shiny::downloadButton("download", label = tags$small("Download"))
+      ),
+      shiny::column(
+        6,
+      shiny::uiOutput("bookmark")
+      )
     )
   )
 }
@@ -68,11 +78,12 @@ panel_mod <- function(input, output, session) {
   #       Downloads the PAT in range of selected date picker and lookback from
   #       the set archive server, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  pat <<- eventReactive(
+  pat <<- eventReactive(ignoreNULL = TRUE,
     eventExpr = {
       input$sensor_picker; input$date_picker; input$lookback_picker
     },
     valueExpr = {
+      shiny::req(input$sensor_picker)
       label <- input$sensor_picker
       ed <- lubridate::ymd(input$date_picker)
       sd <- ed - as.numeric(input$lookback_picker)
@@ -125,12 +136,13 @@ panel_mod <- function(input, output, session) {
         })
     }
   )
+
   # Reactive Annual SENSOR loading handler.
   # NOTE: - VIP -
   #       Downloads the annual sensor monitor object from the selected the input
   #       date picker year stamp, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  annual_sensors <<- eventReactive(
+  annual_sensors <<- eventReactive(ignoreNULL = TRUE,
     eventExpr = {
       input$date_picker; input$lookback_picker
     },
@@ -149,6 +161,19 @@ panel_mod <- function(input, output, session) {
         })
     }
   )
+  # NOTE: Avoid erroneous sensor selection options by keeping the map options
+  #       and picker options identical.
+  observe({
+    annual_sensors() %...>%
+      (function(s) {
+        shinyWidgets::updatePickerInput(
+          session,
+          "sensor_picker",
+          choices = unique(s$meta$monitorID)
+        )
+      })
+  })
+
 
   # Community Selection Event Handler
   # NOTE: Handles the input$community picker

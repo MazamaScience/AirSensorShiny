@@ -65,6 +65,8 @@ overview_mod <- function(input, output, session) {
           },
           error = function(e) {
             logger.error(e)
+            PWFSLSmoke::createEmptyMonitor()
+            NULL
           }
         )
       })
@@ -99,7 +101,7 @@ overview_mod <- function(input, output, session) {
       )
     }
   )
-
+  # Update leaflet on sensor pick selection - highlght marker
   shiny::observeEvent(
     ignoreNULL = TRUE,
     ignoreInit = TRUE,
