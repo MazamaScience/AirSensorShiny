@@ -68,7 +68,7 @@ shiny_comparisonTable <-
     # return(comparisonTable)
   }
 
-shiny_metTable <-
+shiny_noaa_table <-
   function(metData) {
 
   # if (TRUE)

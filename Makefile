@@ -40,11 +40,11 @@ SERVICE_PATH_TEST=airsensor-shiny/test
 
 
 # NOTE:  Version associated with R packages and shiny-server code
-SERVER_VERSION=1.3.8
+SERVER_VERSION=1.3.9
 
 # NOTE:  Version associated with Shiny app
 # first version . airsensorshiny 1.3.6 . calendar plot
-APP_VERSION=0.7.0
+APP_VERSION=0.9.0
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 

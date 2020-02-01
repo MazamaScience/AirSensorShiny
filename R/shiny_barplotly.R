@@ -8,6 +8,13 @@ shiny_barplotly <-
       ylim = NULL
     }
 
+    # Create POSIXct times for ggplot
+    xlim <- c(as.POSIXct(startdate), as.POSIXct(enddate))
+    if ( grepl("-", startdate ) | grepl("-", enddate) ) {
+      startdate <- stringr::str_remove_all(startdate, "-")
+      enddate <- stringr::str_remove_all(enddate, "-")
+    }
+
     sensor <- PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate))
 
     cts <- cut(sensor$data[[2]], breaks = c(0,12,35,55,75,1000))
@@ -40,12 +47,13 @@ shiny_barplotly <-
       ) +
       scale_fill_sqamd() +
       ggplot2::theme_minimal() +
-      ggplot2::scale_x_datetime(date_breaks = "1 day") +
+      ggplot2::scale_x_datetime( date_breaks = "1 day",
+                                 limits = xlim ) +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
                                             face = "bold",
                                             hjust = 0.5,
-                                            margin = margin(b=0) ),
+                                            margin = ggplot2::margin(b=0) ),
         axis.text.x = ggplot2::element_text(
           angle = ifelse(ddif > 10, 25, 0),
           hjust = 1,
@@ -54,8 +62,8 @@ shiny_barplotly <-
         axis.title.x = ggplot2::element_text(size = 12),
         axis.title.y = ggplot2::element_text(size = 12),
         legend.position = "none",
-        panel.grid.major.y = element_line(color = "grey52"),
-        panel.grid.major.x = element_line(color = "grey52")
+        panel.grid.major.y = ggplot2::element_line(color = "grey52"),
+        panel.grid.major.x = ggplot2::element_line(color = "grey52")
       ) +
       ggplot2::ggtitle(label = label) +
       ggplot2::coord_cartesian(ylim = ylim) +

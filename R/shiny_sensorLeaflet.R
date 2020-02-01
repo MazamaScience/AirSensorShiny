@@ -47,11 +47,11 @@ shiny_sensorLeaflet <- function(
 
   MazamaCoreUtils::stopIfNull(sensor)
 
-  if ( !sensor_isSensor(sensor) ) {
+  if ( !AirSensor::sensor_isSensor(sensor) ) {
     stop("Parameter 'sensor' is not a sensor object.")
   }
 
-  if ( sensor_isEmpty(sensor) ) {
+  if ( AirSensor::sensor_isEmpty(sensor) ) {
     stop("Parameter 'sensor' contains no data.")
   }
 
@@ -165,7 +165,7 @@ shiny_sensorLeaflet <- function(
       layerId = sensor$meta$monitorID,
       options = leaflet::markerOptions(riseOnHover = TRUE,
                                        interactive = TRUE,
-                                       keyboard = TRUE)
+                                       keyboard = TRUE, riseOffset = 500)
     )
 
   # ----- Return ---------------------------------------------------------------

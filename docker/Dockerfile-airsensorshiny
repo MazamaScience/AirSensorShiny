@@ -6,8 +6,8 @@ FROM rocker/shiny:3.6.0
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
 
-LABEL build_date="2020-1-16"
-LABEL version="1.3.8"
+LABEL build_date="2020-1-31"
+LABEL version="1.3.9"
 
 LABEL description="AirShiny Docker Image"
 
@@ -89,7 +89,11 @@ RUN install2.r --error -r "https://cran.rstudio.com" \
 	shinyWidgets \
 	DT \
 	shinybusy \
-	shinycssloaders
+	shinycssloaders \
+	shinytoastr \
+	future \
+	promises \
+	rclipboard
 
 # Install latest versions of Mazama packages
 RUN installGithub.r \
