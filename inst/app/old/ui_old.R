@@ -164,8 +164,8 @@ ui <- function(request) {
                                 # Plot outputs
                                 shiny::wellPanel(
                                     leaflet::leafletOutput(
-                                    outputId = "leaflet",
-                                    height = 420
+                                        outputId = "leaflet",
+                                        height = 420
                                     ) %>% loadSpinner()
                                 ),
 
