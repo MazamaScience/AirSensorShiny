@@ -74,33 +74,6 @@ panel_mod_ui <- function(id) {
 #' @param active
 panel_mod <- function(input, output, session) {
 
-  output$download <- shiny::downloadHandler(
-    filename = function() {
-      label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker)
-      sd <- ed - as.numeric(input$lookback_picker)
-      paste0(label,sd,"_",ed,".csv")
-    },
-    content = function(file) {
-      label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker)
-      sd <- ed - as.numeric(input$lookback_picker)
-      tryCatch(
-        expr = {
-          p <- AirSensor::pat_load(label, sd, ed)
-          write.csv(p$data[1:5], file = file)
-        },
-        error = function(e) {
-          logger.error(e)
-          shinytoastr::toastr_error( title = "Oops! Download Failed.",
-                                     message = "Try a different date or sensor.",
-                                     position = "bottom-left" )
-          return(write.csv(NULL))
-        }
-      )
-    }
-  )
-
   # Reactive PAT loading handler.
   # NOTE: - VIP -
   #       Downloads the PAT in range of selected date picker and lookback from
@@ -205,6 +178,34 @@ panel_mod <- function(input, output, session) {
         )
       })
   })
+
+  # Handle Downloads
+  output$download <- shiny::downloadHandler(
+    filename = function() {
+      label <- input$sensor_picker
+      ed <- lubridate::ymd(input$date_picker)
+      sd <- ed - as.numeric(input$lookback_picker)
+      paste0(label,sd,"_",ed,".csv")
+    },
+    content = function(file) {
+      label <- input$sensor_picker
+      ed <- lubridate::ymd(input$date_picker)
+      sd <- ed - as.numeric(input$lookback_picker)
+      tryCatch(
+        expr = {
+          p <- AirSensor::pat_load(label, sd, ed)
+          write.csv(p$data[1:5], file = file)
+        },
+        error = function(e) {
+          logger.error(e)
+          shinytoastr::toastr_error( title = "Oops! Download Failed.",
+                                     message = "Try a different date or sensor.",
+                                     position = "bottom-left" )
+          return(write.csv(NULL))
+        }
+      )
+    }
+  )
 
 
   # Community Selection Event Handler

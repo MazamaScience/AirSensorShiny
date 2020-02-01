@@ -1,6 +1,7 @@
 #' AirSensor DataViewer User Interface
 #'
 #' @param request
+MazamaCoreUtils::logger.debug("------ ui() ------")
 ui <- function(request) {
   shiny::fluidPage(
     # ------ Panel Module -Column ----------------------------------------------

@@ -3,6 +3,7 @@
 #' @param input
 #' @param output
 #' @param session
+MazamaCoreUtils::logger.debug("----- server() ------")
 server <- function(input, output, session) {
 
   # Reactive SENSOR loading.
@@ -144,6 +145,7 @@ server <- function(input, output, session) {
   observeEvent(
     eventExpr = {input$tab},
     handlerExpr = {
+      # Popup Message for user if NULL selection
       if ( input$tab != "overview" & input$tab != "anim" ) {
         if ( is.null(input$`global-sensor_picker`) || input$`global-sensor_picker` == "") {
           shinyWidgets::sendSweetAlert(
@@ -171,10 +173,36 @@ server <- function(input, output, session) {
                                          message = "Please Select a valid sensor.",
                                          position = "bottom-left" )
           }
-
         })
-
     }
   )
+
+  # Handle Element hiding based on valid tabs and page
+  observeEvent(
+    eventExpr = {input$tab},
+    handlerExpr = {
+      # switch( as.character(input$tab == "calendar"),
+      #         "TRUE" = shinyjs::hide("global-community_picker", anim = TRUE),
+      #         "FALSE" = shinyjs::show("global-community_picker", anim = TRUE) )
+      switch( as.character(input$tab == "anim"),
+              "TRUE" = shinyjs::hide("global-sensor_picker", anim = TRUE),
+              "FALSE" = shinyjs::show("global-sensor_picker", anim = TRUE) )
+    }
+  )
+  observeEvent(
+    eventExpr = {input$navbar},
+    handlerExpr = {
+      switch( as.character(input$navbar == "latest"),
+              "TRUE" = {
+                shinyjs::hide("global-community_picker", anim = TRUE)
+                shinyjs::hide("global-date_picker", anim = TRUE)
+                shinyjs::hide("global-lookback_picker", anim = TRUE)
+              },
+              "FALSE" = {
+                shinyjs::show("global-community_picker", anim = TRUE)
+                shinyjs::show("global-date_picker", anim = TRUE)
+                shinyjs::show("global-lookback_picker", anim = TRUE)
+              })
+    })
 
 }

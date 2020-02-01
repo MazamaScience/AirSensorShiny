@@ -55,7 +55,7 @@ raw_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
-            AirSensor::pat_multiplot(p, columns = 2)
+            AirSensor::pat_multiplot(p, columns = 1)
           },
           error = function(e) {
             logger.error(e)
