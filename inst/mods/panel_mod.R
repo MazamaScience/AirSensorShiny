@@ -147,9 +147,10 @@ panel_mod <- function(input, output, session) {
   #       Downloads the annual sensor monitor object from the selected the input
   #       date picker year stamp, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  annual_sensors <<- eventReactive(ignoreNULL = TRUE,
+  annual_sensors <<- eventReactive(
+    ignoreNULL = TRUE,
     eventExpr = {
-      input$date_picker; input$lookback_picker
+      input$date_picker
     },
     valueExpr = {
       tmp <- as.numeric(strftime(input$date_picker, "%Y"))
@@ -213,10 +214,8 @@ panel_mod <- function(input, output, session) {
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = {input$community_picker},
+    eventExpr = {input$community_picker; input$lookback_picker},
     handlerExpr = {
-      # shinyWidgets::updatePickerInput(session = session, inputId = 'sensor_picker', selected = NULL)
-
       annual_sensors() %...>%
         (function(s) {
           tryCatch(
@@ -237,19 +236,22 @@ panel_mod <- function(input, output, session) {
                                     lat2 = bbox$latitude[[2]] )
               # May be useful
               not_community_sensors <- !(s$meta$monitorID %in% community_sensors$monitorID)
-              # Restrict the available sensors to selected community
-              shinyWidgets::updatePickerInput( session = session,
-                                               inputId = 'sensor_picker',
-                                               choices = community_sensors$monitorID )
               # determine what sort of map update to do
               com <- unique(id2com(s$meta$communityRegion))
               if ( input$community_picker != "all" ) {
+                # Only show community group
                 leaflet::leafletProxy("leaflet") %>%
                   leaflet::showGroup(group = com[com == input$community_picker]) %>%
                   leaflet::hideGroup(group = com[com != input$community_picker])
+                # Restrict the available sensors to selected community
+                shinyWidgets::updatePickerInput( session = session,
+                                                 inputId = 'sensor_picker',
+                                                 choices = community_sensors$monitorID, selected = input$sensor_picker )
               } else {
+                # Show all community groups
                 leaflet::leafletProxy("leaflet") %>%
                   leaflet::showGroup(group = com)
+                # Redraw selected marker
                 shinyWidgets::updatePickerInput( session = session,
                                                  inputId = "sensor_picker",
                                                  selected = input$sensor_picker)
