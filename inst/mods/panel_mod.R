@@ -215,7 +215,8 @@ panel_mod <- function(input, output, session) {
     ignoreInit = TRUE,
     eventExpr = {input$community_picker},
     handlerExpr = {
-      shinyWidgets::updatePickerInput(session = session, inputId = 'sensor_picker', selected = NULL)
+      # shinyWidgets::updatePickerInput(session = session, inputId = 'sensor_picker', selected = NULL)
+
       annual_sensors() %...>%
         (function(s) {
           tryCatch(
@@ -234,18 +235,25 @@ panel_mod <- function(input, output, session) {
                                     lng2 = bbox$longitude[[2]],
                                     lat1 = bbox$latitude[[1]],
                                     lat2 = bbox$latitude[[2]] )
-
               # May be useful
               not_community_sensors <- !(s$meta$monitorID %in% community_sensors$monitorID)
-
-              # TODO: Restrict the available sensors to selected community
-              # NOTE: updating the selection to only have the selected community's
-              #       sensors throws an error when selecting a sensor outside of
-              #       the community sensors.
+              # Restrict the available sensors to selected community
               shinyWidgets::updatePickerInput( session = session,
                                                inputId = 'sensor_picker',
-                                               choices = s$meta$monitorID )
-
+                                               choices = community_sensors$monitorID )
+              # determine what sort of map update to do
+              com <- unique(id2com(s$meta$communityRegion))
+              if ( input$community_picker != "all" ) {
+                leaflet::leafletProxy("leaflet") %>%
+                  leaflet::showGroup(group = com[com == input$community_picker]) %>%
+                  leaflet::hideGroup(group = com[com != input$community_picker])
+              } else {
+                leaflet::leafletProxy("leaflet") %>%
+                  leaflet::showGroup(group = com)
+                shinyWidgets::updatePickerInput( session = session,
+                                                 inputId = "sensor_picker",
+                                                 selected = input$sensor_picker)
+              }
             },
             error = function(e) {print("Error in community pick")}
           )

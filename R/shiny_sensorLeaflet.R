@@ -155,6 +155,7 @@ shiny_sensorLeaflet <- function(
     ) %>%
     leaflet::addProviderTiles(providerTiles) %>%
     leaflet::addCircleMarkers(
+      group = ~id2com(communityRegion),
       radius=radius,
       fillColor=cols,
       fillOpacity=opacity,
