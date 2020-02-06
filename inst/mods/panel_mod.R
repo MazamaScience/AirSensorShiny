@@ -21,7 +21,7 @@ panel_mod_ui <- function(id) {
       options = list(
         `live-search` = TRUE,
         title = "Select sensor...",
-        size = 7)
+        size = 7 )
     ),
 
     shinyWidgets::airDatepickerInput(
@@ -121,11 +121,11 @@ panel_mod <- function(input, output, session) {
     },
     valueExpr = {
       label <- input$sensor_picker
-      print("load annual pat")
+      logger.trace(paste0("load annual pat: ",label))
       yr <- as.numeric(strftime(input$date_picker, "%Y"))
       ed <- paste0(yr, "1231")
       sd <- paste0(yr,"0101")
-      print(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
+      logger.trace(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
         pat_load( label,
@@ -154,7 +154,7 @@ panel_mod <- function(input, output, session) {
     },
     valueExpr = {
       tmp <- as.numeric(strftime(input$date_picker, "%Y"))
-      paste0("load annual sensors: ", tmp)
+      logger.trace("Load annual sensors: ", tmp)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
         sensor_loadYear(datestamp = tmp )
@@ -208,7 +208,6 @@ panel_mod <- function(input, output, session) {
     }
   )
 
-
   # Community Selection Event Handler
   # NOTE: Handles the input$community picker
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
@@ -259,10 +258,11 @@ panel_mod <- function(input, output, session) {
                                                  selected = input$sensor_picker)
               }
             },
-            error = function(e) {print("Error in community pick")}
+            error = function(e) {
+              logger.error(paste0("Error in community pick: ", e))
+            }
           )
         })
     }
   )
-
 }

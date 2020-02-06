@@ -142,24 +142,24 @@ server <- function(input, output, session) {
     }
   )
   # Show modal asking to select and sensor/community
-  observeEvent(
-    eventExpr = {input$tab},
-    handlerExpr = {
+  observe( {
       # Popup Message for user if NULL selection
       if ( input$tab != "overview" & input$tab != "anim" ) {
-        if ( is.null(input$`global-sensor_picker`) || input$`global-sensor_picker` == "") {
+        if ( is.null(input$`global-sensor_picker`) || !shiny::isTruthy(input$`global-sensor_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Sensor",
+            text = "A valid sensor selection is required to view this tab.",
             type = "warning",
             closeOnClickOutside = TRUE
           )
         }
       } else if ( input$tab == "anim" ) {
-        if ( is.null(input$`global-community_picker`) || input$`global-community_picker` == "" ) {
+        if ( input$`global-community_picker` == "all" || !shiny::isTruthy(input$`global-community_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Community",
+            text = "A valid community selection is required to view this tab.",
             type = "warning",
             closeOnClickOutside = TRUE
           )
@@ -202,8 +202,8 @@ server <- function(input, output, session) {
       logger.trace(paste0("Navbar: ", input$navbar))
       on("global-date_picker")
       on("global-lookback_picker")
-      if ( input$navbar == "latest" ) off("global-date_picker")
-      if (input$navbar == "latest" ) off("global-lookback_picke")
+      if ( input$navbar == "latest" ) off("global-date_picker", anim = T)
+      if (input$navbar == "latest" ) off("global-lookback_picker", anim = T)
     }
   )
 

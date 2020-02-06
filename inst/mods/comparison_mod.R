@@ -44,6 +44,10 @@ comparison_mod_ui <- function(id) {
 }
 
 comparison_mod <- function(input, output, session) {
+
+  # NOTE: An error exists inthe code to where selecting different datetime/lookback
+  #       on this tab resets the sensor_picker and breaks the page.
+  #       likely has to do with the the order or load
   output$comparison_leaflet <- leaflet::renderLeaflet({
     shiny::req(input$sensor_picker)
     sensor() %...>%

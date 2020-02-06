@@ -39,6 +39,7 @@ AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 # Instantiate Sensor information
 INIT_SENSORS <- AirSensor::sensor_load(days = 1)
+
 SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
 SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
 
@@ -49,7 +50,6 @@ VERSION <<- "0.9.1 (beta)"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
-
 
 # Helpful conversion list
 com_id  <-
@@ -69,6 +69,7 @@ com_id  <-
   "SCHS" = "Sycamore Canyon",
   "SCTV" = "Temescal Valley"
 )
+
 # 4 Digit code to Community name
 id2com <- function(X) {
   unlist(lapply(X, function(x) {ifelse(is.null(com_id[[x]]), x, levels(com_id[[x]]))}))
