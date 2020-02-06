@@ -1,4 +1,0 @@
-ERROR [2020-02-05 12:12:36] Error in if (sensor_label != "tmp") {: argument is of length zero
-
-ERROR [2020-02-05 12:12:45] Error in if (sensor_label != "tmp") {: argument is of length zero
-
