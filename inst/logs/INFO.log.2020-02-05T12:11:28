@@ -1,0 +1,2 @@
+ERROR [2020-02-05 12:11:16] Error in leaflet::addAwesomeMarkers(., group = ~id2com(communityRegion), : unused arguments (fillColor = cols, fillOpacity = opacity, stroke = TRUE, color = "#5863f8", weight = "1")
+

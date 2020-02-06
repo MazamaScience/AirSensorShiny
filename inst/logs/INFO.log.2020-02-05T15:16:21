@@ -1,0 +1,26 @@
+ERROR [2020-02-05 15:11:59] 
+ Download PAT - ERROR:
+ Input Selection: SCAH_04
+ Date Selection: 2018-12-29-2019-01-01
+ERROR [2020-02-05 15:11:59] 
+ Create AirSensor - ERROR
+ERROR [2020-02-05 15:12:00] Error in validateCoords(lng, lat, funcName): addCircleMarkers requires numeric longitude/latitude values
+
+ERROR [2020-02-05 15:12:14] 
+ Download PAT - ERROR:
+ Input Selection: SCAH_07
+ Date Selection: 2018-12-29-2019-01-01
+ERROR [2020-02-05 15:12:14] 
+ Create AirSensor - ERROR
+ERROR [2020-02-05 15:12:14] Error in validateCoords(lng, lat, funcName): addCircleMarkers requires numeric longitude/latitude values
+
+ERROR [2020-02-05 15:12:44] 
+ Download PAT - ERROR:
+ Input Selection: SCAH_07
+ Date Selection: 2018-12-29-2019-01-01
+ERROR [2020-02-05 15:12:44] 
+ Create AirSensor - ERROR
+ERROR [2020-02-05 15:12:44] Error in validateCoords(lng, lat, funcName): addCircleMarkers requires numeric longitude/latitude values
+
+ERROR [2020-02-05 15:12:57] Error in PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate)): ws_monitor object contains zero monitors
+

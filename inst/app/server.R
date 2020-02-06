@@ -178,31 +178,33 @@ server <- function(input, output, session) {
   )
 
   # Handle Element hiding based on valid tabs and page
-  observeEvent(
-    eventExpr = {input$tab},
-    handlerExpr = {
-      # switch( as.character(input$tab == "calendar"),
-      #         "TRUE" = shinyjs::hide("global-community_picker", anim = TRUE),
-      #         "FALSE" = shinyjs::show("global-community_picker", anim = TRUE) )
-      switch( as.character(input$tab == "anim"),
-              "TRUE" = shinyjs::hide("global-sensor_picker", anim = TRUE),
-              "FALSE" = shinyjs::show("global-sensor_picker", anim = TRUE) )
+  observeEvent(input$tab, {
+      shiny::req(input$tab)
+      on <- shinyjs::show
+      off <- shinyjs::hide
+      logger.trace(paste0("Tab: ", input$tab))
+      # NOTE: Necessary to reset the elements...
+      on("global-sensor_picker",anim = T)
+      on("global-date_picker",anim = T)
+      on("global-community_picker",anim = T)
+      on("global-lookback_picker", anim = T)
+      # Now flip off
+      if ( input$tab == "anim" ) off("global-sensor_picker", anim = T)
+      if ( input$tab == "calendar" ) off("global-lookback_picker", anim = T)
     }
   )
   observeEvent(
     eventExpr = {input$navbar},
     handlerExpr = {
-      switch( as.character(input$navbar == "latest"),
-              "TRUE" = {
-                shinyjs::hide("global-community_picker", anim = TRUE)
-                shinyjs::hide("global-date_picker", anim = TRUE)
-                shinyjs::hide("global-lookback_picker", anim = TRUE)
-              },
-              "FALSE" = {
-                shinyjs::show("global-community_picker", anim = TRUE)
-                shinyjs::show("global-date_picker", anim = TRUE)
-                shinyjs::show("global-lookback_picker", anim = TRUE)
-              })
-    })
+      shiny::req(input$navbar)
+      on <- shinyjs::show
+      off <- shinyjs::hide
+      logger.trace(paste0("Navbar: ", input$navbar))
+      on("global-date_picker")
+      on("global-lookback_picker")
+      if ( input$navbar == "latest" ) off("global-date_picker")
+      if (input$navbar == "latest" ) off("global-lookback_picke")
+    }
+  )
 
 }

@@ -1,0 +1,10 @@
+ERROR [2020-02-05 10:40:54] 
+ Download PAT - ERROR:
+ Input Selection: US
+ Date Selection: 2020-02-02-2020-02-05
+ERROR [2020-02-05 10:40:55] 
+ Create AirSensor - ERROR
+ERROR [2020-02-05 10:40:55] Error in PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate)): ws_monitor object contains zero monitors
+
+ERROR [2020-02-05 10:40:55] Error in validateCoords(lng, lat, funcName): addCircleMarkers requires numeric longitude/latitude values
+

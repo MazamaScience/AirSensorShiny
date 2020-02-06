@@ -1,0 +1,78 @@
+DEBUG [2020-02-05 13:46:36] R version 3.6.2 (2019-12-12)
+DEBUG [2020-02-05 13:46:36] Platform: x86_64-pc-linux-gnu (64-bit)
+DEBUG [2020-02-05 13:46:36] Running under: Ubuntu 19.10
+DEBUG [2020-02-05 13:46:36] 
+DEBUG [2020-02-05 13:46:36] Matrix products: default
+DEBUG [2020-02-05 13:46:36] BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.8.0
+DEBUG [2020-02-05 13:46:36] LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.8.0
+DEBUG [2020-02-05 13:46:36] 
+DEBUG [2020-02-05 13:46:36] locale:
+DEBUG [2020-02-05 13:46:36]  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+DEBUG [2020-02-05 13:46:36]  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+DEBUG [2020-02-05 13:46:36]  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+DEBUG [2020-02-05 13:46:36]  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+DEBUG [2020-02-05 13:46:36]  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+DEBUG [2020-02-05 13:46:36] [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+DEBUG [2020-02-05 13:46:36] 
+DEBUG [2020-02-05 13:46:36] attached base packages:
+DEBUG [2020-02-05 13:46:36] [1] stats     graphics  grDevices utils     datasets  methods  
+DEBUG [2020-02-05 13:46:36] [7] base     
+DEBUG [2020-02-05 13:46:36] 
+DEBUG [2020-02-05 13:46:36] other attached packages:
+DEBUG [2020-02-05 13:46:36]  [1] shinyWidgets_0.5.0       promises_1.1.0          
+DEBUG [2020-02-05 13:46:36]  [3] future_1.16.0            worldmet_0.8.7          
+DEBUG [2020-02-05 13:46:36]  [5] AirMonitorPlots_0.5.7    ggplot2_3.2.1           
+DEBUG [2020-02-05 13:46:36]  [7] PWFSLSmoke_1.2.103       MazamaSpatialUtils_0.6.4
+DEBUG [2020-02-05 13:46:36]  [9] sp_1.3-2                 maps_3.3.0              
+DEBUG [2020-02-05 13:46:36] [11] dplyr_0.8.3              AirSensor_0.5.17        
+DEBUG [2020-02-05 13:46:36] [13] MazamaCoreUtils_0.4.2    futile.logger_1.4.3     
+DEBUG [2020-02-05 13:46:36] [15] shiny_1.4.0             
+DEBUG [2020-02-05 13:46:36] 
+DEBUG [2020-02-05 13:46:36] loaded via a namespace (and not attached):
+DEBUG [2020-02-05 13:46:36]  [1] nlme_3.1-141            lubridate_1.7.4        
+DEBUG [2020-02-05 13:46:36]  [3] doParallel_1.0.15       RColorBrewer_1.1-2     
+DEBUG [2020-02-05 13:46:36]  [5] httr_1.4.1              openair_2.7-0          
+DEBUG [2020-02-05 13:46:36]  [7] tools_3.6.2             backports_1.1.5        
+DEBUG [2020-02-05 13:46:36]  [9] R6_2.4.1                DT_0.11                
+DEBUG [2020-02-05 13:46:36] [11] lazyeval_0.2.2          mgcv_1.8-31            
+DEBUG [2020-02-05 13:46:36] [13] colorspace_1.4-1        withr_2.1.2            
+DEBUG [2020-02-05 13:46:36] [15] gridExtra_2.3           tidyselect_0.2.5       
+DEBUG [2020-02-05 13:46:36] [17] leaflet_2.0.3           compiler_3.6.2         
+DEBUG [2020-02-05 13:46:36] [19] formatR_1.7             shinyjs_1.1            
+DEBUG [2020-02-05 13:46:36] [21] plotly_4.9.1            labeling_0.3           
+DEBUG [2020-02-05 13:46:36] [23] scales_1.1.0            hexbin_1.28.0          
+DEBUG [2020-02-05 13:46:36] [25] readr_1.3.1             stringr_1.4.0          
+DEBUG [2020-02-05 13:46:36] [27] digest_0.6.23           jpeg_0.1-8.1           
+DEBUG [2020-02-05 13:46:36] [29] pkgconfig_2.0.3         htmltools_0.4.0        
+DEBUG [2020-02-05 13:46:36] [31] fastmap_1.0.1           htmlwidgets_1.5.1      
+DEBUG [2020-02-05 13:46:36] [33] rlang_0.4.2             rstudioapi_0.10.0-9003 
+DEBUG [2020-02-05 13:46:36] [35] farver_2.0.3            zoo_1.8-7              
+DEBUG [2020-02-05 13:46:36] [37] jsonlite_1.6            crosstalk_1.0.0        
+DEBUG [2020-02-05 13:46:36] [39] magrittr_1.5            Matrix_1.2-17          
+DEBUG [2020-02-05 13:46:36] [41] Rcpp_1.0.3              munsell_0.5.0          
+DEBUG [2020-02-05 13:46:36] [43] rclipboard_0.1.2        shinycssloaders_0.3    
+DEBUG [2020-02-05 13:46:36] [45] lifecycle_0.1.0         stringi_1.4.5          
+DEBUG [2020-02-05 13:46:36] [47] yaml_2.2.0              MASS_7.3-51.4          
+DEBUG [2020-02-05 13:46:36] [49] shinytoastr_2.1.1       plyr_1.8.5             
+DEBUG [2020-02-05 13:46:36] [51] grid_3.6.2              parallel_3.6.2         
+DEBUG [2020-02-05 13:46:36] [53] listenv_0.8.0           crayon_1.3.4           
+DEBUG [2020-02-05 13:46:36] [55] lattice_0.20-38         splines_3.6.2          
+DEBUG [2020-02-05 13:46:36] [57] mapproj_1.2.6           hms_0.5.3              
+DEBUG [2020-02-05 13:46:36] [59] zeallot_0.1.0           pillar_1.4.3           
+DEBUG [2020-02-05 13:46:36] [61] codetools_0.2-16        futile.options_1.0.1   
+DEBUG [2020-02-05 13:46:36] [63] glue_1.3.1              packrat_0.5.0          
+DEBUG [2020-02-05 13:46:36] [65] leaflet.providers_1.9.0 latticeExtra_0.6-29    
+DEBUG [2020-02-05 13:46:36] [67] lambda.r_1.2.4          data.table_1.12.8      
+DEBUG [2020-02-05 13:46:36] [69] png_0.1-7               vctrs_0.2.1            
+DEBUG [2020-02-05 13:46:36] [71] httpuv_1.5.2            foreach_1.4.7          
+DEBUG [2020-02-05 13:46:36] [73] gtable_0.3.0            purrr_0.3.3            
+DEBUG [2020-02-05 13:46:36] [75] tidyr_1.0.0             assertthat_0.2.1       
+DEBUG [2020-02-05 13:46:36] [77] mime_0.8                xtable_1.8-4           
+DEBUG [2020-02-05 13:46:36] [79] later_1.0.0             rsconnect_0.8.16       
+DEBUG [2020-02-05 13:46:36] [81] viridisLite_0.3.0       tibble_2.1.3           
+DEBUG [2020-02-05 13:46:36] [83] shinythemes_1.1.2       iterators_1.0.12       
+DEBUG [2020-02-05 13:46:36] [85] cluster_2.1.0           globals_0.12.5         
+DEBUG [2020-02-05 13:46:36] [87] ellipsis_0.3.0         
+DEBUG [2020-02-05 13:46:36] LOG_DIR = /home/hans/MS/AirSensorShiny/inst/app/../logs
+DEBUG [2020-02-05 13:46:39] ------ ui() ------
+DEBUG [2020-02-05 13:46:40] ----- server() ------

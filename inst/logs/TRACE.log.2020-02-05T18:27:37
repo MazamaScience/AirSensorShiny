@@ -1,0 +1,82 @@
+DEBUG [2020-02-05 18:23:16] R version 3.6.2 (2019-12-12)
+DEBUG [2020-02-05 18:23:16] Platform: x86_64-pc-linux-gnu (64-bit)
+DEBUG [2020-02-05 18:23:16] Running under: Ubuntu 19.10
+DEBUG [2020-02-05 18:23:16] 
+DEBUG [2020-02-05 18:23:16] Matrix products: default
+DEBUG [2020-02-05 18:23:16] BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.8.0
+DEBUG [2020-02-05 18:23:16] LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.8.0
+DEBUG [2020-02-05 18:23:16] 
+DEBUG [2020-02-05 18:23:16] locale:
+DEBUG [2020-02-05 18:23:16]  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+DEBUG [2020-02-05 18:23:16]  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8    LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+DEBUG [2020-02-05 18:23:16]  [9] LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+DEBUG [2020-02-05 18:23:16] 
+DEBUG [2020-02-05 18:23:16] attached base packages:
+DEBUG [2020-02-05 18:23:16] [1] stats     graphics  grDevices utils     datasets  methods   base     
+DEBUG [2020-02-05 18:23:16] 
+DEBUG [2020-02-05 18:23:16] other attached packages:
+DEBUG [2020-02-05 18:23:16]  [1] shinyjs_1.1              shinydashboard_0.7.1     shinyWidgets_0.5.0       promises_1.1.0          
+DEBUG [2020-02-05 18:23:16]  [5] future_1.16.0            worldmet_0.8.7           AirMonitorPlots_0.5.7    ggplot2_3.2.1           
+DEBUG [2020-02-05 18:23:16]  [9] PWFSLSmoke_1.2.103       MazamaSpatialUtils_0.6.4 sp_1.3-2                 maps_3.3.0              
+DEBUG [2020-02-05 18:23:16] [13] dplyr_0.8.3              AirSensor_0.5.17         MazamaCoreUtils_0.4.2    futile.logger_1.4.3     
+DEBUG [2020-02-05 18:23:16] [17] shiny_1.4.0             
+DEBUG [2020-02-05 18:23:16] 
+DEBUG [2020-02-05 18:23:16] loaded via a namespace (and not attached):
+DEBUG [2020-02-05 18:23:16]  [1] backports_1.1.5         plyr_1.8.5              lazyeval_0.2.2          rclipboard_0.1.2       
+DEBUG [2020-02-05 18:23:16]  [5] splines_3.6.2           crosstalk_1.0.0         listenv_0.8.0           leaflet_2.0.3          
+DEBUG [2020-02-05 18:23:16]  [9] digest_0.6.23           foreach_1.4.7           htmltools_0.4.0         rsconnect_0.8.16       
+DEBUG [2020-02-05 18:23:16] [13] leaflet.providers_1.9.0 magrittr_1.5            cluster_2.1.0           doParallel_1.0.15      
+DEBUG [2020-02-05 18:23:16] [17] globals_0.12.5          readr_1.3.1             jpeg_0.1-8.1            colorspace_1.4-1       
+DEBUG [2020-02-05 18:23:16] [21] xfun_0.12               crayon_1.3.4            jsonlite_1.6            hexbin_1.28.0          
+DEBUG [2020-02-05 18:23:16] [25] zeallot_0.1.0           shinyFeedback_0.1.0     zoo_1.8-7               iterators_1.0.12       
+DEBUG [2020-02-05 18:23:16] [29] glue_1.3.1              gtable_0.3.0            scales_1.1.0            futile.options_1.0.1   
+DEBUG [2020-02-05 18:23:16] [33] Rcpp_1.0.3              viridisLite_0.3.0       xtable_1.8-4            foreign_0.8-72         
+DEBUG [2020-02-05 18:23:16] [37] mapproj_1.2.6           DT_0.11                 htmlwidgets_1.5.1       httr_1.4.1             
+DEBUG [2020-02-05 18:23:16] [41] sourcetools_0.1.7       RColorBrewer_1.1-2      ellipsis_0.3.0          pkgconfig_2.0.3        
+DEBUG [2020-02-05 18:23:16] [45] farver_2.0.3            tidyselect_0.2.5        labeling_0.3            rlang_0.4.2            
+DEBUG [2020-02-05 18:23:16] [49] later_1.0.0             munsell_0.5.0           tools_3.6.2             evaluate_0.14          
+DEBUG [2020-02-05 18:23:16] [53] stringr_1.4.0           fastmap_1.0.1           yaml_2.2.0              knitr_1.27             
+DEBUG [2020-02-05 18:23:16] [57] shinycssloaders_0.3     purrr_0.3.3             packrat_0.5.0           nlme_3.1-141           
+DEBUG [2020-02-05 18:23:16] [61] mime_0.8                formatR_1.7             compiler_3.6.2          shinythemes_1.1.2      
+DEBUG [2020-02-05 18:23:16] [65] rstudioapi_0.10.0-9003  plotly_4.9.1            png_0.1-7               tibble_2.1.3           
+DEBUG [2020-02-05 18:23:16] [69] stringi_1.4.5           highr_0.8               lattice_0.20-38         Matrix_1.2-17          
+DEBUG [2020-02-05 18:23:16] [73] vctrs_0.2.1             seismicRoll_1.1.3       pillar_1.4.3            lifecycle_0.1.0        
+DEBUG [2020-02-05 18:23:16] [77] data.table_1.12.8       maptools_0.9-9          httpuv_1.5.2            R6_2.4.1               
+DEBUG [2020-02-05 18:23:16] [81] latticeExtra_0.6-29     gridExtra_2.3           openair_2.7-0           codetools_0.2-16       
+DEBUG [2020-02-05 18:23:16] [85] lambda.r_1.2.4          MASS_7.3-51.4           assertthat_0.2.1        withr_2.1.2            
+DEBUG [2020-02-05 18:23:16] [89] mgcv_1.8-31             parallel_3.6.2          hms_0.5.3               grid_3.6.2             
+DEBUG [2020-02-05 18:23:16] [93] tidyr_1.0.0             rmarkdown_2.0           shinytoastr_2.1.1       lubridate_1.7.4        
+DEBUG [2020-02-05 18:23:16] LOG_DIR = /home/hans/MS/AirSensorShiny/inst/app/../logs
+DEBUG [2020-02-05 18:23:20] ------ ui() ------
+DEBUG [2020-02-05 18:23:21] ----- server() ------
+TRACE [2020-02-05 18:23:23] Tab: overview
+TRACE [2020-02-05 18:23:23] Navbar: explore
+TRACE [2020-02-05 18:23:29] Tab: calendar
+TRACE [2020-02-05 18:23:35] Tab: overview
+TRACE [2020-02-05 18:23:38] Tab: calendar
+TRACE [2020-02-05 18:23:39] Tab: overview
+TRACE [2020-02-05 18:23:40] Tab: anim
+TRACE [2020-02-05 18:23:46] Tab: overview
+TRACE [2020-02-05 18:23:53] Tab: anim
+TRACE [2020-02-05 18:23:54] Tab: overview
+TRACE [2020-02-05 18:24:14] Tab: anim
+TRACE [2020-02-05 18:24:15] Tab: overview
+TRACE [2020-02-05 18:24:21] Tab: anim
+TRACE [2020-02-05 18:24:22] Tab: overview
+TRACE [2020-02-05 18:24:24] Tab: anim
+TRACE [2020-02-05 18:24:25] Tab: overview
+TRACE [2020-02-05 18:24:43] Tab: overview
+TRACE [2020-02-05 18:24:43] Navbar: explore
+TRACE [2020-02-05 18:24:53] Tab: comp
+DEBUG [2020-02-05 18:24:55] ----- shiny_externalFit() -----
+DEBUG [2020-02-05 18:24:57] ----- shiny_comparisonTable() -----
+TRACE [2020-02-05 18:24:58] Tab: anim
+TRACE [2020-02-05 18:25:03] Tab: overview
+TRACE [2020-02-05 18:25:06] Tab: anim
+TRACE [2020-02-05 18:25:08] Tab: overview
+TRACE [2020-02-05 18:25:33] Tab: comp
+TRACE [2020-02-05 18:25:35] Tab: anim
+TRACE [2020-02-05 18:25:40] Tab: overview
+TRACE [2020-02-05 18:25:47] Tab: anim
+TRACE [2020-02-05 18:25:48] Tab: overview
+TRACE [2020-02-05 18:26:02] Tab: anim

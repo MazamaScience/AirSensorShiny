@@ -50,7 +50,6 @@ comparison_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny::req(input$sensor_picker)
             dr <- range(s$data$datetime)
             nearby <- s$meta$pwfsl_closestMonitorID
             dist <- s$meta$pwfsl_closestDistance
@@ -78,7 +77,6 @@ comparison_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny::req(input$sensor_picker)
             shiny_externalFit(sensor = s)
           },
           error = function(e) {
@@ -93,8 +91,8 @@ comparison_mod <- function(input, output, session) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch( expr = {
-          shiny::req(input$sensor_picker)
+        tryCatch(
+        expr = {
           pat_monitorComparison(pat = p)
         },
         error = function(e) {

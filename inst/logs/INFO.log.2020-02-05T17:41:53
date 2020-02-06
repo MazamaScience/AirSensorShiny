@@ -1,0 +1,8 @@
+ERROR [2020-02-05 17:41:29] 
+ Download PAT - ERROR:
+ Input Selection: SCSB_27
+ Date Selection: -
+ERROR [2020-02-05 17:41:30] 
+ Create AirSensor - ERROR
+ERROR [2020-02-05 17:41:30] Error in validateCoords(lng, lat, funcName): addCircleMarkers requires numeric longitude/latitude values
+

@@ -45,7 +45,7 @@ SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
 PAS <- AirSensor::pas_load()
 
 # Version
-VERSION <<- "0.9 (beta)"
+VERSION <<- "0.9.1 (beta)"
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")

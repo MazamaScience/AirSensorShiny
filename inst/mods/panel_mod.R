@@ -10,7 +10,7 @@ panel_mod_ui <- function(id) {
       label = tags$h4("Community"),
       choices = c("All..." = "all",
                   id2com(SENSOR_COMMUNITIES)),
-      options = list(title = "Select community...")
+      selected = "all"
     ),
 
     shinyWidgets::pickerInput(
@@ -246,7 +246,8 @@ panel_mod <- function(input, output, session) {
                 # Restrict the available sensors to selected community
                 shinyWidgets::updatePickerInput( session = session,
                                                  inputId = 'sensor_picker',
-                                                 choices = community_sensors$monitorID, selected = input$sensor_picker )
+                                                 choices = community_sensors$monitorID,
+                                                 selected = input$sensor_picker )
               } else {
                 # Show all community groups
                 leaflet::leafletProxy("leaflet") %>%
@@ -254,6 +255,7 @@ panel_mod <- function(input, output, session) {
                 # Redraw selected marker
                 shinyWidgets::updatePickerInput( session = session,
                                                  inputId = "sensor_picker",
+                                                 choices = community_sensors$monitorID,
                                                  selected = input$sensor_picker)
               }
             },
