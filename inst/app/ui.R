@@ -41,7 +41,7 @@ ui <- function(request) {
                 value = "overview",
                 tags$br(),
                 shiny::column(
-                  width= 12,
+                  width = 12,
                   overview_mod_ui("global"),
                 )
               ),
@@ -141,10 +141,14 @@ ui <- function(request) {
     rclipboard::rclipboardSetup(),
     shinytoastr::useToastr(),
 
+    shinyjs::extendShinyjs("../www/extra.js"),
+
+
     tags$style(type="text/css", "body {padding-top: 70px;}"),
     tags$style(type="text/css", "footer {padding-left: 5%; color: #808080; font-size: 11px}"),
     tags$style(type="text/css", ".well {background-color: #fff}"),
     tags$style(type="text/css", "#panel {min-width:200px;}"),
+    tags$style(type = "text/css", "#global-leaflet {height: calc(80vh) !important;}"),
     tags$head(
       tags$script(
         'var dimension = [0, 0];

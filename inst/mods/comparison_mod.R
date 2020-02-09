@@ -63,9 +63,11 @@ comparison_mod <- function(input, output, session) {
             print(nearby)
             shiny_sensorLeaflet(s) %>%
               leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
-                                          lat = mon$meta$latitude ) %>%
+                                          lat = mon$meta$latitude,
+                                          label = "Nearest Regulatory Monitor" ) %>%
               leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
-                                     lat = c(mon$meta$latitude,s$meta$latitude) )
+                                     lat = c(mon$meta$latitude,s$meta$latitude),
+                                     label = paste0("Distance: ", signif(dist/1000, 2), " km") )
           },
           error = function(e) {
             logger.error(e)

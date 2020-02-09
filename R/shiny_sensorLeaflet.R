@@ -147,7 +147,7 @@ shiny_sensorLeaflet <- function(
   # ----- Create the map -------------------------------------------------------
 
   map <-
-    leaflet::leaflet(SPDF) %>%
+    leaflet::leaflet(SPDF, padding = 0) %>%
     leaflet::setView(
       lng=mean(lonRange),
       lat=mean(latRange),

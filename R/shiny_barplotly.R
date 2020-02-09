@@ -77,7 +77,7 @@ shiny_barplotly <-
                                    autorange = TRUE,
                                    title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)",
                                    titlefont = list(size = 14.5)),
-                     xaxis = list(fixedrange = TRUE, autorange = TRUE))
+                     xaxis = list(fixedrange = F, autorange = T))#TRUE))
 
     return(pp)
   }

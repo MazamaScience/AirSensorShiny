@@ -11,13 +11,49 @@ overview_mod_ui <- function(id) {
   shiny::tagList(
     leaflet::leafletOutput(
       outputId = ns("leaflet"),
-      height = 420
     ) %>% loadSpinner(),
-    plotly::plotlyOutput(
-      outputId = ns("barplotly"),
-      height = 330
-    )%>% loadSpinner()
+    shiny::absolutePanel(
+      id = "plot_panel",
+      fixed = FALSE,
+      left = "auto",
+      right = "auto",
+      bottom = 0,
+      width = "98%",
+      height = "inherit",
+      # Show/Hide barplot panel button
+      HTML('<a id = "collapse_btn" data-toggle="collapse" data-target="#dem" style="margin-left:50%;">
+           <span class="glyphicon glyphicon-chevron-up"></span> Show</a>'),
+      # shiny::includeScript('../www/extra.js'),
+      tags$div(
+        id = 'dem',
+        class = "collapse",
+        plotly::plotlyOutput(
+          outputId = ns("barplotly"),
+          height = 300
+        ) %>% loadSpinner(),
+      )
+    ),
+    # Barplot panel opacity CSS
+    tags$style(
+      type = "text/css",
+      '#plot_panel{
+        /* Appearance */
+        background-color: white;
+        padding: 0 0 0 0;
+        cursor: move;
+        /* Fade out while not hovering */
+        opacity: 0.75;
+        zoom: 0.9;
+        transition: opacity 300ms 500ms;
+      }
+      #plot_panel:hover {
+        /* Fade in while hovering */
+        opacity: 1;
+        transition-delay: 0;
+      }'
+    ),
   )
+
 }
 
 #' TAB: Overview Logic
@@ -41,7 +77,7 @@ overview_mod <- function(input, output, session) {
             shiny_sensorLeaflet( sensor = s,
                                  startdate = sd,
                                  enddate = ed,
-                                 maptype = "OpenStreetMap")
+                                 maptype = "OpenStreetMap" )
           },
           error = function (e) {
             logger.error(e)
@@ -61,7 +97,13 @@ overview_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny_barplotly(s, sd, ed)
+            shiny_barplotly(s, sd, ed)  %>%
+              # Hacky JS way to change the cursor back to normal
+              htmlwidgets::onRender(
+                "function(el, x) {
+                  Plotly.d3.select('.cursor-ew-resize').style('cursor', 'default')
+                }"
+              )
           },
           error = function(e) {
             logger.error(e)
@@ -129,5 +171,16 @@ overview_mod <- function(input, output, session) {
         })
     }
   )
+
+  #TODO: Find a better way to toggle panel based on this:
+  #     - On init load it should be hidden
+  #     - The sensor picker update should show the plot panel if it is hidden
+
+  # observe({
+  #   if ( !isTruthy(input$sensor_picker) ) {
+  #     shinyjs::click("collapse_btn", asis=TRUE)
+  #   }
+  # })
+
 
 }
