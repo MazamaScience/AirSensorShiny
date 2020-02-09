@@ -1,5 +1,5 @@
 ################################################################################
-# Makefile for building and running docker containers for AirSensorShiny
+# Makefile for building and running docker containers for AirSensor DataViewer
 #
 # On joule, ProxypPass settings are defined in:
 #
@@ -35,60 +35,74 @@
 #
 
 # NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile-test
-SERVICE_PATH=airsensor-shiny/v1
-SERVICE_PATH_TEST=airsensor-shiny/test
+SERVICE_PATH=airsensor-dataviewer/v1
+SERVICE_PATH_TEST=airsensor-dataviewer/test
 
+# GLOBAL APP VERSION
+VERSION=0.9.2
 
-# NOTE:  Version associated with R packages and shiny-server code
-SERVER_VERSION=1.3.9
+# App configuration
+clean:
+	if [ -d logs ]; then sudo rm -Rf logs; mkdir logs; fi
+	if [ -d inst/logs ]; then sudo rm -Rf inst/logs; mkdir inst/logs; fi
 
-# NOTE:  Version associated with Shiny app
-# first version . airsensorshiny 1.3.6 . calendar plot
-APP_VERSION=0.9.0
+# Update the app version inline (-i) with Makefile version
+configure_app:
+	sed -i 's%VERSION <<- ".*"%VERSION <<- "$(VERSION)"%' inst/app/global.R # Shiny App Version
+	sed -i 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer # Docker Image Version
+	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test # Docker Test Build Image Version
+	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1 # Docker V1 Build Image Version
+
+# OSX -- Ugh!
+# https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed
+configure_app_osx:
+	sed -i '' 's%VERSION <- ".*"%VERSION <- "$(VERSION)"%' inst/app/global.R
+	sed -i '' s%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
+	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
+	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
-
 desktop_build:
-	-mkdir airsensorshiny/output
-	docker build -t airsensor-shiny-desktop:$(APP_VERSION) \
-		-t airsensor-shiny-desktop:latest -f docker/Dockerfile-test .
+	-mkdir airsensordataviewer/output
+	docker build -t airsensor-dataviewer-desktop:$(VERSION) \
+		-t airsensor-dataviewer-desktop:latest -f docker/Dockerfile-test .
 
 desktop_up:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airsensorshinydesktop up -d
+		-p airsensordataviewerdesktop up -d
 
 desktop_down:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airsensorshinydesktop down
+		-p airsensordataviewerdesktop down
 
 desktop_container_logs:
 	docker-compose -f docker/docker-compose-desktop.yml \
-		-p airsensorshinydesktop logs -f
+		-p airsensordataviewerdesktop logs -f
 
 desktop_bounce: desktop_down desktop_up
 
 desktop_reboot: desktop_build desktop_down desktop_up
 
 
-# AirSensorShiny TEST version --------------------------------------------------
+# AirSensordataviewer TEST version --------------------------------------------------
 
-test_build:
-	-mkdir airsensorshiny/test
-	docker build -t airsensor-shiny-test:$(APP_VERSION) \
-		-t airsensor-shiny-test:latest -f docker/Dockerfile-test .
+test_build: configure_app
+	-mkdir airsensordataviewer/test
+	docker build -t airsensor-dataviewer-test:$(VERSION) \
+		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
 
 test_up:
 	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensorshinytest up -d
+		-p airsensordataviewertest up -d
 
 test_down:
 	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensorshinytest down
+		-p airsensordataviewertest down
 
 test_container_logs:
 	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensorshinytest logs
+		-p airsensordataviewertest logs
 
 test_trace_log:
 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
@@ -106,24 +120,24 @@ test_bounce: test_down test_up
 
 test_reboot: test_build test_down test_up
 
-# AirSensorShiny JOULE version --------------------------------------------------
+# AirSensordataviewer JOULE version --------------------------------------------------
 
-joule_build:
-	-mkdir airsensorshiny/test
-	docker build -t airsensor-shiny-test:$(APP_VERSION) \
-		-t airsensor-shiny-test:latest -f docker/Dockerfile-test .
+joule_build:configure_app
+	-mkdir airsensordataviewer/test
+	docker build -t airsensor-dataviewer-test:$(VERSION) \
+		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
 
 joule_up:
 	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensorshinytest up -d
+		-p airsensordataviewertest up -d
 
 joule_down:
 	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensorshinytest down
+		-p airsensordataviewertest down
 
 joule_container_logs:
 	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensorshinytest logs
+		-p airsensordataviewertest logs
 
 joule_trace_log:
 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
@@ -141,8 +155,8 @@ joule_bounce: joule_down joule_up
 
 joule_reboot: joule_build joule_down joule_up
 
-# AirSensorShiny DOCKER CORE ---------------------------------------------------
+# AirSensordataviewer DOCKER CORE ---------------------------------------------------
 
-airsensorshiny_build:
-	cd docker; docker build -t mazamascience/airsensorshiny:$(SERVER_VERSION) -f Dockerfile-airsensorshiny .
+airsensordataviewer_build:
+	cd docker; docker build -t mazamascience/airsensordataviewer:$(VERSION) -f Dockerfile-airsensordataviewer .
 
