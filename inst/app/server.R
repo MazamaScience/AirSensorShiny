@@ -104,6 +104,7 @@ server <- function(input, output, session) {
     }
   )
   # On Restore
+  # Note: This updates the values based on the session state saved via the URL and state var
   shiny::onRestored(
     fun = function(state) {
       # restore the panel selections

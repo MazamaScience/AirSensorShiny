@@ -163,15 +163,15 @@ panel_mod <- function(input, output, session) {
       input$date_picker
     },
     valueExpr = {
-      tmp <- as.numeric(strftime(input$date_picker, "%Y"))
-      logger.trace("Load annual sensors: ", tmp)
+      yr <- as.numeric(strftime(input$date_picker, "%Y"))
+      logger.trace("Load annual sensors: ", yr)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        sensor_loadYear(datestamp = tmp )
+        rm_invalid(sensor_loadYear(datestamp = yr))
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
-                               "\n Date Selection: ", tmp ))
+                               "\n Date Selection: ", yr ))
           shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
           return(NULL)
         })
@@ -223,7 +223,7 @@ panel_mod <- function(input, output, session) {
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
   observeEvent(
     ignoreInit = TRUE,
-    eventExpr = {input$community_picker; input$lookback_picker},
+    eventExpr = {input$community_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
       annual_sensors() %...>%
         (function(s) {
@@ -251,7 +251,8 @@ panel_mod <- function(input, output, session) {
                 # Only show community group
                 leaflet::leafletProxy("leaflet") %>%
                   leaflet::showGroup(group = com[com == input$community_picker]) %>%
-                  leaflet::hideGroup(group = com[com != input$community_picker])
+                  leaflet::hideGroup(group = com[com != input$community_picker]) %>%
+                  leaflet::removeMarker(layerId = "tmp") # Remove the old marker selection
                 # Restrict the available sensors to selected community
                 shinyWidgets::updatePickerInput( session = session,
                                                  inputId = 'sensor_picker',
@@ -260,7 +261,8 @@ panel_mod <- function(input, output, session) {
               } else {
                 # Show all community groups
                 leaflet::leafletProxy("leaflet") %>%
-                  leaflet::showGroup(group = com)
+                  leaflet::showGroup(group = com) %>%
+                  leaflet::removeMarker(layerId = "tmp") # Remove old marker selection
                 # Redraw selected marker
                 shinyWidgets::updatePickerInput( session = session,
                                                  inputId = "sensor_picker",
