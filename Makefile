@@ -39,7 +39,7 @@ SERVICE_PATH=airsensor-dataviewer/v1
 SERVICE_PATH_TEST=airsensor-dataviewer/test
 
 # GLOBAL APP VERSION
-VERSION=0.9.2
+VERSION=0.9.3
 
 # App configuration
 clean:
