@@ -94,6 +94,7 @@ RUN install2.r --error -r "https://cran.rstudio.com"	shinytoastr
 RUN install2.r --error -r "https://cran.rstudio.com"	future
 RUN install2.r --error -r "https://cran.rstudio.com"	promises
 RUN install2.r --error -r "https://cran.rstudio.com"	rclipboard
+RUN install2.r --error -r "https://cran.rstudio.com"	htmlwidgets
 
 # Install latest versions of Mazama packages
 RUN installGithub.r \
