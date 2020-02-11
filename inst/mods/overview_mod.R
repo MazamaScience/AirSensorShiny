@@ -19,11 +19,11 @@ overview_mod_ui <- function(id) {
       left = "auto",
       right = "auto",
       bottom = 0,
-      width = "98%",
+      width = "100%",
       height = "inherit",
       # Show/Hide barplot panel button
       HTML('<a id = "collapse_btn" class = "collapsed" data-toggle="collapse" data-target="#dem" style="margin-left:50%;">
-           <span class="glyphicon glyphicon-chevron-up"></span> Show</a>'),
+           <span class="glyphicon glyphicon-chevron-up"></span> Select a Sensor</a>'),
       # Put barplot in "dem" html
       tags$div(
         id = 'dem',
@@ -51,6 +51,9 @@ overview_mod_ui <- function(id) {
         /* Fade in while hovering */
         opacity: 1;
         transition-delay: 0;
+      }
+      .col-sm-12{
+        padding: 0 0 0 0;
       }'
     ),
   )
