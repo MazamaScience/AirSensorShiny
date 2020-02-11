@@ -34,7 +34,7 @@ overview_mod_ui <- function(id) {
         ) %>% loadSpinner(),
       )
     ),
-    # Barplot panel opacity CSS
+    # Barplot panel opacity CSS and leaflet padding fix
     tags$style(
       type = "text/css",
       '#plot_panel{
@@ -55,7 +55,7 @@ overview_mod_ui <- function(id) {
       .col-sm-12{
         padding: 0 0 0 0;
       }'
-    ),
+    )
   )
 
 }

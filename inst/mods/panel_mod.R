@@ -62,6 +62,15 @@ panel_mod_ui <- function(id) {
         width = 6,
         shiny::uiOutput("bookmark")
       )
+    ),
+    tags$style(
+      type = "text/css",
+      '#global-download{
+        width: 100%;
+      }
+      #bookmark_button{
+        width: 100%;
+      }'
     )
   )
 }
