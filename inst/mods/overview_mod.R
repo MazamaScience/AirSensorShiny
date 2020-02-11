@@ -99,7 +99,7 @@ overview_mod <- function(input, output, session) {
         tryCatch(
           expr = {
             shiny_barplotly(s, sd, ed)  %>%
-              # Hacky JS way to change the cursor back to normal
+              # Hacky JS way to change the cursor back to normal pointer
               htmlwidgets::onRender(
                 "function(el, x) {
                   Plotly.d3.select('.cursor-ew-resize').style('cursor', 'default')
