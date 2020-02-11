@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+
 overview_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -21,9 +22,9 @@ overview_mod_ui <- function(id) {
       width = "98%",
       height = "inherit",
       # Show/Hide barplot panel button
-      HTML('<a id = "collapse_btn" data-toggle="collapse" data-target="#dem" style="margin-left:50%;">
+      HTML('<a id = "collapse_btn" class = "collapsed" data-toggle="collapse" data-target="#dem" style="margin-left:50%;">
            <span class="glyphicon glyphicon-chevron-up"></span> Show</a>'),
-      # shiny::includeScript('../www/extra.js'),
+      # Put barplot in "dem" html
       tags$div(
         id = 'dem',
         class = "collapse",
@@ -42,7 +43,7 @@ overview_mod_ui <- function(id) {
         padding: 0 0 0 0;
         cursor: move;
         /* Fade out while not hovering */
-        opacity: 0.75;
+        opacity: 0.70;
         zoom: 0.9;
         transition: opacity 300ms 500ms;
       }
@@ -172,15 +173,14 @@ overview_mod <- function(input, output, session) {
     }
   )
 
-  #TODO: Find a better way to toggle panel based on this:
-  #     - On init load it should be hidden
-  #     - The sensor picker update should show the plot panel if it is hidden
-
-  # observe({
-  #   if ( !isTruthy(input$sensor_picker) ) {
-  #     shinyjs::click("collapse_btn", asis=TRUE)
-  #   }
-  # })
-
+  # NOTE: Both events below run the JS code to determine if "dem" html is up or down.
+  #       If a sensor is selected, and it is not already up, it is pushed up.
+  #       If a community is selected, and it is already up, it is pushed down.
+  observeEvent(ignoreInit = TRUE, {input$sensor_picker},{
+    shinyjs::runjs("if(!$('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+  })
+  observeEvent({input$community_picker},{
+    shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+  })
 
 }

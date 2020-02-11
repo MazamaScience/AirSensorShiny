@@ -100,10 +100,11 @@ panel_mod <- function(input, output, session) {
           logger.error(paste0( "\n Download PAT - ERROR:",
                                "\n Input Selection: ", label,
                                "\n Date Selection: ", sd, "-", ed ))
-          shinytoastr::toastr_error( title = "Oops! Sensor Unavaliable.",
-                                     message = "Please try a different sensor or date.",
-                                     position = "bottom-left",
-                                     showDuration = 0 )
+          # shinytoastr::toastr_error( title = "Oops! Sensor Unavaliable.",
+          #                            message = "Please try a different sensor or date.",
+          #                            position = "bottom-left",
+          #                            showDuration = 0 )
+          shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();} else {$('#collapse_btn').click();};")
           return(NULL)
         })
     }

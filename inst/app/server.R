@@ -178,7 +178,9 @@ server <- function(input, output, session) {
   )
 
   # Handle Element hiding based on valid tabs and page
-  observeEvent(input$tab, {
+  observeEvent(
+    eventExpr = input$tab,
+    handlerExpr = {
       shiny::req(input$tab)
       on <- shinyjs::show
       off <- shinyjs::hide

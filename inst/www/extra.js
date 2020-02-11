@@ -1,3 +1,7 @@
+/*
+Collapse button click event handler
+NOTE: Loads on initialization of App
+*/
 shinyjs.init = function() {
   $('#collapse_btn').click(function() {
   if ($('a span').hasClass('glyphicon-chevron-down')) {
