@@ -30,9 +30,9 @@ server <- function(input, output, session) {
     sensor() %...>%
       (function(s) {
         future({
-          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d")
-          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d")
-          shiny_getNOAA(s, sd, ed)
+          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d", tz = TZ)
+          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d", tz = TZ)
+          shiny_getNOAA(s, sd, ed, tz = TZ)
         }) %...!%
           (function(e) {
             logger.error(paste0("\n Download NOAA worldmet - ERROR"))

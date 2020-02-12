@@ -63,6 +63,8 @@ PAS <- AirSensor::pas_load()
 #       across docker, make, and app the same.
 VERSION <<- "0.9.3"
 
+TZ <- 'America/Los_Angeles'
+
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
 

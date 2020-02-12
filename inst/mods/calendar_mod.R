@@ -26,7 +26,7 @@ calendar_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny_calendarPlot(s)
+            shiny_calendarPlot(s, tz = TZ)
           },
           error = function(e) {
             logger.error(e)

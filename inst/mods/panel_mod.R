@@ -27,15 +27,15 @@ panel_mod_ui <- function(id) {
     shinyWidgets::airDatepickerInput(
       inputId = ns("date_picker"),
       label = tags$h4("Date"),
-      value = c(lubridate::now()-lubridate::days(7),
-                lubridate::now()),
+      value = c(lubridate::now(tzone = TZ)-lubridate::days(7),
+                lubridate::now(tzone = TZ)),
       todayButton = TRUE,
       addon = "none",
       inline = FALSE,
       separator = " to ",
       range = FALSE,
-      maxDate = lubridate::now(),
-      minDate = lubridate::ymd(20180102)
+      maxDate = lubridate::now(tzone = TZ),
+      minDate = lubridate::ymd(20180102, tz = TZ)
     ),
 
     shinyWidgets::radioGroupButtons(
@@ -83,6 +83,18 @@ panel_mod_ui <- function(id) {
 #' @param active
 panel_mod <- function(input, output, session) {
 
+  dates <<- eventReactive(
+    eventExpr = {
+      input$datepicker
+      input$lookback_picker
+    },
+    valueExpr = {
+      ed <- lubridate::ymd(input$date_picker, tz = TZ)
+      sd <- ed - lubridate::days(as.numeric(input$lookback_picker))
+      data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
+    }
+  )
+
   # Reactive PAT loading handler.
   # NOTE: - VIP -
   #       Downloads the PAT in range of selected date picker and lookback from
@@ -96,14 +108,14 @@ panel_mod <- function(input, output, session) {
     valueExpr = {
       shiny::req(input$sensor_picker)
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker)
-      sd <- ed - as.numeric(input$lookback_picker)
+      ed <- dates()$ed
+      sd <- dates()$sd
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
         pat_load( label,
-                  startdate = as.numeric(stringr::str_remove_all(sd, "-")),
-                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+                  startdate = sd,
+                  enddate = ed )
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Download PAT - ERROR:",
@@ -132,7 +144,7 @@ panel_mod <- function(input, output, session) {
     valueExpr = {
       label <- input$sensor_picker
       logger.trace(paste0("load annual pat: ",label))
-      yr <- as.numeric(strftime(input$date_picker, "%Y"))
+      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
       ed <- paste0(yr, "1231")
       sd <- paste0(yr,"0101")
       logger.trace(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
@@ -163,7 +175,7 @@ panel_mod <- function(input, output, session) {
       input$date_picker
     },
     valueExpr = {
-      yr <- as.numeric(strftime(input$date_picker, "%Y"))
+      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
       logger.trace("Load annual sensors: ", yr)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
@@ -194,14 +206,14 @@ panel_mod <- function(input, output, session) {
   output$download <- shiny::downloadHandler(
     filename = function() {
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker)
-      sd <- ed - as.numeric(input$lookback_picker)
+      ed <- dates()$ed
+      sd <- dates()$sd
       paste0(label,sd,"_",ed,".csv")
     },
     content = function(file) {
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker)
-      sd <- ed - as.numeric(input$lookback_picker)
+      ed <- dates()$ed
+      sd <- dates()$sd
       tryCatch(
         expr = {
           p <- AirSensor::pat_load(label, sd, ed)

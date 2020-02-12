@@ -83,7 +83,7 @@ comparison_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny_externalFit(sensor = s)
+            shiny_externalFit(sensor = s, tz = TZ)
           },
           error = function(e) {
             logger.error(e)
