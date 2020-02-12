@@ -1,5 +1,5 @@
 shiny_barplotly <-
-  function( sensor, startdate = NULL, enddate = NULL, ylim = NULL ) {
+  function( sensor, startdate = NULL, enddate = NULL, ylim = NULL, tz = NULL) {
     if (FALSE) {
       sensor <- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45) %>%
         PWFSLSmoke::monitor_subset(monitorIDs = "SCSC_33")
@@ -9,7 +9,7 @@ shiny_barplotly <-
     }
 
     # Create POSIXct times for ggplot
-    xlim <- c(as.POSIXct(startdate), as.POSIXct(enddate))
+    xlim <- c(as.POSIXct(lubridate::ymd(startdate, tz = tz), tz = tz), as.POSIXct( lubridate::ymd(enddate, tz = tz), tz = tz))
     if ( grepl("-", startdate ) | grepl("-", enddate) ) {
       startdate <- stringr::str_remove_all(startdate, "-")
       enddate <- stringr::str_remove_all(enddate, "-")
@@ -21,11 +21,11 @@ shiny_barplotly <-
 
     label <- names(sensor$data)[2]
 
-    ddif <- lubridate::ymd(enddate) - lubridate::ymd(startdate)
+    ddif <- lubridate::ymd(enddate, tz = tz) - lubridate::ymd(startdate, tz = tz)
 
     # Tooltip labels
     PM2.5 <- signif(sensor$data[[label]], digits = 3)
-    Date <- lubridate::ymd_hms(sensor$data[["datetime"]], tz = sensor$meta$timezone)
+    Date <- lubridate::ymd_hms(sensor$data[["datetime"]], tz = tz)
 
 
     gg <-
@@ -48,7 +48,7 @@ shiny_barplotly <-
       scale_fill_sqamd() +
       ggplot2::theme_minimal() +
       ggplot2::scale_x_datetime( date_breaks = "1 day",
-                                 limits = xlim ) +
+                                 limits = xlim) +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
                                             face = "bold",
