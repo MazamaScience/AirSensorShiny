@@ -52,7 +52,7 @@ shiny_calendarPlot <-
                   df$datetime,
                   format = "%Y",
                   tz = timezone)[2],
-                "-12-31"), tz = timezone
+                "-12-31")
             ),
             by = "1 day"
           )

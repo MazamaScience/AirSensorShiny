@@ -14,7 +14,7 @@ server <- function(input, output, session) {
     pat() %...>%
       (function(p) {
         future({
-          rm_invalid(pat_createAirSensor(p)) # rm_invalid safety function
+          pat_createAirSensor(p)
         }) %...!%
           (function(e) {
             logger.error(paste0("\n Create AirSensor - ERROR"))
@@ -41,20 +41,16 @@ server <- function(input, output, session) {
       })
   })
 
-  # Reactive tab event -- useful in some places
   tab <<- eventReactive(input$tab, input$tab)
 
   # Module Call
-  ## panel_mod:       Handles panel module -- sensor/date selection and database loading. Cornerstone.
-  ## overview_mod :   Handle explore page overview module.
-  ## calendar_mod:    Handle explore calendar module.
-  ## raw_mod:         Handle explore raw module.
-  ## pattern_mod:     Handle explore daily patterns module.
-  ## comparison_mod:  Handle explore comparison module.
-  ## video_mod:       Handle explore animation module.
-  ## dataview_mod:    Handle dv dataview module
-  ## help_mod Module: Handle help sidebar module.
-  ## latest_mod:      Handle latest latest view module.
+  ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
+  ##               and database loading.
+  ## Overview Module:
+  ## Calendar Module:
+  ## Raw Module:
+  ## Pattern Module:
+  ## Data View Module:
   shiny::callModule(panel_mod,"global")
   shiny::callModule(overview_mod, "global")
   shiny::callModule(calendar_mod, "global")
@@ -147,25 +143,25 @@ server <- function(input, output, session) {
     }
   )
   # Show modal asking to select and sensor/community
-  observe({
+  observe( {
       # Popup Message for user if NULL selection
-      if ( tab() != "overview" && tab() != "anim" ) {
-        if ( !shiny::isTruthy(input$`global-sensor_picker`) ) {
+      if ( input$tab != "overview" & input$tab != "anim" ) {
+        if ( is.null(input$`global-sensor_picker`) || !shiny::isTruthy(input$`global-sensor_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Sensor",
             text = "A valid sensor selection is required to view this tab.",
-            type = "info",
+            type = "warning",
             closeOnClickOutside = TRUE
           )
         }
-      } else if ( tab() == "anim" ) {
-        if ( !shiny::isTruthy(input$`global-community_picker`) || input$`global-community_picker` == "all") {
+      } else if ( input$tab == "anim" ) {
+        if ( input$`global-community_picker` == "all" || !shiny::isTruthy(input$`global-community_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Community",
             text = "A valid community selection is required to view this tab.",
-            type = "info",
+            type = "warning",
             closeOnClickOutside = TRUE
           )
         }
@@ -184,20 +180,20 @@ server <- function(input, output, session) {
 
   # Handle Element hiding based on valid tabs and page
   observeEvent(
-    eventExpr = tab(),
+    eventExpr = input$tab,
     handlerExpr = {
       shiny::req(input$tab)
       on <- shinyjs::show
       off <- shinyjs::hide
-      logger.trace(paste0("Tab: ", tab()))
+      logger.trace(paste0("Tab: ", input$tab))
       # NOTE: Necessary to reset the elements...
       on("global-sensor_picker",anim = T)
       on("global-date_picker",anim = T)
       on("global-community_picker",anim = T)
       on("global-lookback_picker", anim = T)
       # Now flip off
-      if ( tab() == "anim" ) off("global-sensor_picker", anim = T)
-      if ( tab() == "calendar" ) off("global-lookback_picker", anim = T)
+      if ( input$tab == "anim" ) off("global-sensor_picker", anim = T)
+      if ( input$tab == "calendar" ) off("global-lookback_picker", anim = T)
     }
   )
   observeEvent(

@@ -27,15 +27,15 @@ panel_mod_ui <- function(id) {
     shinyWidgets::airDatepickerInput(
       inputId = ns("date_picker"),
       label = tags$h4("Date"),
-      value = c(lubridate::now(tzone = TZ)-lubridate::days(7),
-                lubridate::now(tzone = TZ)),
+      value = c(lubridate::now()-lubridate::days(7),
+                lubridate::now()),
       todayButton = TRUE,
       addon = "none",
       inline = FALSE,
       separator = " to ",
       range = FALSE,
-      maxDate = lubridate::now(tzone = TZ),
-      minDate = lubridate::ymd(20180102, tz = TZ)
+      maxDate = lubridate::now(),
+      minDate = lubridate::ymd(20180102)
     ),
 
     shinyWidgets::radioGroupButtons(
@@ -96,19 +96,14 @@ panel_mod <- function(input, output, session) {
     valueExpr = {
       shiny::req(input$sensor_picker)
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker, tz = TZ)
-      sd <- ed - lubridate::days(as.numeric(input$lookback_picker))
-      logger.trace(sprintf('sd = %s, ed = %s',sd, ed))
-      print( strftime(sd, '%Y%m%d', tz = TZ))
+      ed <- lubridate::ymd(input$date_picker)
+      sd <- ed - as.numeric(input$lookback_picker)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
-        p <- pat_load( label,
-                  startdate = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), #as.numeric(stringr::str_remove_all(sd, "-")),
-                  enddate = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)),#as.numeric(stringr::str_remove_all(ed, "-")),
-                  timezone = TZ )
-        logger.trace("YAY")
-        return(p)
+        pat_load( label,
+                  startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Download PAT - ERROR:",
@@ -137,7 +132,7 @@ panel_mod <- function(input, output, session) {
     valueExpr = {
       label <- input$sensor_picker
       logger.trace(paste0("load annual pat: ",label))
-      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
+      yr <- as.numeric(strftime(input$date_picker, "%Y"))
       ed <- paste0(yr, "1231")
       sd <- paste0(yr,"0101")
       logger.trace(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
@@ -145,8 +140,7 @@ panel_mod <- function(input, output, session) {
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
         pat_load( label,
                   startdate = as.numeric(stringr::str_remove_all(sd, "-")),
-                  enddate = as.numeric(stringr::str_remove_all(ed, "-")),
-                  timezone = TZ)
+                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Downlaod ANNUAL PAT - ERROR:",
@@ -169,11 +163,11 @@ panel_mod <- function(input, output, session) {
       input$date_picker
     },
     valueExpr = {
-      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
+      yr <- as.numeric(strftime(input$date_picker, "%Y"))
       logger.trace("Load annual sensors: ", yr)
       future({
         setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        rm_invalid(sensor_loadYear(datestamp = yr, timezone = TZ)) # rm_invalid sfaety function
+        rm_invalid(sensor_loadYear(datestamp = yr))
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
@@ -200,13 +194,13 @@ panel_mod <- function(input, output, session) {
   output$download <- shiny::downloadHandler(
     filename = function() {
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker, tz = TZ)
+      ed <- lubridate::ymd(input$date_picker)
       sd <- ed - as.numeric(input$lookback_picker)
       paste0(label,sd,"_",ed,".csv")
     },
     content = function(file) {
       label <- input$sensor_picker
-      ed <- lubridate::ymd(input$date_picker, tz = TZ)
+      ed <- lubridate::ymd(input$date_picker)
       sd <- ed - as.numeric(input$lookback_picker)
       tryCatch(
         expr = {
@@ -236,11 +230,10 @@ panel_mod <- function(input, output, session) {
           tryCatch(
             expr = {
               # Calculate the selected community location
-              if ( input$community_picker == "all" ) {
+              if ( grepl("[aA]ll", input$community_picker) ) {
                 community_sensors <- s$meta
               } else {
                 community_sensors <- s$meta[id2com(s$meta$communityRegion) == input$community_picker,]
-                # community_sensors <- sensor_filterMeta(s, communityRegion == com2id(input$community_picker))$meta
               }
               bbox <- lapply( community_sensors[c('longitude', 'latitude')],
                               function(x) c(min = min(x), max = max(x)) )
