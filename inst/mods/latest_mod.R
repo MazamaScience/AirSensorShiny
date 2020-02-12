@@ -27,7 +27,7 @@ latest_mod <- function(input, output, session) {
       shiny::req(input$sensor_picker)
       label <- input$sensor_picker
       future({
-        pat_createNew(pas = PAS, label = label)
+        pat_createNew(pas = PAS, label = label, timezone = TZ)
       }) %...!%
         (function(e) {
           logger.error(paste0( "\n Download LATEST PAT - ERROR:",
@@ -46,7 +46,7 @@ latest_mod <- function(input, output, session) {
         tryCatch(
           expr = {
             plotly::plot_ly( p$data,
-                             x = ~datetime,
+                             x = ~as.POSIXct(datetime, tz = TZ),
                              y = ~pm25_A,
                              type = "scatter",
                              mode = "lines",
@@ -59,7 +59,7 @@ latest_mod <- function(input, output, session) {
               plotly::config(displayModeBar = FALSE) %>%
               plotly::layout( title = list(text = paste0(p$meta$label, " Latest Data")),
                               legend = list(orientation = 'h'),
-                              xaxis = list(title = "Date", titlefont = list(size = 14.5)),
+                              xaxis = list(type = 'date', title = "Date", titlefont = list(size = 14.5)),
                               yaxis = list(title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)", titlefont = list(size = 14.5)) )
           },
           error = function(e) {

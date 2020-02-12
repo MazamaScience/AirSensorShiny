@@ -18,9 +18,9 @@ video_mod <- function(input, output, session) {
     if ( input$community_picker != "all" ) {
       ed <- input$date_picker
       baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
-      year    <- strftime(ed, "%Y")
-      mm      <- strftime(ed, "%m")
-      dd      <- strftime(ed, "%d")
+      year    <- strftime(ed, "%Y", tz = TZ)
+      mm      <- strftime(ed, "%m", tz = TZ)
+      dd      <- strftime(ed, "%d", tz = TZ)
       id    <- com2id(input$community_picker)
       url <- paste0(baseUrl, year, "/", id, "_", year, mm, dd, ".mp4" )
       tags$video(

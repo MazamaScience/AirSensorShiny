@@ -70,8 +70,8 @@ overview_mod <- function(input, output, session) {
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
-    ed <- lubridate::ymd(input$date_picker)
-    sd <- ed - as.numeric(input$lookback_picker)
+    ed <- lubridate::ymd(input$date_picker, tz = TZ) + 1
+    sd <- ed - as.numeric(input$lookback_picker) - 1
     while(!resolved(annual_sensors())) {cat("|")}
     # For coloring the markers based on the date
     annual_sensors() %...>%
@@ -94,14 +94,14 @@ overview_mod <- function(input, output, session) {
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
     shiny::req(input$sensor_picker)
-    ed <- lubridate::ymd(input$date_picker)
-    sd <- ed - as.numeric(input$lookback_picker)
+    ed <- lubridate::ymd(input$date_picker, tz = TZ) + 1
+    sd <- ed - as.numeric(input$lookback_picker) - 1
     while(!resolved(sensor())) {cat("/")}
     sensor() %...>%
       (function(s) {
         tryCatch(
           expr = {
-            shiny_barplotly(s, sd, ed)  %>%
+            shiny_barplotly(s, sd, ed, tz = TZ)  %>%
               # Hacky JS way to change the cursor back to normal pointer
               htmlwidgets::onRender(
                 "function(el, x) {

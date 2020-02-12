@@ -1,5 +1,5 @@
 shiny_barplotly <-
-  function( sensor, startdate = NULL, enddate = NULL, ylim = NULL ) {
+  function( sensor, startdate = NULL, enddate = NULL, ylim = NULL, tz = NULL) {
     if (FALSE) {
       sensor <- AirSensor::sensor_loadLatest(collection = "scaqmd", days = 45) %>%
         PWFSLSmoke::monitor_subset(monitorIDs = "SCSC_33")
@@ -8,24 +8,25 @@ shiny_barplotly <-
       ylim = NULL
     }
 
+    # tz <- sensor$meta$timezone
     # Create POSIXct times for ggplot
-    xlim <- c(as.POSIXct(startdate), as.POSIXct(enddate))
+    xlim <- c(as.POSIXct(startdate, tz = tz), as.POSIXct(enddate, tz = tz))
     if ( grepl("-", startdate ) | grepl("-", enddate) ) {
       startdate <- stringr::str_remove_all(startdate, "-")
       enddate <- stringr::str_remove_all(enddate, "-")
     }
 
-    sensor <- PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate))
+    sensor <- PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate), timezone = tz)
 
     cts <- cut(sensor$data[[2]], breaks = c(0,12,35,55,75,1000))
 
     label <- names(sensor$data)[2]
 
-    ddif <- lubridate::ymd(enddate) - lubridate::ymd(startdate)
+    ddif <- lubridate::ymd(enddate, tz = tz) - lubridate::ymd(startdate, tz = tz)
 
     # Tooltip labels
     PM2.5 <- signif(sensor$data[[label]], digits = 3)
-    Date <- lubridate::ymd_hms(sensor$data[["datetime"]], tz = sensor$meta$timezone)
+    Date <- lubridate::ymd_hms(sensor$data[["datetime"]], tz = tz)
 
 
     gg <-
@@ -48,6 +49,7 @@ shiny_barplotly <-
       scale_fill_sqamd() +
       ggplot2::theme_minimal() +
       ggplot2::scale_x_datetime( date_breaks = "1 day",
+                                 minor_breaks = "12 hour",
                                  limits = xlim ) +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
@@ -77,7 +79,7 @@ shiny_barplotly <-
                                    autorange = TRUE,
                                    title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)",
                                    titlefont = list(size = 14.5)),
-                     xaxis = list(fixedrange = F, autorange = T))#TRUE))
+                     xaxis = list(fixedrange = F, autorange = TRUE))
 
     return(pp)
   }

@@ -46,22 +46,15 @@ future::plan(future::multiprocess)
 
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
-rm_invalid <- function(x) {
-  sensor_filterMeta(x, !is.na(communityRegion))
-}
 
-# Instantiate Sensor information
-INIT_SENSORS <- rm_invalid(AirSensor::sensor_load(days = 5))
-
-SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
-SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
-
-PAS <- AirSensor::pas_load()
 
 # Global Version
 # NOTE: Update this via the Makefile -- configure_app will keep all versions
 #       across docker, make, and app the same.
 VERSION <<- "0.9.3"
+
+# Global timezone
+TZ <- 'America/Los_Angeles'
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
@@ -94,3 +87,15 @@ com2id <- function(X) {
   unlist(lapply(X, function(x) {i<-which(com_id == x); ifelse(length(i)!=0, names(com_id[i]), x)}))
 }
 
+# Safety function to remove any missing community sensors
+rm_invalid <- function(x) {
+  sensor_filterMeta(x, !is.na(communityRegion))
+}
+
+# Instantiate Sensor information
+INIT_SENSORS <- rm_invalid(AirSensor::sensor_load(days = 5))
+
+SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
+SENSOR_COMMUNITIES <- id2com(unique(INIT_SENSORS$meta$communityRegion))
+
+PAS <- AirSensor::pas_load()
