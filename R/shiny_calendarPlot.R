@@ -55,7 +55,7 @@ shiny_calendarPlot <-
       names(df)[2] <- "pm25"
 
       # Create calendar plot handler data frame
-      df$datetime <- zoo::as.Date(df$datetime)  # format date
+       df$datetime <- zoo::as.Date(df$datetime)  # format date
       df$day <- as.numeric(strftime(df$datetime, format = "%d", tz = timezone))
       df$yearmonth <- zoo::as.yearmon(df$datetime)
       df$yearmonthf <- factor(df$yearmonth)

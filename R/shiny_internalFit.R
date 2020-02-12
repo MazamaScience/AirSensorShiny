@@ -48,7 +48,8 @@ shiny_internalFit <- function(
   lr_lcolor = "tomato",
   lr_lalpha = 0.45,
   ts_shape = 1,
-  xylim = NULL
+  xylim = NULL,
+  tz = NULL
 ) {
 
   # ----- Validate parameters --------------------------------------------------
@@ -110,7 +111,7 @@ shiny_internalFit <- function(
 
   if ( showPlot ) {
 
-    timezone <- pat$meta$timezone[1]
+    timezone <- tz
     year <- strftime(pat$data$datetime[1], "%Y", tz=timezone)
 
     # LH Linear regression plot
@@ -134,7 +135,7 @@ shiny_internalFit <- function(
       equationLabel
 
     # Set time axis to sensor local time
-    tidy_data$datetime <- lubridate::with_tz(tidy_data$datetime, timezone)
+    tidy_data$datetime <- lubridate::with_tz(tidy_data$datetime, tzone = timezone)
 
     ts_plot <-
       tidy_data %>%
