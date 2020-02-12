@@ -242,7 +242,7 @@ panel_mod <- function(input, output, session) {
           tryCatch(
             expr = {
               # Calculate the selected community location
-              if ( grepl("[aA]ll", input$community_picker) ) {
+              if ( input$community_picker == 'all' ) {
                 community_sensors <- s$meta
               } else {
                 community_sensors <- s$meta[id2com(s$meta$communityRegion) == input$community_picker,]
