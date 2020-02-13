@@ -85,12 +85,11 @@ panel_mod <- function(input, output, session) {
 
   dates <<- eventReactive(
     eventExpr = {
-      input$datepicker
-      input$lookback_picker
+      input$date_picker; input$lookback_picker
     },
     valueExpr = {
-      ed <- lubridate::ymd(input$date_picker, tz = TZ)
-      sd <- ed - lubridate::days(as.numeric(input$lookback_picker))
+      ed <- lubridate::ymd(input$date_picker, tz = TZ) + lubridate::days(1)
+      sd <- ed - lubridate::days(as.numeric(input$lookback_picker)) - lubridate::days(1)
       data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
     }
   )

@@ -8,6 +8,7 @@
 * New latest data look
 * Updated help html
 * Updated airdatepicker to be inline to avoid weird overlapping UI
+* Resolved timezones*
 
 # AirSensor DataViewer 0.7
 

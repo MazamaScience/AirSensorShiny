@@ -48,8 +48,6 @@ shiny_barplotly <-
       ) +
       scale_fill_sqamd() +
       ggplot2::theme_minimal() +
-      ggplot2::scale_x_datetime( date_breaks = "1 day",
-                                 limits = xlim) +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
                                             face = "bold",
