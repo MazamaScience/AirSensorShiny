@@ -1,4 +1,4 @@
-FROM mazamascience/airsensordataviewer:0.9.3
+FROM mazamascience/airsensordataviewer:0.9.4
 
 LABEL maintainer="hans@mazamascience.com" \
       maintainer="jon@mazamascience.com"
