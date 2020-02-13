@@ -15,6 +15,7 @@ shiny_barplotly <-
       enddate <- stringr::str_remove_all(enddate, "-")
     }
 
+    sensor$data$datetime <- lubridate::with_tz(sensor$data$datetime, tz)
     sensor <- PWFSLSmoke::monitor_subset(sensor, tlim = c(startdate, enddate))
 
     cts <- cut(sensor$data[[2]], breaks = c(0,12,35,55,75,1000))

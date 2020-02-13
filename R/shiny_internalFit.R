@@ -64,6 +64,7 @@ shiny_internalFit <- function(
 
   # Remove any duplicate data records
   pat <- pat_distinct(pat)
+  pat$data$datetime <- lubridate::with_tz(pat$data$datetime, tzone = TZ)
 
   # For easier access
   meta <- pat$meta
