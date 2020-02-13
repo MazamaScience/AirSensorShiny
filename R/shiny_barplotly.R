@@ -47,6 +47,7 @@ shiny_barplotly <-
         color = "white"
       ) +
       scale_fill_sqamd() +
+      ggplot2::scale_x_datetime(breaks = "1 day", date_labels = '%b %d') +
       ggplot2::theme_minimal() +
       ggplot2::theme(
         plot.title = ggplot2::element_text( size = 14,
