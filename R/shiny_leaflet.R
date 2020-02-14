@@ -139,8 +139,7 @@ shiny_leaflet <- function(
       radius=radius,
       fillColor=cols,
       fillOpacity=opacity,
-      stroke=TRUE,
-      color = "#77A4B2",
+      color = "#000",
       weight = "1",
       label = ~label,
       layerId = pas$label

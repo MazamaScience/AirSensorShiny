@@ -133,7 +133,7 @@ overview_mod <- function(input, output, session) {
           leaflet::leafletProxy("leaflet", data = input$leaflet_marker_click) %>%
             leaflet::addCircleMarkers( lng = ~lng,
                                        lat = ~ lat,
-                                       color = '#333334',
+                                       color = '#42434C',
                                        fillColor = '#EABA5E',
                                        fillOpacity = 1,
                                        radius = 9, opacity = 0.95,
@@ -164,20 +164,12 @@ overview_mod <- function(input, output, session) {
               leaflet::leafletProxy("leaflet", data = s$meta) %>%
                 leaflet::addCircleMarkers( lng = ~longitude,
                                            lat = ~latitude,
-                                           color = '#333334',
+                                           color = '#42434C',
                                            fillColor = '#EABA5E',
                                            fillOpacity = 1,
                                            radius = 9,
                                            opacity = 1,
                                            weight = 2, layerId = 'tmp')
-              # leaflet::leafletProxy("leaflet") %>%
-              #   leaflet::addCircleMarkers( lng = s$meta$longitude,
-              #                              lat = s$meta$latitude,
-              #                              radius = 6,
-              #                              fillOpacity = 1,
-              #                              layerId = input$sensor_picker,
-              #                              color = "#000",
-              #                              options = list(leaflet::pathOptions(interactive = FALSE)) )
             },
             error = function(e) {
               logger.error(e)
