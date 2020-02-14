@@ -1,0 +1,19 @@
+version: '2'
+services:
+   shiny:
+      container_name: airsensor-dataviewer-v1
+      image: airsensor-dataviewer-v1
+      ports:
+          - "6701:3838"
+      volumes:
+          - /var/www/tools.mazamascience.com/html/logs/airsensor-dataviewer/v1/app:/var/log/shiny-server/
+      restart: unless-stopped
+
+#networks:
+#  custom:
+#    driver: bridge
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 172.67.09.0/24
+#          gateway: 172.67.09.1
