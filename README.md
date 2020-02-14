@@ -26,6 +26,8 @@ Now for the gory details.
 
 * https://community.rstudio.com/t/best-practices-with-shiny-for-accessing-routinely-updated-external-files/11183
 
+* https://www.linuxjournal.com/content/integrating-web-applications-apache
+
 ## Running the app from RStudio ##
 
 Inside RStudio you can run the app with:
@@ -64,6 +66,8 @@ make desktop_down
 ```
 
 ## Setup and testing on joule.mazamascience.com
+
+_(See the integrating-web-applications-apache link above.)_
 
 The machine joule.mazamascience .com is set up to host a test version of the 
 Shiny app. The code repository exists at `/home/jonc/Projects/MazamaScience/AirSensorShiny`.
