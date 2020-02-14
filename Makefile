@@ -57,14 +57,16 @@ configure_app:
 # https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed
 configure_app_osx:
 	sed -i '' 's%VERSION <- ".*"%VERSION <- "$(VERSION)"%' inst/app/global.R
-	sed -i '' s%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
+	sed -i '' 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
+	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
+	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
+# NOTE:  make the appropriate configure_app target first
+
 desktop_build:
-	-mkdir airsensordataviewer/output
+	-mkdir logs
 	docker build -t airsensor-dataviewer-desktop:$(VERSION) \
 		-t airsensor-dataviewer-desktop:latest -f docker/Dockerfile-test .
 
@@ -82,7 +84,7 @@ desktop_container_logs:
 
 desktop_bounce: desktop_down desktop_up
 
-desktop_reboot: desktop_build desktop_down desktop_up
+desktop_reboot: desktop_build desktop_bounce
 
 
 # AirSensordataviewer TEST version --------------------------------------------------
@@ -118,11 +120,11 @@ test_error_log:
 
 test_bounce: test_down test_up
 
-test_reboot: test_build test_down test_up
+test_reboot: test_build test_bounce
 
 # AirSensordataviewer JOULE version --------------------------------------------------
 
-joule_build:configure_app
+joule_build: configure_app
 	-mkdir airsensordataviewer/test
 	docker build -t airsensor-dataviewer-test:$(VERSION) \
 		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
@@ -153,7 +155,7 @@ joule_error_log:
 
 joule_bounce: joule_down joule_up
 
-joule_reboot: joule_build joule_down joule_up
+joule_reboot: joule_build joule_bounce
 
 # AirSensordataviewer DOCKER CORE ---------------------------------------------------
 
