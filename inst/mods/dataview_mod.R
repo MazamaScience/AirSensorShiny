@@ -32,8 +32,7 @@ dataview_mod <- function(input, output, session) {
                         "Longitude" = p$meta$longitude,
                         "Latitude" = p$meta$latitude,
                         "State" = p$meta$stateCode,
-                        "Country" = p$meta$countryCode,
-                        "Timezone" = p$meta$timezone )
+                        "Country" = p$meta$countryCode )
           },
           error = function(e) {
             logger.error(e)
@@ -52,7 +51,7 @@ dataview_mod <- function(input, output, session) {
         tryCatch(
           expr = {
             data <- p$data[-(6:10)]
-            names(data) <- c( "Datetime",
+            names(data) <- c( "Datetime (UTC)",
                               "PM2.5 Ch. A (\u03bcg / m\u00b)",
                               "PM2.5 Ch. B (\u03bcg / m\u00b)",
                               "Temperature (F)",

@@ -55,7 +55,7 @@ raw_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
-            AirSensor::pat_multiplot(p, columns = 1)
+            AirSensor::pat_multiplot(p, columns = 1, timezone = TZ)
           },
           error = function(e) {
             logger.error(e)
@@ -73,7 +73,7 @@ raw_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
-            shiny_internalFit(p, whichPlot = 'ab')
+            shiny_internalFit(p, whichPlot = 'ab', tz = TZ)
           },
           error = function(e) {
             logger.error(e)
@@ -89,7 +89,7 @@ raw_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
-            shiny_internalFit(p, whichPlot = 'lm')
+            shiny_internalFit(p, whichPlot = 'lm', tz = TZ)
           },
           error = function(e) {
             logger.error(e)

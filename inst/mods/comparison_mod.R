@@ -44,13 +44,16 @@ comparison_mod_ui <- function(id) {
 }
 
 comparison_mod <- function(input, output, session) {
+
+  # NOTE: An error exists inthe code to where selecting different datetime/lookback
+  #       on this tab resets the sensor_picker and breaks the page.
+  #       likely has to do with the the order or load
   output$comparison_leaflet <- leaflet::renderLeaflet({
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
         tryCatch(
           expr = {
-            shiny::req(input$sensor_picker)
             dr <- range(s$data$datetime)
             nearby <- s$meta$pwfsl_closestMonitorID
             dist <- s$meta$pwfsl_closestDistance
@@ -60,9 +63,11 @@ comparison_mod <- function(input, output, session) {
             print(nearby)
             shiny_sensorLeaflet(s) %>%
               leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
-                                          lat = mon$meta$latitude ) %>%
+                                          lat = mon$meta$latitude,
+                                          label = "Nearest Regulatory Monitor" ) %>%
               leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
-                                     lat = c(mon$meta$latitude,s$meta$latitude) )
+                                     lat = c(mon$meta$latitude,s$meta$latitude),
+                                     label = paste0("Distance: ", signif(dist/1000, 2), " km") )
           },
           error = function(e) {
             logger.error(e)
@@ -78,8 +83,7 @@ comparison_mod <- function(input, output, session) {
       (function(s) {
         tryCatch(
           expr = {
-            shiny::req(input$sensor_picker)
-            shiny_externalFit(sensor = s)
+            shiny_externalFit(sensor = s, tz = TZ)
           },
           error = function(e) {
             logger.error(e)
@@ -93,8 +97,8 @@ comparison_mod <- function(input, output, session) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch( expr = {
-          shiny::req(input$sensor_picker)
+        tryCatch(
+        expr = {
           pat_monitorComparison(pat = p)
         },
         error = function(e) {

@@ -1,6 +1,6 @@
 # Get world met data
 shiny_getNOAA <-
-  function(sensor, startdate = NULL, enddate = NULL ) {
+  function(sensor, startdate = NULL, enddate = NULL, tz = NULL) {
     logger.trace("loading wind data")
 
     # Find wind data readings from the closest NOAA site
@@ -8,8 +8,8 @@ shiny_getNOAA <-
     lon <- sensor$meta$longitude
     lat <- sensor$meta$latitude
 
-    startdate <- lubridate::ymd(startdate)
-    enddate <- lubridate::ymd(enddate)
+    startdate <- lubridate::ymd(startdate, tz = tz)
+    enddate <- lubridate::ymd(enddate, tz = tz)
 
     # if ( is.null(startdate) ) startdate <- lubridate::ymd(range(sensor$data$datetime)[1])
     # if ( is.null(enddate) ) enddate <- lubridate::ymd(range(sensor$data$datetime)[2])
@@ -23,7 +23,7 @@ shiny_getNOAA <-
 
     timeRange <- range(siteData$date)
     logger.trace("windData goes from %s to %s local time",
-                 strftime(timeRange[1]),
-                 strftime(timeRange[2]))
+                 strftime(timeRange[1], tz = tz),
+                 strftime(timeRange[2], tz = tz))
     return(siteData)
   }

@@ -1,14 +1,14 @@
 version: '2'
 services:
    shiny:
-      container_name: airsensor-shiny-test
-      image: airsensor-shiny-test
-      ports: 
+      container_name: airsensor-dataviewer-test
+      image: airsensor-dataviewer-test
+      ports:
           - "6709:3838"
-      volumes: 
-          - /var/www/tools.mazamascience.com/html/logs/airsensor-shiny/test/app:/var/log/shiny-server/
+      volumes:
+          - /var/www/tools.mazamascience.com/html/logs/airsensor-dataviewer/test/app:/var/log/shiny-server/
       restart: unless-stopped
-  
+
 #networks:
 #  custom:
 #    driver: bridge

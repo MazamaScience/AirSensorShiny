@@ -1,11 +1,20 @@
-library(futile.logger)
-library(MazamaCoreUtils)
-library(AirSensor)
-library(PWFSLSmoke)
-library(AirMonitorPlots)
-library(worldmet)
-library(future)
-library(promises)
+#' Global
+#' Used to define global variables and loading
+#'
+
+# Load the libraries
+suppressPackageStartupMessages({
+library(futile.logger) # logging
+library(MazamaCoreUtils) # Core
+library(AirSensor) # AirSensor duh
+library(PWFSLSmoke) # Monitors
+library(AirMonitorPlots) # Plotting Extension
+library(ggplot2)
+library(plotly)
+library(worldmet) # Wind Info
+library(future) # Async
+library(promises) # Async
+})
 
 # ----- Set up logging ---------------------------------------------------------
 if ( interactive() ) { # Running from RStudio
@@ -37,19 +46,27 @@ future::plan(future::multiprocess)
 
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
+rm_invalid <- function(x) {
+  sensor_filterMeta(x, !is.na(communityRegion))
+}
+
 # Instantiate Sensor information
-INIT_SENSORS <- AirSensor::sensor_load(days = 1)
+INIT_SENSORS <- rm_invalid(AirSensor::sensor_load(days = 5))
+
 SENSOR_LABELS <- INIT_SENSORS$meta$monitorID
 SENSOR_COMMUNITIES <- unique(INIT_SENSORS$meta$communityRegion)
 
 PAS <- AirSensor::pas_load()
 
-# Version
-VERSION <<- "0.9 (beta)"
+# Global Version
+# NOTE: Update this via the Makefile -- configure_app will keep all versions
+#       across docker, make, and app the same.
+VERSION <<- "0.9.4"
+
+TZ <- 'America/Los_Angeles'
 
 # Enable Bookmarks / state restoration
 shiny::enableBookmarking(store = "url")
-
 
 # Helpful conversion list
 com_id  <-
@@ -69,6 +86,7 @@ com_id  <-
   "SCHS" = "Sycamore Canyon",
   "SCTV" = "Temescal Valley"
 )
+
 # 4 Digit code to Community name
 id2com <- function(X) {
   unlist(lapply(X, function(x) {ifelse(is.null(com_id[[x]]), x, levels(com_id[[x]]))}))
