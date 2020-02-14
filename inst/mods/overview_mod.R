@@ -81,7 +81,9 @@ overview_mod <- function(input, output, session) {
             shiny_sensorLeaflet( sensor = s,
                                  startdate = sd,
                                  enddate = ed,
-                                 maptype = "OpenStreetMap" )
+                                 maptype = "OpenStreetMap",
+                                 radius = 9,
+                                 opacity = 0.95 )
           },
           error = function (e) {
             logger.error(e)
@@ -128,14 +130,14 @@ overview_mod <- function(input, output, session) {
         expr = {
           print(input$leaflet_marker_click)
           sensor_label <- input$leaflet_marker_click$id
-          leaflet::leafletProxy("leaflet") %>%
-            leaflet::addCircleMarkers( lng = input$leaflet_marker_click$lng,
-                                       lat = input$leaflet_marker_click$lat,
-                                       radius = 10,
-                                       fillOpacity = 0.95,
-                                       layerId = "tmp",
-                                       color = "#ffa020",
-                                       options = list(leaflet::pathOptions(interactive = FALSE), bubblingMouseEvents = TRUE) )
+          leaflet::leafletProxy("leaflet", data = input$leaflet_marker_click) %>%
+            leaflet::addCircleMarkers( lng = ~lng,
+                                       lat = ~ lat,
+                                       color = '#333334',
+                                       fillColor = '#EABA5E',
+                                       fillOpacity = 1,
+                                       radius = 9, opacity = 0.95,
+                                       weight = 2, layerId  = 'tmp')
           # Handle hightlighted marker re-click
           if ( sensor_label != 'tmp' ) {
             shiny::updateSelectInput(session, "sensor_picker", selected = sensor_label)
@@ -159,14 +161,23 @@ overview_mod <- function(input, output, session) {
         (function(s) {
           tryCatch(
             expr = {
-              leaflet::leafletProxy("leaflet") %>%
-                leaflet::addCircleMarkers( lng = s$meta$longitude,
-                                           lat = s$meta$latitude,
-                                           radius = 10,
-                                           fillOpacity = 0.95,
-                                           layerId = "tmp",
-                                           color = "#ffa020",
-                                           options = list(leaflet::pathOptions(interactive = FALSE)) )
+              leaflet::leafletProxy("leaflet", data = s$meta) %>%
+                leaflet::addCircleMarkers( lng = ~longitude,
+                                           lat = ~latitude,
+                                           color = '#333334',
+                                           fillColor = '#EABA5E',
+                                           fillOpacity = 1,
+                                           radius = 9,
+                                           opacity = 1,
+                                           weight = 2, layerId = 'tmp')
+              # leaflet::leafletProxy("leaflet") %>%
+              #   leaflet::addCircleMarkers( lng = s$meta$longitude,
+              #                              lat = s$meta$latitude,
+              #                              radius = 6,
+              #                              fillOpacity = 1,
+              #                              layerId = input$sensor_picker,
+              #                              color = "#000",
+              #                              options = list(leaflet::pathOptions(interactive = FALSE)) )
             },
             error = function(e) {
               logger.error(e)
