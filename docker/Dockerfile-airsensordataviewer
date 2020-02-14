@@ -1,0 +1,111 @@
+# BASE DOCKER for intended for
+# AirSensor package and  AirSensorShiny App
+
+FROM rocker/shiny:3.6.0
+
+LABEL maintainer="hans@mazamascience.com" \
+      maintainer="jon@mazamascience.com"
+
+LABEL build_date="2020-02-07"
+LABEL version="0.9.4"
+
+LABEL description="AirSensor DataViewer Docker Image"
+
+# Install general libraries
+RUN apt-get update && apt-get install libcurl4-openssl-dev libv8-3.14-dev -y
+
+# Install AirSensor library Dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    gdebi-core \
+    pandoc \
+    pandoc-citeproc \
+    libcurl4-gnutls-dev \
+    libcairo2-dev \
+    libxt-dev \
+    xtail \
+    wget \
+    libudunits2-dev \
+    libssl-dev \
+    libprotobuf-dev \
+    libjq-dev \
+    libxml2-dev \
+    libv8-dev \
+    protobuf-compiler \
+    libgdal-dev \
+    libfreetype6-dev \
+    libmagick++-dev \
+    cargo \
+    libx11-dev \
+    mesa-common-dev \
+    libglu1-mesa-dev \
+    vim
+
+# Create directories for shiny
+RUN mkdir -p /var/lib/shiny-server/bookmarks/shiny
+RUN mkdir -p /var/lib/AirSensorShiny/bookmarks/shiny
+
+# Create directories for AirSensor
+RUN mkdir -p /home/mazama/data/Spatial
+
+# Add CARB spatial data required by AirSensor
+RUN wget -nv http://mazamascience.com/RData/Spatial/CA_AirBasins_01.RData \
+  -O /home/mazama/data/Spatial/CA_AirBasins_01.RData
+
+# Download and install R dependencies
+# NOTE: Each package is installed indiviually to use Image Caching effectively
+RUN install2.r --error -r "https://cran.rstudio.com" shiny
+RUN install2.r --error -r "https://cran.rstudio.com"	V8
+RUN install2.r --error -r "https://cran.rstudio.com"	shinyjs
+RUN install2.r --error -r "https://cran.rstudio.com"	countrycode
+RUN install2.r --error -r "https://cran.rstudio.com"	dplyr
+RUN install2.r --error -r "https://cran.rstudio.com"	dygraphs
+RUN install2.r --error -r "https://cran.rstudio.com"	geosphere
+RUN install2.r --error -r "https://cran.rstudio.com"	geodist
+RUN install2.r --error -r "https://cran.rstudio.com"	GGally
+RUN install2.r --error -r "https://cran.rstudio.com"	ggmap
+RUN install2.r --error -r "https://cran.rstudio.com"	ggplot2
+RUN install2.r --error -r "https://cran.rstudio.com"	httr
+RUN install2.r --error -r "https://cran.rstudio.com"	jsonlite
+RUN install2.r --error -r "https://cran.rstudio.com"	leaflet
+RUN install2.r --error -r "https://cran.rstudio.com"	lubridate
+RUN install2.r --error -r "https://cran.rstudio.com"	MazamaCoreUtils
+RUN install2.r --error -r "https://cran.rstudio.com"	MazamaSpatialUtils
+RUN install2.r --error -r "https://cran.rstudio.com"	plyr
+RUN install2.r --error -r "https://cran.rstudio.com"	plotly
+RUN install2.r --error -r "https://cran.rstudio.com"	PWFSLSmoke
+RUN install2.r --error -r "https://cran.rstudio.com"	RColorBrewer
+RUN install2.r --error -r "https://cran.rstudio.com"	rlang
+RUN install2.r --error -r "https://cran.rstudio.com"	seismicRoll
+RUN install2.r --error -r "https://cran.rstudio.com"	sp
+RUN install2.r --error -r "https://cran.rstudio.com"	stringr
+RUN install2.r --error -r "https://cran.rstudio.com"	tidyr
+RUN install2.r --error -r "https://cran.rstudio.com"	magrittr
+RUN install2.r --error -r "https://cran.rstudio.com"	xts
+RUN install2.r --error -r "https://cran.rstudio.com"	zoo
+RUN install2.r --error -r "https://cran.rstudio.com"	shinythemes
+RUN install2.r --error -r "https://cran.rstudio.com"	worldmet
+RUN install2.r --error -r "https://cran.rstudio.com"	remotes
+RUN install2.r --error -r "https://cran.rstudio.com"	shinyWidgets
+RUN install2.r --error -r "https://cran.rstudio.com"	DT
+RUN install2.r --error -r "https://cran.rstudio.com"	shinybusy
+RUN install2.r --error -r "https://cran.rstudio.com"	shinycssloaders
+RUN install2.r --error -r "https://cran.rstudio.com"	shinytoastr
+RUN install2.r --error -r "https://cran.rstudio.com"	future
+RUN install2.r --error -r "https://cran.rstudio.com"	promises
+RUN install2.r --error -r "https://cran.rstudio.com"	rclipboard
+RUN install2.r --error -r "https://cran.rstudio.com"	htmlwidgets
+
+# Install latest versions of Mazama packages
+RUN installGithub.r \
+	MazamaScience/MazamaCoreUtils \
+	MazamaScience/PWFSLSmoke \
+	MazamaScience/AirMonitorPlots
+
+# Copy the AirSensor package to image
+COPY AirSensor_0.5.18.tar.gz /
+
+# Install the AirSensor package
+RUN R CMD INSTALL AirSensor_0.5.18.tar.gz
+
+

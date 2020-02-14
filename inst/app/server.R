@@ -30,9 +30,9 @@ server <- function(input, output, session) {
     sensor() %...>%
       (function(s) {
         future({
-          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d")
-          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d")
-          shiny_getNOAA(s, sd, ed)
+          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d", tz = TZ)
+          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d", tz = TZ)
+          shiny_getNOAA(s, sd, ed, tz = TZ)
         }) %...!%
           (function(e) {
             logger.error(paste0("\n Download NOAA worldmet - ERROR"))
@@ -104,6 +104,7 @@ server <- function(input, output, session) {
     }
   )
   # On Restore
+  # Note: This updates the values based on the session state saved via the URL and state var
   shiny::onRestored(
     fun = function(state) {
       # restore the panel selections
@@ -142,24 +143,24 @@ server <- function(input, output, session) {
     }
   )
   # Show modal asking to select and sensor/community
-  observeEvent(
-    eventExpr = {input$tab},
-    handlerExpr = {
+  observe( {
       # Popup Message for user if NULL selection
       if ( input$tab != "overview" & input$tab != "anim" ) {
-        if ( is.null(input$`global-sensor_picker`) || input$`global-sensor_picker` == "") {
+        if ( is.null(input$`global-sensor_picker`) || !shiny::isTruthy(input$`global-sensor_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Sensor",
+            text = "A valid sensor selection is required to view this tab.",
             type = "warning",
             closeOnClickOutside = TRUE
           )
         }
       } else if ( input$tab == "anim" ) {
-        if ( is.null(input$`global-community_picker`) || input$`global-community_picker` == "" ) {
+        if ( input$`global-community_picker` == "all" || !shiny::isTruthy(input$`global-community_picker`) ) {
           shinyWidgets::sendSweetAlert(
             session,
             title = "Please Select a Community",
+            text = "A valid community selection is required to view this tab.",
             type = "warning",
             closeOnClickOutside = TRUE
           )
@@ -179,30 +180,34 @@ server <- function(input, output, session) {
 
   # Handle Element hiding based on valid tabs and page
   observeEvent(
-    eventExpr = {input$tab},
+    eventExpr = input$tab,
     handlerExpr = {
-      # switch( as.character(input$tab == "calendar"),
-      #         "TRUE" = shinyjs::hide("global-community_picker", anim = TRUE),
-      #         "FALSE" = shinyjs::show("global-community_picker", anim = TRUE) )
-      switch( as.character(input$tab == "anim"),
-              "TRUE" = shinyjs::hide("global-sensor_picker", anim = TRUE),
-              "FALSE" = shinyjs::show("global-sensor_picker", anim = TRUE) )
+      shiny::req(input$tab)
+      on <- shinyjs::show
+      off <- shinyjs::hide
+      logger.trace(paste0("Tab: ", input$tab))
+      # NOTE: Necessary to reset the elements...
+      on("global-sensor_picker",anim = T)
+      on("global-date_picker",anim = T)
+      on("global-community_picker",anim = T)
+      on("global-lookback_picker", anim = T)
+      # Now flip off
+      if ( input$tab == "anim" ) off("global-sensor_picker", anim = T)
+      if ( input$tab == "calendar" ) off("global-lookback_picker", anim = T)
     }
   )
   observeEvent(
     eventExpr = {input$navbar},
     handlerExpr = {
-      switch( as.character(input$navbar == "latest"),
-              "TRUE" = {
-                shinyjs::hide("global-community_picker", anim = TRUE)
-                shinyjs::hide("global-date_picker", anim = TRUE)
-                shinyjs::hide("global-lookback_picker", anim = TRUE)
-              },
-              "FALSE" = {
-                shinyjs::show("global-community_picker", anim = TRUE)
-                shinyjs::show("global-date_picker", anim = TRUE)
-                shinyjs::show("global-lookback_picker", anim = TRUE)
-              })
-    })
+      shiny::req(input$navbar)
+      on <- shinyjs::show
+      off <- shinyjs::hide
+      logger.trace(paste0("Navbar: ", input$navbar))
+      on("global-date_picker")
+      on("global-lookback_picker")
+      if ( input$navbar == "latest" ) off("global-date_picker", anim = T)
+      if (input$navbar == "latest" ) off("global-lookback_picker", anim = T)
+    }
+  )
 
 }

@@ -45,6 +45,7 @@ latest_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
+            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
                              y = ~pm25_A,
@@ -75,6 +76,7 @@ latest_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
+            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
                              y = ~humidity,
@@ -100,6 +102,7 @@ latest_mod <- function(input, output, session) {
       (function(p) {
         tryCatch(
           expr = {
+            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
                              y = ~temperature,

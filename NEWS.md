@@ -1,3 +1,15 @@
+# AirSensor DataViewer 0.9.X
+
+* Same look - New Great Taste Update!
+* Resturctured directory
+* Refactored all code to utlize Shiny Modules
+* Rewritten to utilize promise/future async evaluation 
+* New overview look
+* New latest data look
+* Updated help html
+* Updated airdatepicker to be inline to avoid weird overlapping UI
+* Resolved timezones*
+
 # AirSensor DataViewer 0.7
 
 * Year 2020(Y2.02K) bug smashed :)

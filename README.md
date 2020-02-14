@@ -1,6 +1,22 @@
-# AirShiny
+# monitor-data #
 
-`An R Shiny web application to process and display PM2.5 data from PurpleAir`
+This directory contains a dockerizable R Shiny web app to process and display
+PurpleAir data accessed with the **AirSensor** package.
+
+## Restart Instructions for a Production Site 
+
+```make production_bounce```
+
+*or, for joule.mazamascience.com:*
+
+```make joule_bounce```
+
+*(Yes, that's it.)*
+
+***
+***
+
+Now for the gory details.
 
 ## Helpful Links
 
@@ -10,17 +26,36 @@
 
 * https://community.rstudio.com/t/best-practices-with-shiny-for-accessing-routinely-updated-external-files/11183
 
-## Desktop setup and testing
+## Running the app from RStudio ##
+
+Inside RStudio you can run the app with:
+
+ * open up `app.R`
+ * click the "Source" button
+
+RStudio will automatically launch the application.
+ 
+## Running the app with Docker ##
 
 To rebuild and redeploy the Shiny app on a desktop machine just type:
 
+On OSX:
+
 ```
+make configure_app_osx
+make desktop_reboot
+```
+
+On Linux:
+
+```
+make configure_app
 make desktop_reboot
 ```
 
 This will use the local web server to display the Shiny app at:
 
-http://localhost:8080/app/
+http://localhost:8080/airsensor-dataviewer/test
 
 Shut the server down when you are finished testing with:
 

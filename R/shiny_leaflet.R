@@ -122,8 +122,7 @@ shiny_leaflet <- function(
 
   # Create leaflet map
   map <-
-    leaflet::leaflet(SPDF)
-
+    leaflet::leaflet(SPDF,padding =100)
   map <-
     leaflet::setView(
       map,

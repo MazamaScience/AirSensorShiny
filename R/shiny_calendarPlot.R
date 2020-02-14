@@ -1,5 +1,5 @@
 shiny_calendarPlot <-
-  function(pat) {
+  function(pat, tz = NULL) {
 
     # ====== TEMPORARY INTERNAL CALENDAR PLOT FUNCTION =========================
     .sensor_calendarPlot <- function(
@@ -7,7 +7,8 @@ shiny_calendarPlot <-
       palette = NULL,
       ncol = 3,
       aspectRatio = 4/5,
-      discrete = TRUE
+      discrete = TRUE,
+      tz = NULL
     ) {
 
       # ----- Validate parameters ----------------------------------------------
@@ -22,7 +23,7 @@ shiny_calendarPlot <-
         stop("Parameter 'sensor' must contain data for only one sensor.")
 
       # Always specify local timezones!
-      timezone <- sensor$meta$timezone
+      timezone <- tz
 
       # Create data frame
       df <- sensor$data
@@ -34,25 +35,16 @@ shiny_calendarPlot <-
           datetime = seq(
             from = as.POSIXct(
               paste0(
-                strftime(
-                  df$datetime,
-                  format = "%Y",
-
-                  tz = timezone)[2],
+                strftime(df$datetime, format = "%Y", tz = timezone)[2],
                 "-01-01"
               ) ,
-              tz = strftime(
-                df$datetime,
-                format = "%Z",
-                tz = timezone)[1]
+              tz = timezone
             ),
             to = as.POSIXct(
               paste0(
-                strftime(
-                  df$datetime,
-                  format = "%Y",
-                  tz = timezone)[2],
-                "-12-31")
+                strftime(df$datetime, format = "%Y", tz = timezone)[2],
+                "-12-31"),
+              tz = timezone
             ),
             by = "1 day"
           )
@@ -63,16 +55,16 @@ shiny_calendarPlot <-
       names(df)[2] <- "pm25"
 
       # Create calendar plot handler data frame
-      df$datetime <- zoo::as.Date(df$datetime)  # format date
-      df$day <- as.numeric(strftime(df$datetime, format = "%d"))
+       df$datetime <- zoo::as.Date(df$datetime)  # format date
+      df$day <- as.numeric(strftime(df$datetime, format = "%d", tz = timezone))
       df$yearmonth <- zoo::as.yearmon(df$datetime)
       df$yearmonthf <- factor(df$yearmonth)
-      df$week <- as.numeric(strftime(df$datetime, format = "%W"))
-      df$year <- as.numeric(strftime(df$datetime, format = "%Y"))
-      df$month <- as.numeric(strftime(df$datetime, format = "%m"))
+      df$week <- as.numeric(strftime(df$datetime, format = "%W", tz = timezone))
+      df$year <- as.numeric(strftime(df$datetime, format = "%Y", tz = timezone))
+      df$month <- as.numeric(strftime(df$datetime, format = "%m", tz = timezone))
       df$monthf <- months.Date(df$datetime, abbreviate = TRUE)
       df$weekdayf <- weekdays.Date(df$datetime, abbreviate = TRUE)
-      df$weekday <- as.numeric(strftime(df$datetime, format = "%d"))
+      df$weekday <- as.numeric(strftime(df$datetime, format = "%d", tz = timezone))
       df$weekd <- ordered(df$weekdayf,
                           levels= c( "Mon",
                                      "Tue",
@@ -179,7 +171,8 @@ shiny_calendarPlot <-
       channel = "ab",
       qc_algorithm = "hourly_AB_01",
       min_count = 20,
-      discrete = TRUE
+      discrete = TRUE,
+      tz = NULL
     ) {
 
       # ----- Validate parameters ----------------------------------------------
@@ -211,7 +204,7 @@ shiny_calendarPlot <-
 
       # ----- Create plot ------------------------------------------------------
 
-      gg <- .sensor_calendarPlot(sensor, palette, ncol, discrete = discrete)
+      gg <- .sensor_calendarPlot(sensor, palette, ncol, discrete = discrete, tz = tz)
 
       # ----- Return -----------------------------------------------------------
 
@@ -223,7 +216,7 @@ shiny_calendarPlot <-
 
     # --- Create an interactive plotly for SHINY! ---
 
-    gg_cal <- .pat_calendarPlot(pat = pat, ncol = 4) + scale_fill_sqamd()
+    gg_cal <- .pat_calendarPlot(pat = pat, ncol = 4, tz = tz) + scale_fill_sqamd()
     PM2.5 <- signif(x = gg_cal$data$pm25, digits = 3)
     gg_cal <- gg_cal + ggplot2::aes(pm = PM2.5)
 

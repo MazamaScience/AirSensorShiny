@@ -147,7 +147,7 @@ shiny_sensorLeaflet <- function(
   # ----- Create the map -------------------------------------------------------
 
   map <-
-    leaflet::leaflet(SPDF) %>%
+    leaflet::leaflet(SPDF, padding = 0, ) %>%
     leaflet::setView(
       lng=mean(lonRange),
       lat=mean(latRange),
@@ -155,17 +155,15 @@ shiny_sensorLeaflet <- function(
     ) %>%
     leaflet::addProviderTiles(providerTiles) %>%
     leaflet::addCircleMarkers(
+      group = ~id2com(communityRegion),
       radius=radius,
       fillColor=cols,
       fillOpacity=opacity,
-      stroke=TRUE,
-      color = "#5863f8",
-      weight = "1",
+      color = "#FFF",
+      opacity = 1,
+      weight = 2,
       label = ~monitorID,
-      layerId = sensor$meta$monitorID,
-      options = leaflet::markerOptions(riseOnHover = TRUE,
-                                       interactive = TRUE,
-                                       keyboard = TRUE, riseOffset = 500)
+      layerId = ~monitorID
     )
 
   # ----- Return ---------------------------------------------------------------
@@ -193,7 +191,10 @@ if ( FALSE ) {
   map <- shiny_sensorLeaflet(
     sensor = sensor,
     startdate = startdate,
-    enddate = enddate
+    enddate = enddate,
+    maptype = "OpenStreetMap",
+    radius = 6,
+    opacity = 0.95,
   )
 
   print(map)

@@ -4,6 +4,7 @@
 MazamaCoreUtils::logger.debug("------ ui() ------")
 ui <- function(request) {
   shiny::fluidPage(
+
     # ------ Panel Module -Column ----------------------------------------------
     shiny::column(
       width = 2,
@@ -13,6 +14,7 @@ ui <- function(request) {
       ),
       shiny::tags$footer(id = "ver", paste0("Version: ", VERSION))
     ),
+
     shiny::navbarPage(
       # ------ Nav Bar ---------------------------------------------------------
       title = tags$b("AirSensor DataViewer (Beta)"),
@@ -23,6 +25,7 @@ ui <- function(request) {
       collapsible = TRUE,
       position = "fixed-top",
       windowTitle = "AirSensor DataViewer",
+
       # ------ Explore Page ----------------------------------------------------
       shiny::tabPanel(
         title = tags$b("Explore"),
@@ -41,7 +44,7 @@ ui <- function(request) {
                 value = "overview",
                 tags$br(),
                 shiny::column(
-                  width= 12,
+                  width = 12,
                   overview_mod_ui("global"),
                 )
               ),
@@ -54,6 +57,7 @@ ui <- function(request) {
                 shiny::fluidRow(
                   shiny::column(
                     width = 12,
+                    tags$h4("Calendar"),
                     shiny::wellPanel(
                       calendar_mod_ui("global")
                     )
@@ -138,27 +142,18 @@ ui <- function(request) {
 
     # Use ShinyJS
     shinyjs::useShinyjs(debug = TRUE),
+    # Enable the "Share" Clipboard JS
     rclipboard::rclipboardSetup(),
+    # Enable Toastr ntofications
     shinytoastr::useToastr(),
+    # Load the extra JS script
+    shinyjs::extendShinyjs("../www/extra.js"),
 
+    # Other Random CSS
     tags$style(type="text/css", "body {padding-top: 70px;}"),
     tags$style(type="text/css", "footer {padding-left: 5%; color: #808080; font-size: 11px}"),
     tags$style(type="text/css", ".well {background-color: #fff}"),
-    tags$style(type="text/css", "#panel {min-height: 600px; min-width:236px;}"),
-    tags$head(
-      tags$script(
-        'var dimension = [0, 0];
-         $(document).on("shiny:connected", function(e) {
-            dimension[0] = window.innerWidth;
-            dimension[1] = window.innerHeight;
-            Shiny.onInputChange("dimension", dimension);
-        });
-        $(window).resize(function(e) {
-            dimension[0] = window.innerWidth;
-            dimension[1] = window.innerHeight;
-            Shiny.onInputChange("dimension", dimension);
-        });'
-      )
-    ),
+    tags$style(type="text/css", "#panel {min-width:200px;}"),
+    tags$style(type = "text/css", "#global-leaflet {height: calc(80vh) !important;}"),
   )
 }

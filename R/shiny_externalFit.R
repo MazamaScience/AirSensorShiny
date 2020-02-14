@@ -56,7 +56,8 @@ shiny_externalFit <-
   channel = "ab",
   replaceOutliers = TRUE,
   qc_algorithm = "hourly_AB_01",
-  min_count = 20
+  min_count = 20,
+  tz = NULL
 ) {
 
   logger.debug('----- shiny_externalFit() -----')
@@ -132,7 +133,7 @@ shiny_externalFit <-
 
   if ( showPlot ) {
 
-    timezone <- sensor$meta$timezone[1]
+    timezone <- tz
     year <- strftime(sensor$data$datetime[1], "%Y", tz=timezone)
 
     # LH Linear regression plot
