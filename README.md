@@ -1,3 +1,19 @@
+# monitor-data #
+
+This directory contains a dockerizable R Shiny web app to process and display
+PurpleAir data accessed with the **AirSensor** package.
+
+## Restart Instructions for a Production Site
+
+```make production_bounce```
+
+*(Yes, that's it.)*
+
+***
+***
+
+Now for the gory details.
+
 # AirShiny
 
 `An R Shiny web application to process and display PM2.5 data from PurpleAir`
