@@ -17,7 +17,7 @@ AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
 
 # Run the shiny app
 shiny::shinyAppDir(
-  ui = appFolder,
+  appDir = appFolder,
   options = list(
     # NOTE:  Options and defaults from ?shiny::runApp
     # port = getOption("shiny.port"),

@@ -39,14 +39,23 @@ RStudio will automatically launch the application.
 
 To rebuild and redeploy the Shiny app on a desktop machine just type:
 
+On OSX:
+
 ```
 make configure_app_osx
 make desktop_reboot
 ```
 
+On Linux:
+
+```
+make configure_app
+make desktop_reboot
+```
+
 This will use the local web server to display the Shiny app at:
 
-http://localhost:8080/app/
+http://localhost:8080/airsensor-dataviewer/test
 
 Shut the server down when you are finished testing with:
 

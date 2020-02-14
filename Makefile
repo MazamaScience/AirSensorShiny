@@ -52,6 +52,7 @@ configure_app:
 	sed -i 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer # Docker Image Version
 	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test # Docker Test Build Image Version
 	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1 # Docker V1 Build Image Version
+	sed -i 's%location /.*/ {%location /$(SERVICE_PATH_TEST)/ {%' shiny-server.conf
 
 # OSX -- Ugh!
 # https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed
@@ -60,6 +61,7 @@ configure_app_osx:
 	sed -i '' 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
 	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
 	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
+	sed -i '' 's%location /.*/ {%location /$(SERVICE_PATH_TEST)/ {%' shiny-server.conf
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
@@ -90,6 +92,7 @@ desktop_reboot: desktop_build desktop_bounce
 # AirSensordataviewer TEST version --------------------------------------------------
 
 test_build: configure_app
+	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH_TEST)\/ {%' shiny-server.conf
 	-mkdir airsensordataviewer/test
 	docker build -t airsensor-dataviewer-test:$(VERSION) \
 		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
@@ -125,6 +128,7 @@ test_reboot: test_build test_bounce
 # AirSensordataviewer JOULE version --------------------------------------------------
 
 joule_build: configure_app
+	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH_TEST)\/ {%' shiny-server.conf
 	-mkdir airsensordataviewer/test
 	docker build -t airsensor-dataviewer-test:$(VERSION) \
 		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
