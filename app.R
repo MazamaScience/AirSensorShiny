@@ -8,9 +8,9 @@ appFolder = 'inst/app'
 R_files <- list.files('R', pattern = '^shiny_.+\\.R', full.names = TRUE)
 lapply(R_files,  source)
 
-# Load Shiny UI modules
-module_files <- list.files('inst/mods', full.names = TRUE)
-lapply(module_files, source)
+## Load Shiny UI modules
+#module_files <- list.files('inst/mods', full.names = TRUE)
+#lapply(module_files, source)
 
 # Set data archive URL
 AirSensor::setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
@@ -28,3 +28,4 @@ shiny::shinyAppDir(
     # test.mode = getOption("shiny.testmode", FALSE)
   )
 )
+
