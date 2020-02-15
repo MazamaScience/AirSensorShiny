@@ -66,15 +66,15 @@ overview_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-overview_mod <- function(input, output, session) {
+overview_mod <- function(input, output, session, sensor, annual_sensors, dates) {
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
-    ed <- dates()$ed
-    sd <- dates()$sd
-    while(!resolved(annual_sensors())) {cat("|")}
+    ed <- dates$ed
+    sd <- dates$sd
+    while(!resolved(annual_sensors)) {cat("|")}
     # For coloring the markers based on the date
-    annual_sensors() %...>%
+    annual_sensors %...>%
       (function(s) {
         tryCatch(
           expr = {
@@ -96,10 +96,10 @@ overview_mod <- function(input, output, session) {
   # Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
     shiny::req(input$sensor_picker)
-    ed <-  dates()$ed
-    sd <- dates()$sd
-    while(!resolved(sensor())) {cat("/")}
-    sensor() %...>%
+    ed <-  dates$ed
+    sd <- dates$sd
+    while(!resolved(sensor)) {cat("/")}
+    sensor %...>%
       (function(s) {
         tryCatch(
           expr = {
@@ -150,34 +150,34 @@ overview_mod <- function(input, output, session) {
     }
   )
   # Update leaflet on sensor pick selection - highlght marker
-  shiny::observeEvent(
-    ignoreNULL = TRUE,
-    ignoreInit = TRUE,
-    eventExpr = {input$sensor_picker; input$date_picker; input$lookback_picker},
-    handlerExpr = {
-      print("Update leaflet marker from sensor picker")
-      while(!resolved(sensor())) {cat("/")}
-      sensor() %...>%
-        (function(s) {
-          tryCatch(
-            expr = {
-              leaflet::leafletProxy("leaflet", data = s$meta) %>%
-                leaflet::addCircleMarkers( lng = ~longitude,
-                                           lat = ~latitude,
-                                           color = '#42434C',
-                                           fillColor = '#EABA5E',
-                                           fillOpacity = 1,
-                                           radius = 9,
-                                           opacity = 1,
-                                           weight = 2, layerId = 'tmp')
-            },
-            error = function(e) {
-              logger.error(e)
-            }
-          )
-        })
-    }
-  )
+  # shiny::observeEvent(
+  #   ignoreNULL = TRUE,
+  #   ignoreInit = TRUE,
+  #   eventExpr = {input$sensor_picker; input$date_picker; input$lookback_picker},
+  #   handlerExpr = {
+  #     print("Update leaflet marker from sensor picker")
+  #     while(!resolved(sensor)) {cat("/")}
+  #     sensor %...>%
+  #       (function(s) {
+  #         tryCatch(
+  #           expr = {
+  #             leaflet::leafletProxy("leaflet", data = s$meta) %>%
+  #               leaflet::addCircleMarkers( lng = ~longitude,
+  #                                          lat = ~latitude,
+  #                                          color = '#42434C',
+  #                                          fillColor = '#EABA5E',
+  #                                          fillOpacity = 1,
+  #                                          radius = 9,
+  #                                          opacity = 1,
+  #                                          weight = 2, layerId = 'tmp')
+  #           },
+  #           error = function(e) {
+  #             logger.error(e)
+  #           }
+  #         )
+  #       })
+  #   }
+  # )
 
   # NOTE: Both events below run the JS code to determine if "dem" html is up or down.
   #       If a sensor is selected, and it is not already up, it is pushed up.
