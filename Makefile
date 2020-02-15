@@ -15,28 +15,33 @@
 #
 # Note that we are proxying from the port exposed in the Dockerfile.
 # 
-# 6700-6709 airsensor ---------------------------------------------------------
+# # 6700-6709 airsensor ---------------------------------------------------------
 # # 6701 -- v1 operational
 # # 6709 -- test
-#  <Proxy *>
-#    Allow from localhost
-#  </Proxy>
 #
 # RewriteEngine on
+# 
 # RewriteCond %{HTTP:Upgrade} =websocket
 # RewriteRule /airsensor-test/(.*) ws://localhost:6709/$1 [P,L]
 # RewriteCond %{HTTP:Upgrade} !=websocket
 # RewriteRule /airsensor-test/(.*) http://localhost:6709/$1 [P,L]
+#
 # ProxyPass /airsensor-test/ http://localhost:6709/
 # ProxyPassReverse /airsensor-test/ http://localhost:6709/
 #
-# Header edit Location ^/ /airsensor-test/
-# ProxyRequests Off
-#
+# # Version 0.9 which should end up as version 1.0
+# RewriteCond %{HTTP:Upgrade} =websocket
+# RewriteRule /airsensor-dataviewer/v1/(.*) ws://localhost:6701/airsensor-dataviewer/v1/$1 [P,L]
+# RewriteCond %{HTTP:Upgrade} !=websocket
+# RewriteRule /airsensor-dataviewer/v1/(.*) http://localhost:6701/airsensor-dataviewer/v1/$1 [P,L]
+# 
+# ProxyPass /airsensor-dataviewer/v1/ http://localhost:6701/airsensor-dataviewer/v1/
+# ProxyPassReverse /airsensor-dataviewer/v1/ http://localhost:6701/airsensor-dataviewer/v1/
+# # ----------------------------------------------------------------------------
 #
 # Test these settings on CentOS with:    "sudo apachectl configtest"
 # Reload these settings on CentOS with:  "sudo apachectl graceful"
-#
+
 
 # NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile
 SERVICE_PATH=airsensor-dataviewer/v1
@@ -52,7 +57,7 @@ clean:
 
 # Update the app version inline (-i) with Makefile version
 configure_app:
-	sed -i 's%VERSION <<- ".*"%VERSION <<- "$(VERSION)"%' inst/app/global.R # Shiny App Version
+	sed -i 's%VERSION <- ".*"%VERSION <- "$(VERSION)"%' inst/app/global.R # Shiny App Version
 	sed -i 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer # Docker Image Version
 	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile # Docker V1 Build Image Version
 	sed -i 's%location /.*/ {%location /$(SERVICE_PATH_TEST)/ {%' shiny-server.conf
@@ -91,47 +96,45 @@ desktop_bounce: desktop_down desktop_up
 desktop_reboot: desktop_build desktop_bounce
 
 
-# # AirSensordataviewer TEST version --------------------------------------------------
+# AirSensordataviewer TEST version --------------------------------------------------
 
-# test_build: configure_app
-# 	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH_TEST)\/ {%' shiny-server.conf
-# 	###-mkdir airsensordataviewer/test
-# 	docker build -t airsensor-dataviewer-test:$(VERSION) \
-# 		-t airsensor-dataviewer-test:latest -f docker/Dockerfile .
+test_build: configure_app
+	sed -i 's%location /.*/ {%location /$(SERVICE_PATH_TEST)/ {%' shiny-server.conf
+	docker build -t airsensor-dataviewer-test:$(VERSION) \
+		-t airsensor-dataviewer-test:latest -f docker/Dockerfile .
 
-# test_up:
-# 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airsensordataviewertest up -d
+test_up:
+	docker-compose -f docker/docker-compose-test.yml \
+		-p airsensordataviewertest up -d
 
-# test_down:
-# 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airsensordataviewertest down
+test_down:
+	docker-compose -f docker/docker-compose-test.yml \
+		-p airsensordataviewertest down
 
-# test_container_logs:
-# 	docker-compose -f docker/docker-compose-test.yml \
-# 		-p airsensordataviewertest logs
+test_container_logs:
+	docker-compose -f docker/docker-compose-test.yml \
+		-p airsensordataviewertest logs
 
-# test_trace_log:
-# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
+test_trace_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
 
-# test_debug_log:
-# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
+test_debug_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
 
-# test_info_log:
-# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
+test_info_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
 
-# test_error_log:
-# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
+test_error_log:
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
 
-# test_bounce: test_down test_up
+test_bounce: test_down test_up
 
-# test_reboot: test_build test_bounce
+test_reboot: test_build test_bounce
 
 # AirSensordataviewer JOULE version --------------------------------------------------
 
 joule_build: configure_app
-	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH)\/ {%' shiny-server.conf
-	###-mkdir airsensordataviewer/v1
+	sed -i 's%location /.*/ {%location /$(SERVICE_PATH)/ {%' shiny-server.conf
 	docker build -t airsensor-dataviewer-v1:$(VERSION) \
 		-t airsensor-dataviewer-v1:latest -f docker/Dockerfile .
 
