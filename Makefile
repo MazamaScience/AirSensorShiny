@@ -91,41 +91,41 @@ desktop_bounce: desktop_down desktop_up
 desktop_reboot: desktop_build desktop_bounce
 
 
-# AirSensordataviewer TEST version --------------------------------------------------
+# # AirSensordataviewer TEST version --------------------------------------------------
 
-test_build: configure_app
-	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH_TEST)\/ {%' shiny-server.conf
-	###-mkdir airsensordataviewer/test
-	docker build -t airsensor-dataviewer-test:$(VERSION) \
-		-t airsensor-dataviewer-test:latest -f docker/Dockerfile .
+# test_build: configure_app
+# 	sed -i 's%location\/.*\/ {%location\/$(SERVICE_PATH_TEST)\/ {%' shiny-server.conf
+# 	###-mkdir airsensordataviewer/test
+# 	docker build -t airsensor-dataviewer-test:$(VERSION) \
+# 		-t airsensor-dataviewer-test:latest -f docker/Dockerfile .
 
-test_up:
-	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensordataviewertest up -d
+# test_up:
+# 	docker-compose -f docker/docker-compose-test.yml \
+# 		-p airsensordataviewertest up -d
 
-test_down:
-	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensordataviewertest down
+# test_down:
+# 	docker-compose -f docker/docker-compose-test.yml \
+# 		-p airsensordataviewertest down
 
-test_container_logs:
-	docker-compose -f docker/docker-compose-test.yml \
-		-p airsensordataviewertest logs
+# test_container_logs:
+# 	docker-compose -f docker/docker-compose-test.yml \
+# 		-p airsensordataviewertest logs
 
-test_trace_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
+# test_trace_log:
+# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
 
-test_debug_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
+# test_debug_log:
+# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
 
-test_info_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
+# test_info_log:
+# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
 
-test_error_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
+# test_error_log:
+# 	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
 
-test_bounce: test_down test_up
+# test_bounce: test_down test_up
 
-test_reboot: test_build test_bounce
+# test_reboot: test_build test_bounce
 
 # AirSensordataviewer JOULE version --------------------------------------------------
 
