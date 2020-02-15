@@ -6,22 +6,11 @@
 MazamaCoreUtils::logger.debug("----- server() ------")
 server <- function(input, output, session) {
 
-################################################################################
-################################################################################
-################################################################################
-# Load Shiny UI modules
-module_files <- list.files('inst/mods', full.names = TRUE)
-lapply(module_files, source, local = TRUE)
-################################################################################
-################################################################################
-################################################################################
-
-
   # Reactive SENSOR loading.
   # NOTE: - VIP - (Very Important Program)
   #       Creates the sensor monitor object from the reactive PAT promise context.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  sensor <- reactive({
+  sensor <<- reactive({
     pat() %...>%
       (function(p) {
         future({
@@ -37,7 +26,7 @@ lapply(module_files, source, local = TRUE)
   # Reactive NOAA loading.
   # NOTE: Creates the NOAA data from the worldmet package.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  noaa <- reactive({
+  noaa <<- reactive({
     sensor() %...>%
       (function(s) {
         future({
@@ -52,7 +41,7 @@ lapply(module_files, source, local = TRUE)
       })
   })
 
-  tab <- eventReactive(input$tab, input$tab)
+  tab <<- eventReactive(input$tab, input$tab)
 
   # Module Call
   ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \

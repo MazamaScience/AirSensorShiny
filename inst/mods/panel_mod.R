@@ -83,7 +83,7 @@ panel_mod_ui <- function(id) {
 #' @param active
 panel_mod <- function(input, output, session) {
 
-  dates <- eventReactive(
+  dates <<- eventReactive(
     eventExpr = {
       input$date_picker; input$lookback_picker
     },
@@ -99,7 +99,7 @@ panel_mod <- function(input, output, session) {
   #       Downloads the PAT in range of selected date picker and lookback from
   #       the set archive server, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  pat <- eventReactive(
+  pat <<- eventReactive(
     ignoreNULL = TRUE,
     eventExpr = {
       input$sensor_picker; input$date_picker; input$lookback_picker
@@ -136,7 +136,7 @@ panel_mod <- function(input, output, session) {
   #       picker year stamp, global.
   # NOTE: Asynchronous following Future/Promise protocol to reduce concurrent
   #       event call cost.
-  annual_pat <- eventReactive(
+  annual_pat <<- eventReactive(
     eventExpr = {
       input$sensor_picker;# input$date_picker; input$lookback_picker
     },
@@ -168,7 +168,7 @@ panel_mod <- function(input, output, session) {
   #       Downloads the annual sensor monitor object from the selected the input
   #       date picker year stamp, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  annual_sensors <- eventReactive(
+  annual_sensors <<- eventReactive(
     ignoreNULL = TRUE,
     eventExpr = {
       input$date_picker
