@@ -57,9 +57,9 @@ configure_app:
 # https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed
 configure_app_osx:
 	sed -i '' 's%VERSION <- ".*"%VERSION <- "$(VERSION)"%' inst/app/global.R
-	sed -i '' s%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
+	sed -i '' 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
+	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
+	sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
@@ -123,33 +123,33 @@ test_reboot: test_build test_down test_up
 # AirSensordataviewer JOULE version --------------------------------------------------
 
 joule_build:configure_app
-	-mkdir airsensordataviewer/test
-	docker build -t airsensor-dataviewer-test:$(VERSION) \
-		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
+	-mkdir airsensordataviewer/v1
+	docker build -t airsensor-dataviewer-v1:$(VERSION) \
+		-t airsensor-dataviewer-v1:latest -f docker/Dockerfile-v1 .
 
 joule_up:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest up -d
+	docker-compose -f docker/docker-compose-v1_joule.yml \
+		-p airsensordataviewerv1 up -d
 
 joule_down:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest down
+	docker-compose -f docker/docker-compose-v1_joule.yml \
+		-p airsensordataviewerv1 down
 
 joule_container_logs:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest logs
+	docker-compose -f docker/docker-compose-v1_joule.yml \
+		-p airsensordataviewerv1 logs
 
 joule_trace_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/TRACE.log
 
 joule_debug_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/DEBUG.log
 
 joule_info_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/INFO.log
 
 joule_error_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/ERROR.log
 
 joule_bounce: joule_down joule_up
 
