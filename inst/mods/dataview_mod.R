@@ -18,7 +18,7 @@ dataview_mod_ui <- function(id) {
   )
 }
 
-dataview_mod <- function(input, output, session) {
+dataview_mod <- function(input, output, session, pat) {
 
   output$meta_table <- shiny::renderTable({
     shiny::req(input$sensor_picker)

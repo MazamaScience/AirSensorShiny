@@ -43,7 +43,7 @@ comparison_mod_ui <- function(id) {
   )
 }
 
-comparison_mod <- function(input, output, session) {
+comparison_mod <- function(input, output, session, pat, sensor) {
 
   # NOTE: An error exists inthe code to where selecting different datetime/lookback
   #       on this tab resets the sensor_picker and breaks the page.

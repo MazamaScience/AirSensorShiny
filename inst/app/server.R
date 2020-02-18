@@ -6,9 +6,11 @@
 MazamaCoreUtils::logger.debug("----- server() ------")
 server <- function(input, output, session) {
 
-  selected <- reactiveVal()
+  selected_sensor <- reactiveVal()
+  selected_community <- reactiveVal()
   dates <- reactiveVal()
   pat <- reactiveVal()
+  sensor <- reactiveVal()
   year <- reactiveVal()
   annual_sensors <- reactiveVal()
   annual_pat <- reactiveVal()
@@ -46,14 +48,40 @@ server <- function(input, output, session) {
     pat = reactive(pat())
   )
 
+  shiny::callModule(
+    pattern_mod,
+    "global",
+    sensor = reactive(sensor()),
+    noaa = reactive(noaa())
+  )
+
+
+  shiny::callModule(
+    comparison_mod,
+    "global",
+    pat = reactive(pat()),
+    sensor = reactive(sensor())
+  )
+
+  shiny::callModule(
+    video_mod,
+    "global"
+  )
+
+  shiny::callModule(
+    dataview_mod,
+    "global",
+    pat = reactive(pat())
+  )
+
   # Set Sensor Selection on sensor picker update
   observeEvent(
     {
       input$`global-sensor_picker`
     },
     {
-      selected(input$`global-sensor_picker`)
-      logger.trace(paste0("Selected Sensor: ", selected()))
+      selected_sensor(input$`global-sensor_picker`)
+      logger.trace(paste0("Selected Sensor: ", selected_sensor()))
     }
   )
   # Set Dates on lookback/date picker update
@@ -74,11 +102,11 @@ server <- function(input, output, session) {
 
   observeEvent(
     {
-      selected()
+      selected_sensor()
       dates()
     },
     {
-      label <- selected()
+      label <- selected_sensor()
       sd <- dates()$sd
       ed <- dates()$ed
       p <- future({
@@ -90,8 +118,13 @@ server <- function(input, output, session) {
     }
   )
 
-  observe({
-
+  observeEvent({pat()}, {
+    pat <- value(pat())
+    sensor(
+      future({
+        tryCatch(pat_createAirSensor(pat), error = function(e) e)
+      })
+    )
   })
 
   observeEvent(
@@ -102,7 +135,7 @@ server <- function(input, output, session) {
       datestamp <- lubridate::year(dates()$ed)
       annual_sensors(
         future({
-          sensor_loadYear(datestamp = datestamp)
+          tryCatch(sensor_loadYear(datestamp = datestamp), error = function(e) e)
           })
       )
       logger.trace(paste0("Annual Sensors: ", str(value(annual_sensors()))))
@@ -111,21 +144,36 @@ server <- function(input, output, session) {
   observeEvent(
     {
       dates()
-      selected()
+      selected_sensor()
     },
     {
 
-      label <- selected()
+      label <- selected_sensor()
       sd <- as.numeric(strftime(dates()$sd, '%Y0101'))
       ed <- as.numeric(strftime(dates()$ed, '%Y1231'))
       annual_pat(
         future({
           setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-          pat_load(label, sd, ed)
+          tryCatch(pat_load(label, sd, ed), error = function(e) e)
         })
       )
     }
   )
+
+  observeEvent({
+    sensor()
+  }, {
+    sensor <- value(sensor())
+    sd <- dates()$sd
+    ed <- dates()$ed
+    noaa(
+      future({
+        tryCatch(shiny_getNOAA(sensor, sd, ed, tz = TZ), error = function(e) e)
+      })
+    )
+  })
+
+  observeEvent({input$`global-community_picker`}, {selected_community(input$`global-community_picker`)})
 
 
 

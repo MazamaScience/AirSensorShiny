@@ -30,7 +30,7 @@ pattern_mod_ui <- function(id) {
   )
 }
 
-pattern_mod <- function(input, output, session) {
+pattern_mod <- function(input, output, session, sensor, noaa) {
 
   output$daily_pattern_plot <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
