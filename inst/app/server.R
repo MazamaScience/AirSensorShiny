@@ -6,42 +6,43 @@
 MazamaCoreUtils::logger.debug("----- server() ------")
 server <- function(input, output, session) {
 
+
   # Reactive SENSOR loading.
   # NOTE: - VIP - (Very Important Program)
   #       Creates the sensor monitor object from the reactive PAT promise context.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  sensor <<- reactive({
-    pat() %...>%
-      (function(p) {
-        future({
-          pat_createAirSensor(p)
-        }) %...!%
-          (function(e) {
-            logger.error(paste0("\n Create AirSensor - ERROR"))
-            return(PWFSLSmoke::createEmptyMonitor())
-          })
-      })
-  })
-
-  # Reactive NOAA loading.
-  # NOTE: Creates the NOAA data from the worldmet package.
-  # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  noaa <<- reactive({
-    sensor() %...>%
-      (function(s) {
-        future({
-          sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d", tz = TZ)
-          ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d", tz = TZ)
-          shiny_getNOAA(s, sd, ed, tz = TZ)
-        }) %...!%
-          (function(e) {
-            logger.error(paste0("\n Download NOAA worldmet - ERROR"))
-            return(NULL)
-          })
-      })
-  })
-
-  tab <<- eventReactive(input$tab, input$tab)
+  # sensor <<- reactive({
+  #   pat() %...>%
+  #     (function(p) {
+  #       future({
+  #         pat_createAirSensor(p)
+  #       }) %...!%
+  #         (function(e) {
+  #           logger.error(paste0("\n Create AirSensor - ERROR"))
+  #           return(PWFSLSmoke::createEmptyMonitor())
+  #         })
+  #     })
+  # })
+  #
+  # # Reactive NOAA loading.
+  # # NOTE: Creates the NOAA data from the worldmet package.
+  # # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
+  # noaa <<- reactive({
+  #   sensor() %...>%
+  #     (function(s) {
+  #       future({
+  #         sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d", tz = TZ)
+  #         ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d", tz = TZ)
+  #         shiny_getNOAA(s, sd, ed, tz = TZ)
+  #       }) %...!%
+  #         (function(e) {
+  #           logger.error(paste0("\n Download NOAA worldmet - ERROR"))
+  #           return(NULL)
+  #         })
+  #     })
+  # })``
+  #
+  # tab <<- eventReactive(input$tab, input$tab)
 
   # Module Call
   ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
@@ -51,16 +52,35 @@ server <- function(input, output, session) {
   ## Raw Module:
   ## Pattern Module:
   ## Data View Module:
-  shiny::callModule(panel_mod,"global")
-  shiny::callModule(overview_mod, "global")
-  shiny::callModule(calendar_mod, "global")
-  shiny::callModule(raw_mod, "global")
-  shiny::callModule(pattern_mod, "global")
-  shiny::callModule(comparison_mod, "global")
-  shiny::callModule(video_mod, "global")
-  shiny::callModule(dataview_mod, "global")
-  shiny::callModule(help_mod, "global")
-  shiny::callModule(latest_mod, "global")
+  panel <- function(annual_sensors) shiny::callModule(panel_mod,"global", annual_sensors)
+  annual_sensors <- reactive({
+    yr <- as.numeric(strftime(input$`global-date_picker`, "%Y", tz = TZ))
+    logger.trace("Load annual sensors: ", yr)
+    future({
+      setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+      rm_invalid(sensor_loadYear(datestamp = yr))
+    }) %...!%
+      (function(e) {
+        logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
+                             "\n Date Selection: ", yr ))
+        shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
+        return(NULL)
+      })
+  })
+
+  observe({
+      annual_sensors() %...>% panel()
+  })
+
+  # shiny::callModule(overview_mod, "global")
+  # shiny::callModule(calendar_mod, "global")
+  # shiny::callModule(raw_mod, "global")
+  # shiny::callModule(pattern_mod, "global")
+  # shiny::callModule(comparison_mod, "global")
+  # shiny::callModule(video_mod, "global")
+  # shiny::callModule(dataview_mod, "global")
+  # shiny::callModule(help_mod, "global")
+  # shiny::callModule(latest_mod, "global")
 
   # ----- Bookmarking -----
   observe({

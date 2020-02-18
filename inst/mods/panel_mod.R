@@ -81,7 +81,7 @@ panel_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-panel_mod <- function(input, output, session) {
+panel_mod <- function(input, output, session, annual_sensors) {
 
   dates <<- eventReactive(
     eventExpr = {
@@ -167,38 +167,44 @@ panel_mod <- function(input, output, session) {
   # NOTE: - VIP -
   #       Downloads the annual sensor monitor object from the selected the input
   #       date picker year stamp, global.
-  # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  annual_sensors <<- eventReactive(
-    ignoreNULL = TRUE,
-    eventExpr = {
-      input$date_picker
-    },
-    valueExpr = {
-      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
-      logger.trace("Load annual sensors: ", yr)
-      future({
-        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        rm_invalid(sensor_loadYear(datestamp = yr))
-      }) %...!%
-        (function(e) {
-          logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
-                               "\n Date Selection: ", yr ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
-          return(NULL)
-        })
-    }
-  )
+  # # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
+  # annual_sensors <<- eventReactive(
+  #   ignoreNULL = TRUE,
+  #   eventExpr = {
+  #     input$date_picker
+  #   },
+  #   valueExpr = {
+  #     yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
+  #     logger.trace("Load annual sensors: ", yr)
+  #     future({
+  #       setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+  #       rm_invalid(sensor_loadYear(datestamp = yr))
+  #     }) %...!%
+  #       (function(e) {
+  #         logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
+  #                              "\n Date Selection: ", yr ))
+  #         shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
+  #         return(NULL)
+  #       })
+  #   }
+  # )
   # NOTE: Avoid erroneous sensor selection options by keeping the map options
   #       and picker options identical.
   observe({
-    annual_sensors() %...>%
-      (function(s) {
-        shinyWidgets::updatePickerInput(
-          session,
-          "sensor_picker",
-          choices = unique(s$meta$monitorID)
-        )
-      })
+    # annual_sensors %...>%
+    #   (function(s) {
+    #     shinyWidgets::updatePickerInput(
+    #       session,
+    #       "sensor_picker",
+    #       choices = unique(s$meta$monitorID)
+    #     )
+    #   })
+
+    shinyWidgets::updatePickerInput(
+      session,
+      "sensor_picker",
+      choices = unique(annual_sensors$meta$monitorID)
+    )
   })
 
   # Handle Downloads
@@ -236,56 +242,53 @@ panel_mod <- function(input, output, session) {
     ignoreInit = TRUE,
     eventExpr = {input$community_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
-      annual_sensors() %...>%
-        (function(s) {
-          tryCatch(
-            expr = {
-              # Calculate the selected community location
-              if ( input$community_picker == 'all' ) {
-                community_sensors <- s$meta
-              } else {
-                community_sensors <- s$meta[id2com(s$meta$communityRegion) == input$community_picker,]
-              }
-              bbox <- lapply( community_sensors[c('longitude', 'latitude')],
-                              function(x) c(min = min(x), max = max(x)) )
-              # Change leaflet bounds to community
-              leaflet::leafletProxy('leaflet') %>%
-                leaflet::fitBounds( lng1 = bbox$longitude[[1]],
-                                    lng2 = bbox$longitude[[2]],
-                                    lat1 = bbox$latitude[[1]],
-                                    lat2 = bbox$latitude[[2]] )
-              # May be useful
-              not_community_sensors <- !(s$meta$monitorID %in% community_sensors$monitorID)
-              # determine what sort of map update to do
-              com <- unique(id2com(s$meta$communityRegion))
-              if ( input$community_picker != "all" ) {
-                # Only show community group
-                leaflet::leafletProxy("leaflet") %>%
-                  leaflet::showGroup(group = com[com == input$community_picker]) %>%
-                  leaflet::hideGroup(group = com[com != input$community_picker]) %>%
-                  leaflet::removeMarker(layerId = "tmp") # Remove the old marker selection
-                # Restrict the available sensors to selected community
-                shinyWidgets::updatePickerInput( session = session,
-                                                 inputId = 'sensor_picker',
-                                                 choices = community_sensors$monitorID,
-                                                 selected = input$sensor_picker )
-              } else {
-                # Show all community groups
-                leaflet::leafletProxy("leaflet") %>%
-                  leaflet::showGroup(group = com) %>%
-                  leaflet::removeMarker(layerId = "tmp") # Remove old marker selection
-                # Redraw selected marker
-                shinyWidgets::updatePickerInput( session = session,
-                                                 inputId = "sensor_picker",
-                                                 choices = community_sensors$monitorID,
-                                                 selected = input$sensor_picker)
-              }
-            },
-            error = function(e) {
-              logger.error(paste0("Error in community pick: ", e))
-            }
-          )
-        })
+      tryCatch(
+        expr = {
+          # Calculate the selected community location
+          if ( input$community_picker == 'all' ) {
+            community_sensors <- annual_sensors$meta
+          } else {
+            community_sensors <- annual_sensors$meta[id2com(annual_sensors$meta$communityRegion) == input$community_picker,]
+          }
+          bbox <- lapply( community_sensors[c('longitude', 'latitude')],
+                          function(x) c(min = min(x), max = max(x)) )
+          # Change leaflet bounds to community
+          leaflet::leafletProxy('leaflet') %>%
+            leaflet::fitBounds( lng1 = bbox$longitude[[1]],
+                                lng2 = bbox$longitude[[2]],
+                                lat1 = bbox$latitude[[1]],
+                                lat2 = bbox$latitude[[2]] )
+          # May be useful
+          not_community_sensors <- !(annual_sensors$meta$monitorID %in% community_sensors$monitorID)
+          # determine what sort of map update to do
+          com <- unique(id2com(annual_sensors$meta$communityRegion))
+          if ( input$community_picker != "all" ) {
+            # Only show community group
+            leaflet::leafletProxy("leaflet") %>%
+              leaflet::showGroup(group = com[com == input$community_picker]) %>%
+              leaflet::hideGroup(group = com[com != input$community_picker]) %>%
+              leaflet::removeMarker(layerId = "tmp") # Remove the old marker selection
+            # Restrict the available sensors to selected community
+            shinyWidgets::updatePickerInput( session = session,
+                                             inputId = 'sensor_picker',
+                                             choices = community_sensors$monitorID,
+                                             selected = input$sensor_picker )
+          } else {
+            # Show all community groups
+            leaflet::leafletProxy("leaflet") %>%
+              leaflet::showGroup(group = com) %>%
+              leaflet::removeMarker(layerId = "tmp") # Remove old marker selection
+            # Redraw selected marker
+            shinyWidgets::updatePickerInput( session = session,
+                                             inputId = "sensor_picker",
+                                             choices = community_sensors$monitorID,
+                                             selected = input$sensor_picker)
+          }
+        },
+        error = function(e) {
+          logger.error(paste0("Error in community pick: ", e))
+        }
+      )
     }
   )
 }
