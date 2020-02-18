@@ -40,7 +40,11 @@ server <- function(input, output, session) {
      annual_pat = reactive(annual_pat())
   )
 
-
+  shiny::callModule(
+    raw_mod,
+    "global",
+    pat = reactive(pat())
+  )
 
   # Set Sensor Selection on sensor picker update
   observeEvent(

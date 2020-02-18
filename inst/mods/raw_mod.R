@@ -46,7 +46,7 @@ raw_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-raw_mod <- function(input, output, session) {
+raw_mod <- function(input, output, session, pat) {
 
   # Multiplot
   output$multi_plot <- shiny::renderPlot({
