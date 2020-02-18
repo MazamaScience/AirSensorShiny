@@ -83,52 +83,56 @@ panel_mod_ui <- function(id) {
 #' @param active
 panel_mod <- function(input, output, session, annual_sensors) {
 
-  dates <<- eventReactive(
-    eventExpr = {
-      input$date_picker; input$lookback_picker
-    },
-    valueExpr = {
-      ed <- lubridate::ymd(input$date_picker, tz = TZ) + lubridate::days(1)
-      sd <- ed - lubridate::days(as.numeric(input$lookback_picker)) - lubridate::days(1)
-      data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
-    }
-  )
+
+
+
+
+  # dates <<- eventReactive(
+  #   eventExpr = {
+  #     input$date_picker; input$lookback_picker
+  #   },
+  #   valueExpr = {
+  #     ed <- lubridate::ymd(input$date_picker, tz = TZ) + lubridate::days(1)
+  #     sd <- ed - lubridate::days(as.numeric(input$lookback_picker)) - lubridate::days(1)
+  #     data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
+  #   }
+  # )
 
   # Reactive PAT loading handler.
   # NOTE: - VIP -
   #       Downloads the PAT in range of selected date picker and lookback from
   #       the set archive server, global.
   # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  pat <<- eventReactive(
-    ignoreNULL = TRUE,
-    eventExpr = {
-      input$sensor_picker; input$date_picker; input$lookback_picker
-    },
-    valueExpr = {
-      shiny::req(input$sensor_picker)
-      label <- input$sensor_picker
-      ed <- dates()$ed
-      sd <- dates()$sd
-      future({
-        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-
-        pat_load( label,
-                  startdate = sd,
-                  enddate = ed )
-      }) %...!%
-        (function(e) {
-          logger.error(paste0( "\n Download PAT - ERROR:",
-                               "\n Input Selection: ", label,
-                               "\n Date Selection: ", sd, "-", ed ))
-          # shinytoastr::toastr_error( title = "Oops! Sensor Unavaliable.",
-          #                            message = "Please try a different sensor or date.",
-          #                            position = "bottom-left",
-          #                            showDuration = 0 )
-          shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();} else {$('#collapse_btn').click();};")
-          return(NULL)
-        })
-    }
-  )
+  # pat <<- eventReactive(
+  #   ignoreNULL = TRUE,
+  #   eventExpr = {
+  #     input$sensor_picker; input$date_picker; input$lookback_picker
+  #   },
+  #   valueExpr = {
+  #     shiny::req(input$sensor_picker)
+  #     label <- input$sensor_picker
+  #     ed <- dates$ed
+  #     sd <- dates$sd
+  #     future({
+  #       setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+  #
+  #       pat_load( label,
+  #                 startdate = sd,
+  #                 enddate = ed )
+  #     }) %...!%
+  #       (function(e) {
+  #         logger.error(paste0( "\n Download PAT - ERROR:",
+  #                              "\n Input Selection: ", label,
+  #                              "\n Date Selection: ", sd, "-", ed ))
+  #         # shinytoastr::toastr_error( title = "Oops! Sensor Unavaliable.",
+  #         #                            message = "Please try a different sensor or date.",
+  #         #                            position = "bottom-left",
+  #         #                            showDuration = 0 )
+  #         shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();} else {$('#collapse_btn').click();};")
+  #         return(NULL)
+  #       })
+  #   }
+  # )
 
   # Reactive Annual PAT loading handler.
   # NOTE: - VIP -
@@ -136,32 +140,32 @@ panel_mod <- function(input, output, session, annual_sensors) {
   #       picker year stamp, global.
   # NOTE: Asynchronous following Future/Promise protocol to reduce concurrent
   #       event call cost.
-  annual_pat <<- eventReactive(
-    eventExpr = {
-      input$sensor_picker;# input$date_picker; input$lookback_picker
-    },
-    valueExpr = {
-      label <- input$sensor_picker
-      logger.trace(paste0("load annual pat: ",label))
-      yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
-      ed <- paste0(yr, "1231")
-      sd <- paste0(yr,"0101")
-      logger.trace(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
-      future({
-        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        pat_load( label,
-                  startdate = as.numeric(stringr::str_remove_all(sd, "-")),
-                  enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
-      }) %...!%
-        (function(e) {
-          logger.error(paste0( "\n Downlaod ANNUAL PAT - ERROR:",
-                               "\n Input Selection: ", label,
-                               "\n Date Selection: ", sd, "-", ed ))
-          shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
-          return(NULL)
-        })
-    }
-  )
+  # annual_pat <<- eventReactive(
+  #   eventExpr = {
+  #     input$sensor_picker;# input$date_picker; input$lookback_picker
+  #   },
+  #   valueExpr = {
+  #     label <- input$sensor_picker
+  #     logger.trace(paste0("load annual pat: ",label))
+  #     yr <- as.numeric(strftime(input$date_picker, "%Y", tz = TZ))
+  #     ed <- paste0(yr, "1231")
+  #     sd <- paste0(yr,"0101")
+  #     logger.trace(paste(label, as.numeric(stringr::str_remove_all(sd, "-")), as.numeric(stringr::str_remove_all(ed, "-")) ,sep= "-"))
+  #     future({
+  #       setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+  #       pat_load( label,
+  #                 startdate = as.numeric(stringr::str_remove_all(sd, "-")),
+  #                 enddate = as.numeric(stringr::str_remove_all(ed, "-")) )
+  #     }) %...!%
+  #       (function(e) {
+  #         logger.error(paste0( "\n Downlaod ANNUAL PAT - ERROR:",
+  #                              "\n Input Selection: ", label,
+  #                              "\n Date Selection: ", sd, "-", ed ))
+  #         shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
+  #         return(NULL)
+  #       })
+  #   }
+  # )
 
   # Reactive Annual SENSOR loading handler.
   # NOTE: - VIP -
@@ -190,35 +194,35 @@ panel_mod <- function(input, output, session, annual_sensors) {
   # )
   # NOTE: Avoid erroneous sensor selection options by keeping the map options
   #       and picker options identical.
-  observe({
-    # annual_sensors %...>%
-    #   (function(s) {
-    #     shinyWidgets::updatePickerInput(
-    #       session,
-    #       "sensor_picker",
-    #       choices = unique(s$meta$monitorID)
-    #     )
-    #   })
-
-    shinyWidgets::updatePickerInput(
-      session,
-      "sensor_picker",
-      choices = unique(annual_sensors$meta$monitorID)
-    )
-  })
+  # observe({
+  #   # annual_sensors %...>%
+  #   #   (function(s) {
+  #   #     shinyWidgets::updatePickerInput(
+  #   #       session,
+  #   #       "sensor_picker",
+  #   #       choices = unique(s$meta$monitorID)
+  #   #     )
+  #   #   })
+  #
+  #   shinyWidgets::updatePickerInput(
+  #     session,
+  #     "sensor_picker",
+  #     choices = unique(annual_sensors$meta$monitorID)
+  #   )
+  # })
 
   # Handle Downloads
   output$download <- shiny::downloadHandler(
     filename = function() {
       label <- input$sensor_picker
-      ed <- dates()$ed
-      sd <- dates()$sd
+      ed <- dates$ed
+      sd <- dates$sd
       paste0(label,sd,"_",ed,".csv")
     },
     content = function(file) {
       label <- input$sensor_picker
-      ed <- dates()$ed
-      sd <- dates()$sd
+      ed <- dates$ed
+      sd <- dates$sd
       tryCatch(
         expr = {
           p <- AirSensor::pat_load(label, sd, ed)
@@ -242,6 +246,7 @@ panel_mod <- function(input, output, session, annual_sensors) {
     ignoreInit = TRUE,
     eventExpr = {input$community_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
+      annual_sensors <- value(annual_sensors())
       tryCatch(
         expr = {
           # Calculate the selected community location
@@ -291,4 +296,31 @@ panel_mod <- function(input, output, session, annual_sensors) {
       )
     }
   )
+
+  # # Use the PAS data frame as the selected() reactive value
+  # selected <- reactive({
+  #   p <- annual_sensors %>% sensor_filterMeta(monitorID == input$sensor_picker)#pas_filter(label == input$selector)
+  #   p$meta
+  # })
+  #
+  # # Observe selected() reactive
+  # observeEvent(
+  #   ignoreNULL = TRUE,
+  #   ignoreInit = TRUE,
+  #   eventExpr = selected(),
+  #   handlerExpr = {
+  #     # Use the reactive selected() filtered PAS location to add selector pas
+  #     # high light marker. Remove old, if any, selected marker.
+  #     leafletProxy("leaflet", data = selected()) %>%
+  #       removeMarker('selected') %>%
+  #       leaflet::addCircleMarkers( lng = ~longitude,
+  #                                  lat = ~ latitude,
+  #                                  color = '#42434C',
+  #                                  fillColor = '#EABA5E',
+  #                                  fillOpacity = 1,
+  #                                  radius = 9, opacity = 0.95,
+  #                                  weight = 2, layerId  = 'selected')
+  #   }
+  # )
+
 }

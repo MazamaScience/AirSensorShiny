@@ -45,7 +45,8 @@ ui <- function(request) {
                 tags$br(),
                 shiny::column(
                   width = 12,
-                  overview_mod_ui("global"),
+                  map_mod_ui("global"),
+                  barplotly_mod_ui("global")
                 )
               ),
               # ---- Calendar tab ----

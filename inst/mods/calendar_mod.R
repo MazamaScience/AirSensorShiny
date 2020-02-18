@@ -17,23 +17,23 @@ calendar_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-calendar_mod <- function(input, output, session) {
+calendar_mod <- function(input, output, session, annual_pat) {
 
   output$calendar <- plotly::renderPlotly({
     shiny::req(input$sensor_picker)
-    while(!resolved(annual_pat())) {cat(".")}
-    annual_pat() %...>%
-      (function(s) {
+
+    annual_pat <- value(annual_pat())
+
         tryCatch(
           expr = {
-            shiny_calendarPlot(s, tz = TZ)
+            shiny_calendarPlot(annual_pat, tz = TZ)
           },
           error = function(e) {
             logger.error(e)
             return(NULL)
           }
         )
-      })
+
 
 
   })
