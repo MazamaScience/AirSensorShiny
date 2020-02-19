@@ -13,15 +13,25 @@ RUN rm -rf /srv/shiny-server/
 
 ################################################################################
 # app
+#
+# Setup for MS Azure
 
-# Copy app
-COPY . /srv/shiny-server
-
-# Allow readable files
-RUN chmod -R 755 /srv/shiny-server/inst/app
+# Instance configuration ---------------
 
 # Port
 EXPOSE 3838
 
+# Set up the app ---------------
+
+# Copy app
+COPY inst /srv/shiny-server/inst
+COPY R /srv/shiny-server/R
+COPY app.R /srv/shiny-server/app.R
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
+
+# Allow readable files
+RUN chmod -R 755 /srv/shiny-server/inst/app
+
 # Run
 CMD ["/usr/bin/shiny-server.sh"]
+

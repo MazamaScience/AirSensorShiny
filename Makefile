@@ -13,6 +13,7 @@
 #
 # 6700-6709 airsensor ---------------------------------------------------------
 # # 6701 -- v1 operational
+# # 6708 -- v8 test2
 # # 6709 -- test
 #  <Proxy *>
 #    Allow from localhost
@@ -34,12 +35,12 @@
 # Reload these settings on CentOS with:  "sudo apachectl graceful"
 #
 
-# NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile-test
-SERVICE_PATH=airsensor-dataviewer/v1
+# NOTE:  The SERVICE_PATH should match that found in Dockerfile and Dockerfile
+SERVICE_PATH=airsensor-dataviewer/v8
 SERVICE_PATH_TEST=airsensor-dataviewer/test
 
 # GLOBAL APP VERSION
-VERSION=0.9.4
+VERSION=0.9.5
 
 # App configuration
 clean:
@@ -49,24 +50,22 @@ clean:
 # Update the app version inline (-i) with Makefile version
 configure_app:
 	sed -i 's%VERSION <<- ".*"%VERSION <<- "$(VERSION)"%' inst/app/global.R # Shiny App Version
-	sed -i 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer # Docker Image Version
-	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test # Docker Test Build Image Version
-	sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1 # Docker V1 Build Image Version
+	###sed -i 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer # Docker Image Version
+	###sed -i 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile
 
 # OSX -- Ugh!
 # https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed
 configure_app_osx:
 	sed -i '' 's%VERSION <- ".*"%VERSION <- "$(VERSION)"%' inst/app/global.R
-	sed -i '' s%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-test
-	sed -i '' s%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile-v1
+	###sed -i '' 's%LABEL version=".*"%LABEL version="$(VERSION)"%' docker/Dockerfile-airsensordataviewer
+	###sed -i '' 's%FROM .*%FROM mazamascience/airsensordataviewer:$(VERSION)%' docker/Dockerfile
 
 # AirSensorShiny DESKTOP version -----------------------------------------------
 
 desktop_build:
 	-mkdir airsensordataviewer/output
 	docker build -t airsensor-dataviewer-desktop:$(VERSION) \
-		-t airsensor-dataviewer-desktop:latest -f docker/Dockerfile-test .
+		-t airsensor-dataviewer-desktop:latest -f docker/Dockerfile .
 
 desktop_up:
 	docker-compose -f docker/docker-compose-desktop.yml \
@@ -90,7 +89,7 @@ desktop_reboot: desktop_build desktop_down desktop_up
 test_build: configure_app
 	-mkdir airsensordataviewer/test
 	docker build -t airsensor-dataviewer-test:$(VERSION) \
-		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
+		-t airsensor-dataviewer-test:latest -f docker/Dockerfile .
 
 test_up:
 	docker-compose -f docker/docker-compose-test.yml \
@@ -122,34 +121,33 @@ test_reboot: test_build test_down test_up
 
 # AirSensordataviewer JOULE version --------------------------------------------------
 
-joule_build:configure_app
-	-mkdir airsensordataviewer/test
-	docker build -t airsensor-dataviewer-test:$(VERSION) \
-		-t airsensor-dataviewer-test:latest -f docker/Dockerfile-test .
+joule_build: configure_app
+	docker build -t airsensor-dataviewer-v8:$(VERSION) \
+		-t airsensor-dataviewer-v8:latest -f docker/Dockerfile .
 
 joule_up:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest up -d
+	docker-compose -f docker/docker-compose-v8_joule.yml \
+		-p airsensordataviewerv8 up -d
 
 joule_down:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest down
+	docker-compose -f docker/docker-compose-v8_joule.yml \
+		-p airsensordataviewerv8 down
 
 joule_container_logs:
-	docker-compose -f docker/docker-compose-test_joule.yml \
-		-p airsensordataviewertest logs
+	docker-compose -f docker/docker-compose-v8_joule.yml \
+		-p airsensordataviewerv8 logs
 
 joule_trace_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/TRACE.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/TRACE.log
 
 joule_debug_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/DEBUG.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/DEBUG.log
 
 joule_info_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/INFO.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/INFO.log
 
 joule_error_log:
-	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH_TEST)/app/ERROR.log
+	cat /var/www/tools.mazamascience.com/html/logs/$(SERVICE_PATH)/app/ERROR.log
 
 joule_bounce: joule_down joule_up
 
