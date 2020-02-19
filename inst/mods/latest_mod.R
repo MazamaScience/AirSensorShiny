@@ -43,8 +43,6 @@ latest_mod <- function(input, output, session) {
   output$latest_pm <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
@@ -62,20 +60,12 @@ latest_mod <- function(input, output, session) {
                               legend = list(orientation = 'h'),
                               xaxis = list(title = "Date", titlefont = list(size = 14.5)),
                               yaxis = list(title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)", titlefont = list(size = 14.5)) )
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$latest_rh <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
@@ -88,20 +78,12 @@ latest_mod <- function(input, output, session) {
               plotly::layout( title = list(text = "Humidity"),
                               xaxis = list(title = "Date", titlefont = list(size = 14.5)),
                               yaxis = list(title = "RH (%)", titlefont = list(size = 14.5)) )
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$latest_temp <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
             plotly::plot_ly( p$data,
                              x = ~datetime,
@@ -114,13 +96,7 @@ latest_mod <- function(input, output, session) {
               plotly::layout( title = list(text = "Temperature"),
                               xaxis = list(title = "Date", titlefont = list(size = 14.5)),
                               yaxis = list(title = "Temperature (F)", titlefont = list(size = 14.5)) )
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
 }

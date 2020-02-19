@@ -11,17 +11,17 @@ video_mod_ui <- function(id) {
   )
 }
 
-video_mod <- function(input, output, session) {
+video_mod <- function(input, output, session, selected_community, dates) {
 
   output$video <- shiny::renderUI({
     shiny::req(input$community_picker)
-    if ( input$community_picker != "all" ) {
-      ed <- input$date_picker
+    if ( selected_community() != "all" ) {
+      ed <- dates()$ed
       baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
-      year    <- strftime(ed, "%Y")
+      year    <- lubridate::year(ed)#strftime(ed, "%Y")
       mm      <- strftime(ed, "%m")
       dd      <- strftime(ed, "%d")
-      id    <- com2id(input$community_picker)
+      id    <- com2id(selected_community())
       url <- paste0(baseUrl, year, "/", id, "_", year, mm, dd, ".mp4" )
       tags$video(
         id = "video",

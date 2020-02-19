@@ -52,8 +52,6 @@ comparison_mod <- function(input, output, session, pat, sensor) {
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-        tryCatch(
-          expr = {
             dr <- range(s$data$datetime)
             nearby <- s$meta$pwfsl_closestMonitorID
             dist <- s$meta$pwfsl_closestDistance
@@ -68,52 +66,29 @@ comparison_mod <- function(input, output, session, pat, sensor) {
               leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
                                      lat = c(mon$meta$latitude,s$meta$latitude),
                                      label = paste0("Distance: ", signif(dist/1000, 2), " km") )
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$sensor_monitor_correlation <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-        tryCatch(
-          expr = {
             shiny_externalFit(sensor = s, tz = TZ)
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$sensor_monitor_comparison <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch(
-        expr = {
           pat_monitorComparison(pat = p)
-        },
-        error = function(e) {
-          logger.error(e)
-          return(NULL)
-        }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$sensor_status_table <- DT::renderDT({
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch( expr = {
           shiny::req(input$sensor_picker)
           DT::datatable(
             shiny_comparisonTable(p),
@@ -123,13 +98,7 @@ comparison_mod <- function(input, output, session, pat, sensor) {
             class = 'cell-border stripe'
           ) %>%
             DT::formatRound(columns = 1, digits = 2)
-        },
-        error = function(e) {
-          logger.error(e)
-          return(NULL)
-        }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
 }

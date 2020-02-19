@@ -24,8 +24,6 @@ dataview_mod <- function(input, output, session, pat) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             data.frame( "Sensor" = p$meta$label,
                         "Community" = p$meta$communityRegion,
                         "Sensor Type" = p$meta$sensorType,
@@ -33,13 +31,7 @@ dataview_mod <- function(input, output, session, pat) {
                         "Latitude" = p$meta$latitude,
                         "State" = p$meta$stateCode,
                         "Country" = p$meta$countryCode )
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   output$data_table <- DT::renderDataTable({
@@ -48,8 +40,6 @@ dataview_mod <- function(input, output, session, pat) {
     # Remove unnecessary columns
     pat() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             data <- p$data[-(6:10)]
             names(data) <- c( "Datetime (UTC)",
                               "PM2.5 Ch. A (\u03bcg / m\u00b)",
@@ -59,13 +49,7 @@ dataview_mod <- function(input, output, session, pat) {
 
             DT::datatable(data, selection = "none", options = list(pageLength = 25) ) %>%
               DT::formatDate(1, method = 'toLocaleString', params = list('en-EN'))
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
 }

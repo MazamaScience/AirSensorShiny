@@ -47,33 +47,23 @@ barplotly_mod_ui <- function(id) {
   )
 }
 
-barplotly_mod <- function(input, output, session, pat, dates) {
+barplotly_mod <- function(input, output, session, sensor, dates) {
 
   #Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
     shiny::req(input$sensor_picker)
     ed <-  dates()$ed
     sd <- dates()$sd
-    pat <- value(pat())
-    sensor <- pat_createAirSensor(pat)
-    # while(!resolved(sensor)) {cat("/")}
-    tryCatch(
-      expr = {
-
-        shiny_barplotly(sensor, sd, ed, tz = TZ)  %>%
+    sensor() %...>%
+      (function(s) {
+        shiny_barplotly(s, sd, ed, tz = TZ)  %>%
           # Hacky JS way to change the cursor back to normal pointer
           htmlwidgets::onRender(
             "function(el, x) {
                   Plotly.d3.select('.cursor-ew-resize').style('cursor', 'default')
                 }"
           )
-      },
-      error = function(e) {
-        logger.error(e)
-        PWFSLSmoke::createEmptyMonitor()
-        NULL
-      }
-    )
+      }) %...!% (function(e) NULL)
   })
   # NOTE: Both events below run the JS code to determine if "dem" html is up or down.
   #       If a sensor is selected, and it is not already up, it is pushed up.

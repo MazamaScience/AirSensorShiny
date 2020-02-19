@@ -53,16 +53,8 @@ raw_mod <- function(input, output, session, pat) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             AirSensor::pat_multiplot(p, columns = 1, timezone = TZ)
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
 
@@ -71,31 +63,15 @@ raw_mod <- function(input, output, session, pat) {
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             shiny_internalFit(p, whichPlot = 'ab', tz = TZ)
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
   # # Channel Correlation plot
   output$ch_correlation_plot <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-        tryCatch(
-          expr = {
             shiny_internalFit(p, whichPlot = 'lm', tz = TZ)
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 }

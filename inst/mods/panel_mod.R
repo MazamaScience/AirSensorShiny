@@ -246,9 +246,8 @@ panel_mod <- function(input, output, session, annual_sensors) {
     ignoreInit = TRUE,
     eventExpr = {input$community_picker; input$lookback_picker; input$date_picker},
     handlerExpr = {
-      annual_sensors <- value(annual_sensors())
-      tryCatch(
-        expr = {
+      annual_sensors() %...>%
+        (function(s) {
           # Calculate the selected community location
           if ( input$community_picker == 'all' ) {
             community_sensors <- annual_sensors$meta
@@ -289,11 +288,7 @@ panel_mod <- function(input, output, session, annual_sensors) {
                                              choices = community_sensors$monitorID,
                                              selected = input$sensor_picker)
           }
-        },
-        error = function(e) {
-          logger.error(paste0("Error in community pick: ", e))
-        }
-      )
+        }) %...!% (function(e) NULL)
     }
   )
 

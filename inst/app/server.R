@@ -11,142 +11,153 @@ server <- function(input, output, session) {
   dates <- reactiveVal()
   pat <- reactiveVal()
   sensor <- reactiveVal()
-  year <- reactiveVal()
   annual_sensors <- reactiveVal()
   annual_pat <- reactiveVal()
   noaa <- reactiveVal()
 
   shiny::callModule(
-    panel_mod,
-    "global",
+    module = panel_mod,
+    id = "global",
     annual_sensors = reactive(annual_sensors())
   )
 
   shiny::callModule(
-    map_mod,
-    "global",
+    module = map_mod,
+    id = "global",
     annual_sensors = reactive(annual_sensors()),
     dates = reactive(dates())
   )
 
   shiny::callModule(
-    barplotly_mod,
-    "global",
-    pat = reactive(pat()),
+    module = barplotly_mod,
+    id = "global",
+    sensor = reactive(sensor()),
     dates = reactive(dates())
   )
 
   shiny::callModule(
-    calendar_mod,
-    "global",
-     annual_pat = reactive(annual_pat())
+    module = calendar_mod,
+    id = "global",
+    annual_pat = reactive(annual_pat())
   )
 
   shiny::callModule(
-    raw_mod,
-    "global",
+    module = raw_mod,
+    id = "global",
     pat = reactive(pat())
   )
 
   shiny::callModule(
-    pattern_mod,
-    "global",
+    module = pattern_mod,
+    id = "global",
     sensor = reactive(sensor()),
     noaa = reactive(noaa())
   )
 
 
   shiny::callModule(
-    comparison_mod,
-    "global",
+    module = comparison_mod,
+    id = "global",
     pat = reactive(pat()),
     sensor = reactive(sensor())
   )
 
   shiny::callModule(
-    video_mod,
-    "global"
+    module = video_mod,
+    id = "global",
+    selected_community = reactive(selected_community()),
+    dates = reactive(dates())
   )
 
   shiny::callModule(
-    dataview_mod,
-    "global",
+    module = dataview_mod,
+    id = "global",
     pat = reactive(pat())
+  )
+
+  shiny::callModule(
+    module = latest_mod,
+    id = "global"
   )
 
   # Set Sensor Selection on sensor picker update
   observeEvent(
-    {
+    eventExpr = {
       input$`global-sensor_picker`
     },
-    {
+    handlerExpr = {
       selected_sensor(input$`global-sensor_picker`)
       logger.trace(paste0("Selected Sensor: ", selected_sensor()))
     }
   )
   # Set Dates on lookback/date picker update
   observeEvent(
-    {
+    eventExpr = {
       input$`global-date_picker`
       input$`global-lookback_picker`
     },
-    {
+    handlerExpr = {
       ed <- lubridate::ymd(input$`global-date_picker`, tz = TZ) + lubridate::days(1)
       sd <- ed - lubridate::days(as.numeric(input$`global-lookback_picker`)) - lubridate::days(1)
-      # df <- data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
-      df <- data.frame('sd' = sd, 'ed' = ed)
-      dates(df)
+      dates(data.frame('sd' = sd, 'ed' = ed))
       logger.trace(paste0("Selected Dates: ", sd, "-", ed))
     }
   )
 
   observeEvent(
-    {
+    eventExpr = {
       selected_sensor()
       dates()
     },
-    {
+    handlerExpr = {
       label <- selected_sensor()
       sd <- dates()$sd
       ed <- dates()$ed
-      p <- future({
-        setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-        tryCatch(pat_load(label, sd, ed), error = function(e) e)
-      })
-      pat(p)
-      logger.trace(paste0("PAT: ", str(value(pat()))))
+      pat(
+        future({
+          setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+          pat_load(label, sd, ed)
+        }) %...!% (function(e) NULL)
+      )
+      logger.trace("PAT Loaded")
     }
   )
 
-  observeEvent({pat()}, {
-    pat <- value(pat())
-    sensor(
-      future({
-        tryCatch(pat_createAirSensor(pat), error = function(e) e)
-      })
-    )
-  })
-
   observeEvent(
-    {
-      dates()
+    eventExpr = {
+      pat()
     },
-    {
-      datestamp <- lubridate::year(dates()$ed)
-      annual_sensors(
-        future({
-          tryCatch(sensor_loadYear(datestamp = datestamp), error = function(e) e)
-          })
-      )
-      logger.trace(paste0("Annual Sensors: ", str(value(annual_sensors()))))
+    handlerExpr = {
+      pat() %...>%
+        (function(p) {
+          sensor(
+            future({
+              pat_createAirSensor(p)
+            }) %...!% (function(e) NULL)
+          )
+        })
     })
 
   observeEvent(
-    {
+    eventExpr = {
+      dates()
+    },
+    handlerExpr = {
+      datestamp <- lubridate::year(dates()$ed)
+      annual_sensors(
+        future({
+          setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
+          sensor_loadYear(datestamp = datestamp)
+        }) %...!% (function(e) NULL)
+      )
+    })
+
+  observeEvent(
+    eventExpr = {
       dates()
       selected_sensor()
     },
-    {
+    handlerExpr = {
 
       label <- selected_sensor()
       sd <- as.numeric(strftime(dates()$sd, '%Y0101'))
@@ -154,143 +165,39 @@ server <- function(input, output, session) {
       annual_pat(
         future({
           setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-          tryCatch(pat_load(label, sd, ed), error = function(e) e)
-        })
+          pat_load(label, sd, ed)
+        }) %...!% (function(e) NULL)
       )
     }
   )
 
-  observeEvent({
-    sensor()
-  }, {
-    sensor <- value(sensor())
-    sd <- dates()$sd
-    ed <- dates()$ed
-    noaa(
-      future({
-        tryCatch(shiny_getNOAA(sensor, sd, ed, tz = TZ), error = function(e) e)
-      })
-    )
-  })
+  observeEvent(
+    eventExpr = {
+      sensor()
+    },
+    handlerExpr = {
+      sd <- dates()$sd
+      ed <- dates()$ed
+      sensor() %...>%
+        (function(s) {
+          noaa(
+            future({
+              shiny_getNOAA(s, sd, ed, tz = TZ)
+            }) %...!% (function(e) NULL)
+          )
+        })
+    }
+  )
 
-  observeEvent({input$`global-community_picker`}, {selected_community(input$`global-community_picker`)})
-
-
-
-
-
-
-  # Reactive SENSOR loading.
-  # NOTE: - VIP - (Very Important Program)
-  #       Creates the sensor monitor object from the reactive PAT promise context.
-  # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  # sensor <<- reactive({
-  #   pat() %...>%
-  #     (function(p) {
-  #       future({
-  #         pat_createAirSensor(p)
-  #       }) %...!%
-  #         (function(e) {
-  #           logger.error(paste0("\n Create AirSensor - ERROR"))
-  #           return(PWFSLSmoke::createEmptyMonitor())
-  #         })
-  #     })
-  # })
-  #
-  # # Reactive NOAA loading.
-  # # NOTE: Creates the NOAA data from the worldmet package.
-  # # NOTE: Asynchronous Future/Promise protocol to reduce concurrent event call cost.
-  # noaa <<- reactive({
-  #   sensor() %...>%
-  #     (function(s) {
-  #       future({
-  #         sd <- strftime(range(s$data$datetime)[1], "%Y-%m-%d", tz = TZ)
-  #         ed <- strftime(range(s$data$datetime)[2], "%Y-%m-%d", tz = TZ)
-  #         shiny_getNOAA(s, sd, ed, tz = TZ)
-  #       }) %...!%
-  #         (function(e) {
-  #           logger.error(paste0("\n Download NOAA worldmet - ERROR"))
-  #           return(NULL)
-  #         })
-  #     })
-  # })``
-  #
-  # tab <<- eventReactive(input$tab, input$tab)
-
-  # Module Call
-  ## Panel Module: Handles Sensor, Community, Date, Lookback, etc., selection \
-  ##               and database loading.
-  ## Overview Module:
-  ## Calendar Module:
-  ## Raw Module:
-  ## Pattern Module:
-  ## Data View Module:
-  # panel <- function(annual_sensors, dates) shiny::callModule(panel_mod, "global", annual_sensors, dates)
-  #
-  # annual_sensors <- reactive({
-  #   yr <- as.numeric(strftime(input$`global-date_picker`, "%Y", tz = TZ))
-  #   logger.trace("Load annual sensors: ", yr)
-  #   future({
-  #     setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-  #     rm_invalid(sensor_loadYear(datestamp = yr))
-  #   })
-  #   # %...!%
-  #   #   (function(e) {
-  #   #     logger.error(paste0( "\n Download ANNUAL SENSORS - ERROR:",
-  #   #                          "\n Date Selection: ", yr ))
-  #   #     shinytoastr::toastr_error("Sensor Unavaliable", position = "bottom-left", showDuration = 0)
-  #   #     return(NULL)
-  #   #   })
-  # })
-  #
-  # dates <- reactive({
-  #   ed <- lubridate::ymd(input$`global-date_picker`, tz = TZ) + lubridate::days(1)
-  #   sd <- ed - lubridate::days(as.numeric(input$`global-lookback_picker`)) - lubridate::days(1)
-  #   data.frame('sd' = as.numeric(strftime(sd, '%Y%m%d', tz = TZ)), 'ed' = as.numeric(strftime(ed, '%Y%m%d', tz = TZ)) )
-  # })
-  #
-  # observe({
-  #    panel(value(annual_sensors()), dates = dates())
-  # })
-  #
-  # overview <- function(annual_sensors, dates) shiny::callModule(overview_mod, "global", annual_sensors, dates)
-  # barplotly <- function(pat, dates) shiny::callModule(barplotly_mod, "global", pat, dates)
-  # selected <- reactive(input$`global-sensor_picker`)
-  #
-  # pat <- eventReactive({input$`global-sensor_picker`; input$`global-date_picker`; input$`global-lookback_picker`},{
-  #   label <- selected()
-  #   sd <- dates()$sd
-  #   ed <- dates()$ed
-  #
-  #
-  #     print("Load PAT")
-  #     setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
-  #     tryCatch(pat_load(label = label, sd, ed), error = function(e) e)
-  #
-  # })
-  #
-  # sensor <- reactive({
-  #   pat <- value(pat())
-  #   pat_createAirSensor(pat)
-  # })
-  #
-  # observe({
-  #   overview(value(annual_sensors()), dates())
-  # })
-  #
-  # observe({
-  #   barplotly(pat(), dates())
-  # })
-
-  # shiny::callModule(overview_mod, "global")
-  # shiny::callModule(calendar_mod, "global")
-  # shiny::callModule(raw_mod, "global")
-  # shiny::callModule(pattern_mod, "global")
-  # shiny::callModule(comparison_mod, "global")
-  # shiny::callModule(video_mod, "global")
-  # shiny::callModule(dataview_mod, "global")
-  # shiny::callModule(help_mod, "global")
-  # shiny::callModule(latest_mod, "global")
+  observeEvent(
+    eventExpr = {
+      input$`global-community_picker`
+    },
+    handlerExpr = {
+      selected_community(input$`global-community_picker`)
+      logger.trace(paste0("Selected Community: ", selected_community()))
+    }
+  )
 
   # ----- Bookmarking -----
   observe({
@@ -373,40 +280,40 @@ server <- function(input, output, session) {
     }
   )
   # Show modal asking to select and sensor/community
-  # observe( {
-  #     # Popup Message for user if NULL selection
-  #     if ( input$tab != "overview" & input$tab != "anim" ) {
-  #       if ( is.null(input$`global-sensor_picker`) || !shiny::isTruthy(input$`global-sensor_picker`) ) {
-  #         shinyWidgets::sendSweetAlert(
-  #           session,
-  #           title = "Please Select a Sensor",
-  #           text = "A valid sensor selection is required to view this tab.",
-  #           type = "warning",
-  #           closeOnClickOutside = TRUE
-  #         )
-  #       }
-  #     } else if ( input$tab == "anim" ) {
-  #       if ( input$`global-community_picker` == "all" || !shiny::isTruthy(input$`global-community_picker`) ) {
-  #         shinyWidgets::sendSweetAlert(
-  #           session,
-  #           title = "Please Select a Community",
-  #           text = "A valid community selection is required to view this tab.",
-  #           type = "warning",
-  #           closeOnClickOutside = TRUE
-  #         )
-  #       }
-  #     }
-  #     # Remind the user that their selection is void
-  #     # pat() %...>%
-  #     #   (function(p) {
-  #     #     if ( !pat_isPat(p) ) {
-  #     #       shinytoastr::toastr_warning( title = "Oops!",
-  #     #                                    message = "Please Select a valid sensor.",
-  #     #                                    position = "bottom-left" )
-  #     #     }
-  #     #   })
-  #   }
-  # )
+  observe( {
+    # Popup Message for user if NULL selection
+    if ( input$tab != "overview" & input$tab != "anim" ) {
+      if ( is.null(input$`global-sensor_picker`) || !shiny::isTruthy(input$`global-sensor_picker`) ) {
+        shinyWidgets::sendSweetAlert(
+          session,
+          title = "Please Select a Sensor",
+          text = "A valid sensor selection is required to view this tab.",
+          type = "warning",
+          closeOnClickOutside = TRUE
+        )
+      }
+    } else if ( input$tab == "anim" ) {
+      if ( input$`global-community_picker` == "all" || !shiny::isTruthy(input$`global-community_picker`) ) {
+        shinyWidgets::sendSweetAlert(
+          session,
+          title = "Please Select a Community",
+          text = "A valid community selection is required to view this tab.",
+          type = "warning",
+          closeOnClickOutside = TRUE
+        )
+      }
+    }
+    # Remind the user that their selection is void
+    pat() %...>%
+      (function(p) {
+        if ( !pat_isPat(p) ) {
+          shinytoastr::toastr_warning( title = "Oops!",
+                                       message = "Please Select a valid sensor.",
+                                       position = "bottom-left" )
+        }
+      })
+  }
+  )
 
   # Handle Element hiding based on valid tabs and page
   observeEvent(

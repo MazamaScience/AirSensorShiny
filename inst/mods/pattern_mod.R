@@ -36,25 +36,15 @@ pattern_mod <- function(input, output, session, sensor, noaa) {
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-        tryCatch(
-          expr = {
             AirMonitorPlots::ggplot_pm25Diurnal( ws_data = s,
                                                  offsetBreaks = TRUE ) +
               AirMonitorPlots::stat_meanByHour(output = "scaqmd")
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
   output$noaa_table <- DT::renderDT({
     shiny::req(input$sensor_picker)
     noaa() %...>%
       (function(n) {
-        tryCatch(
-          expr = {
             data <- shiny_noaa_table(n)
             DT::datatable(
               data = data,
@@ -64,13 +54,7 @@ pattern_mod <- function(input, output, session, sensor, noaa) {
               class = 'cell-border stripe'
             ) %>%
               DT::formatRound(columns = 1, digits = 2)
-          },
-          error = function(e) {
-            logger.error(e)
-            return(NULL)
-          }
-        )
-      })
+      }) %...!% (function(e) NULL)
   })
 
   # NOTE: Look into finding a better method than "nesting" promises
@@ -78,21 +62,11 @@ pattern_mod <- function(input, output, session, sensor, noaa) {
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-            noaa() %...>% ( function(n) {
-              tryCatch(
-                expr = AirSensor::sensor_pollutionRose(s, n),
-                error = function(e) {
-                  shinytoastr::toastr_warning(
-                    title = "Wind Rose Plot Error",
-                    message = "Wind Rose Plot failed to render. Please try a different sensor or date.",
-                    position = "bottom-left"
-                  )
-                  logger.error(e)
-                  return(NULL)
-                }
-              )
-            })
-      })
+            noaa() %...>%
+          (function(n) {
+                AirSensor::sensor_pollutionRose(s, n)
+          })
+      }) %...!% (function(e) NULL)
   })
 
 }
