@@ -18,14 +18,14 @@ help_mod_ui <- function(id) {
   )
 }
 
-help_mod <- function(input, output, session) {
+help_mod <- function(input, output, session, current_tab) {
   # React to help button toggle, returns T/F
   help <- eventReactive(input$help_button, input$help_button)
   output$help <- shiny::renderUI({
     # Switch to different HTML documents depending on current view
     if ( help() ) {
       switch(
-        tab(),
+        current_tab(),
         "overview" = {shiny::includeHTML(file.path(getwd(),"../www/overview_help.html"))},
         "calendar" = {shiny::includeHTML(file.path(getwd(),"../www/calendar_help.html"))},
         "raw" = {shiny::includeHTML(file.path(getwd(),"../www/raw_help.html"))},

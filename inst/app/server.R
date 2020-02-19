@@ -14,6 +14,7 @@ server <- function(input, output, session) {
   annual_sensors <- reactiveVal()
   annual_pat <- reactiveVal()
   noaa <- reactiveVal()
+  current_tab <- reactiveVal()
 
   shiny::callModule(
     module = panel_mod,
@@ -80,6 +81,12 @@ server <- function(input, output, session) {
     id = "global"
   )
 
+  shiny::callModule(
+    module = help_mod,
+    id = "global",
+    current_tab = reactive(current_tab())
+  )
+
   # Set Sensor Selection on sensor picker update
   observeEvent(
     eventExpr = {
@@ -117,9 +124,15 @@ server <- function(input, output, session) {
         future({
           setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
           pat_load(label, sd, ed)
-        }) %...!% (function(e) NULL)
+        }) %...!%
+          (function(e) {
+            # logger.error(paste0( "\n Download PAT - ERROR:",
+            #                      "\n Input Selection: ", label,
+            #                      "\n Date Selection: ", sd, "-", ed ))
+            # shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();} else {$('#collapse_btn').click();};")
+            return(NULL)
+          })
       )
-      logger.trace("PAT Loaded")
     }
   )
 
@@ -196,6 +209,15 @@ server <- function(input, output, session) {
     handlerExpr = {
       selected_community(input$`global-community_picker`)
       logger.trace(paste0("Selected Community: ", selected_community()))
+    }
+  )
+
+  observeEvent(
+    eventExpr = {
+      input$tab
+    },
+    handlerExpr = {
+      current_tab(input$tab)
     }
   )
 
