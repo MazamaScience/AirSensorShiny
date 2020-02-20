@@ -5,6 +5,9 @@
 .Rhistory
 .Rapp.history
 
+# Interactive Log files
+inst/logs/*.log
+
 # Session Data files
 .RData
 
