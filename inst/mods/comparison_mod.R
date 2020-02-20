@@ -45,6 +45,8 @@ comparison_mod_ui <- function(id) {
 
 comparison_mod <- function(input, output, session, pat, sensor) {
 
+  logger.trace("loaded comparison module...")
+
   # NOTE: An error exists inthe code to where selecting different datetime/lookback
   #       on this tab resets the sensor_picker and breaks the page.
   #       likely has to do with the the order or load
@@ -52,53 +54,69 @@ comparison_mod <- function(input, output, session, pat, sensor) {
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-            dr <- range(s$data$datetime)
-            nearby <- s$meta$pwfsl_closestMonitorID
-            dist <- s$meta$pwfsl_closestDistance
-            mon <- PWFSLSmoke::monitor_load( monitorIDs = nearby,
-                                             startdate = dr[1],
-                                             enddate = dr[2] )
-            print(nearby)
-            shiny_sensorLeaflet(s) %>%
-              leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
-                                          lat = mon$meta$latitude,
-                                          label = "Nearest Regulatory Monitor" ) %>%
-              leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
-                                     lat = c(mon$meta$latitude,s$meta$latitude),
-                                     label = paste0("Distance: ", signif(dist/1000, 2), " km") )
-      }) %...!% (function(e) NULL)
+        dr <- range(s$data$datetime)
+        nearby <- s$meta$pwfsl_closestMonitorID
+        dist <- s$meta$pwfsl_closestDistance
+        mon <- PWFSLSmoke::monitor_load( monitorIDs = nearby,
+                                         startdate = dr[1],
+                                         enddate = dr[2] )
+        print(nearby)
+        shiny_sensorLeaflet(s) %>%
+          leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
+                                      lat = mon$meta$latitude,
+                                      label = "Nearest Regulatory Monitor" ) %>%
+          leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
+                                 lat = c(mon$meta$latitude,s$meta$latitude),
+                                 label = paste0("Distance: ", signif(dist/1000, 2), " km") )
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
   output$sensor_monitor_correlation <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
-            shiny_externalFit(sensor = s, tz = TZ)
-      }) %...!% (function(e) NULL)
+        shiny_externalFit(sensor = s, tz = TZ)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
   output$sensor_monitor_comparison <- shiny::renderPlot({
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-          pat_monitorComparison(pat = p)
-      }) %...!% (function(e) NULL)
+        pat_monitorComparison(pat = p)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
   output$sensor_status_table <- DT::renderDT({
     shiny::req(input$sensor_picker)
     pat() %...>%
       (function(p) {
-          shiny::req(input$sensor_picker)
-          DT::datatable(
-            shiny_comparisonTable(p),
-            selection = "none",
-            colnames = "",
-            options = list(dom = 't', bSort = FALSE),
-            class = 'cell-border stripe'
-          ) %>%
-            DT::formatRound(columns = 1, digits = 2)
-      }) %...!% (function(e) NULL)
+        shiny::req(input$sensor_picker)
+        DT::datatable(
+          shiny_comparisonTable(p),
+          selection = "none",
+          colnames = "",
+          options = list(dom = 't', bSort = FALSE),
+          class = 'cell-border stripe'
+        ) %>%
+          DT::formatRound(columns = 1, digits = 2)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
 }

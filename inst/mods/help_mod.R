@@ -19,6 +19,9 @@ help_mod_ui <- function(id) {
 }
 
 help_mod <- function(input, output, session, current_tab) {
+
+  logger.trace("loaded help module...")
+
   # React to help button toggle, returns T/F
   help <- eventReactive(input$help_button, input$help_button)
   output$help <- shiny::renderUI({

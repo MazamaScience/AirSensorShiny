@@ -11,7 +11,7 @@ map_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     leaflet::leafletOutput(
-      outputId = ns("leaflet"),
+      outputId = ns("leaflet")
     ) %>% loadSpinner()
   )
 
@@ -24,6 +24,8 @@ map_mod_ui <- function(id) {
 #' @param session
 #' @param active
 map_mod <- function(input, output, session, annual_sensors, dates, selected_sensor, selected_community) {
+
+  logger.trace("loaded map module...")
 
   # Leaflet map output
   output$leaflet <- leaflet::renderLeaflet({
@@ -39,7 +41,11 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
                              maptype = "OpenStreetMap",
                              radius = 9,
                              opacity = 0.95 )
-      }) %...!% (function(e) NULL)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
 
@@ -57,7 +63,7 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
         leaflet::removeMarker('selected') %>%
         leaflet::addCircleMarkers( lng = ~lng,
                                    lat = ~ lat,
-                                   color = '#42434C',
+                                   color = '#4F5755',
                                    fillColor = '#EABA5E',
                                    fillOpacity = 1,
                                    radius = 9, opacity = 0.95,
@@ -80,13 +86,17 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
             leaflet::removeMarker('selected') %>%
             leaflet::addCircleMarkers( lng = ~longitude,
                                        lat = ~latitude,
-                                       color = '#42434C',
+                                       color = '#4F5755',
                                        fillColor = '#EABA5E',
                                        fillOpacity = 1,
                                        radius = 9,
                                        opacity = 1,
                                        weight = 2, layerId = 'selected')
-        }) %...!% (function(e) NULL)
+        }) %...!%
+        (function(e){
+          logger.error(e)
+          return(NULL)
+        })
     }
   )
 
@@ -133,6 +143,7 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
             },
             error = function(e) {
               logger.error(paste0("Error in community pick: ", e))
+              return(NULL)
             }
           )
         })
@@ -155,7 +166,7 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
                 leaflet::removeMarker('selected') %>%
                 leaflet::addCircleMarkers( lng = ~lng,
                                            lat = ~ lat,
-                                           color = '#42434C',
+                                           color = '#4F5755',
                                            fillColor = '#EABA5E',
                                            fillOpacity = 1,
                                            radius = 9, opacity = 0.95,

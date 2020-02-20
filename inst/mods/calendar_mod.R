@@ -19,16 +19,19 @@ calendar_mod_ui <- function(id) {
 #' @param active
 calendar_mod <- function(input, output, session, annual_pat) {
 
+  logger.trace("loaded calendar module...")
+
   output$calendar <- plotly::renderPlotly({
     shiny::req(annual_pat())
 
     annual_pat() %...>%
       (function(p) {
         shiny_calendarPlot(p, tz = TZ)
-      }) %...!% (function(e) NULL)
-
-
-
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
 }

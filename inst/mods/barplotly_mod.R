@@ -49,6 +49,8 @@ barplotly_mod_ui <- function(id) {
 
 barplotly_mod <- function(input, output, session, sensor, dates) {
 
+  logger.trace("loaded barplot module...")
+
   #Plotly barplot output
   output$barplotly <- plotly::renderPlotly({
     shiny::req(input$sensor_picker)
@@ -63,16 +65,11 @@ barplotly_mod <- function(input, output, session, sensor, dates) {
                   Plotly.d3.select('.cursor-ew-resize').style('cursor', 'default')
                 }"
           )
-      }) %...!% (function(e) NULL)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
-  # NOTE: Both events below run the JS code to determine if "dem" html is up or down.
-  #       If a sensor is selected, and it is not already up, it is pushed up.
-  #       If a community is selected, and it is already up, it is pushed down.
-  # observeEvent(ignoreInit = TRUE, {input$sensor_picker},{
-  #   shinyjs::runjs("if(!$('#dem').hasClass('in')) {$('#collapse_btn').click();};")
-  # })
-  # observeEvent({input$community_picker},{
-  #   shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();};")
-  # })
 
 }

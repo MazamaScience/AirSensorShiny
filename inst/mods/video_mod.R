@@ -13,6 +13,8 @@ video_mod_ui <- function(id) {
 
 video_mod <- function(input, output, session, selected_community, dates) {
 
+  logger.trace("loaded video module...")
+
   output$video <- shiny::renderUI({
     shiny::req(input$community_picker)
     if ( selected_community() != "all" ) {

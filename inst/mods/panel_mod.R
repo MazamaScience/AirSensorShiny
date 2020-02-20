@@ -81,7 +81,15 @@ panel_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-panel_mod <- function(input, output, session, annual_sensors, selected_sensor, selected_community, dates) {
+panel_mod <- function( input,
+                       output,
+                       session,
+                       annual_sensors,
+                       selected_sensor,
+                       selected_community,
+                       dates ) {
+
+  logger.trace("loaded panel module...")
 
   # Handle Downloads
   output$download <- shiny::downloadHandler(

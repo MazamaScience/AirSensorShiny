@@ -48,6 +48,8 @@ raw_mod_ui <- function(id) {
 #' @param active
 raw_mod <- function(input, output, session, pat) {
 
+  logger.trace("loaded raw data module...")
+
   # Multiplot
   output$multi_plot <- shiny::renderPlot({
     shiny::req(input$sensor_picker)

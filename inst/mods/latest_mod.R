@@ -19,13 +19,15 @@ latest_mod_ui <- function(id) {
   )
 }
 
-latest_mod <- function(input, output, session) {
+latest_mod <- function(input, output, session, selected_sensor) {
+
+  logger.trace("loaded latest data module...")
 
   latest <- eventReactive(
-    eventExpr = {input$sensor_picker},
+    eventExpr = {selected_sensor()},
     valueExpr = {
-      shiny::req(input$sensor_picker)
-      label <- input$sensor_picker
+      shiny::req(selected_sensor())
+      label <- selected_sensor()
       future({
         pat_createNew(pas = PAS, label = label)
       }) %...!%
@@ -43,60 +45,72 @@ latest_mod <- function(input, output, session) {
   output$latest_pm <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
-            plotly::plot_ly( p$data,
-                             x = ~datetime,
-                             y = ~pm25_A,
-                             type = "scatter",
-                             mode = "lines",
-                             line = list(color ="red"),#"#ba2e00"),
-                             name = "Channel A",
-                             opacity = 0.65 ) %>%
-              plotly::add_trace( y = ~pm25_B,
-                                 line = list(color = "blue"),#"#008cba"),
-                                 name = "Channel B" ) %>%
-              plotly::config(displayModeBar = FALSE) %>%
-              plotly::layout( title = list(text = paste0(p$meta$label, " Latest Data")),
-                              legend = list(orientation = 'h'),
-                              xaxis = list(title = "Date", titlefont = list(size = 14.5)),
-                              yaxis = list(title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)", titlefont = list(size = 14.5)) )
-      }) %...!% (function(e) NULL)
+        p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
+        plotly::plot_ly( p$data,
+                         x = ~datetime,
+                         y = ~pm25_A,
+                         type = "scatter",
+                         mode = "lines",
+                         line = list(color ="red"),#"#ba2e00"),
+                         name = "Channel A",
+                         opacity = 0.65 ) %>%
+          plotly::add_trace( y = ~pm25_B,
+                             line = list(color = "blue"),#"#008cba"),
+                             name = "Channel B" ) %>%
+          plotly::config(displayModeBar = FALSE) %>%
+          plotly::layout( title = list(text = paste0(p$meta$label, " Latest Data")),
+                          legend = list(orientation = 'h'),
+                          xaxis = list(title = "Date", titlefont = list(size = 14.5)),
+                          yaxis = list(title = "PM<sub>2.5</sub> (\u03bcg / m\u00b3)", titlefont = list(size = 14.5)) )
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
   output$latest_rh <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
-            plotly::plot_ly( p$data,
-                             x = ~datetime,
-                             y = ~humidity,
-                             type = "scatter",
-                             mode = "lines",
-                             line = list(color ="black"),
-                             opacity = 0.65 ) %>%
-              plotly::config(displayModeBar = FALSE) %>%
-              plotly::layout( title = list(text = "Humidity"),
-                              xaxis = list(title = "Date", titlefont = list(size = 14.5)),
-                              yaxis = list(title = "RH (%)", titlefont = list(size = 14.5)) )
-      }) %...!% (function(e) NULL)
+        p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
+        plotly::plot_ly( p$data,
+                         x = ~datetime,
+                         y = ~humidity,
+                         type = "scatter",
+                         mode = "lines",
+                         line = list(color ="black"),
+                         opacity = 0.65 ) %>%
+          plotly::config(displayModeBar = FALSE) %>%
+          plotly::layout( title = list(text = "Humidity"),
+                          xaxis = list(title = "Date", titlefont = list(size = 14.5)),
+                          yaxis = list(title = "RH (%)", titlefont = list(size = 14.5)) )
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
   output$latest_temp <- plotly::renderPlotly({
     latest() %...>%
       (function(p) {
-            p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
-            plotly::plot_ly( p$data,
-                             x = ~datetime,
-                             y = ~temperature,
-                             type = "scatter",
-                             mode = "lines",
-                             line = list(color ="black"),
-                             opacity = 0.65 ) %>%
-              plotly::config(displayModeBar = FALSE) %>%
-              plotly::layout( title = list(text = "Temperature"),
-                              xaxis = list(title = "Date", titlefont = list(size = 14.5)),
-                              yaxis = list(title = "Temperature (F)", titlefont = list(size = 14.5)) )
-      }) %...!% (function(e) NULL)
+        p$data$datetime <- lubridate::with_tz(p$data$datetime, tzone = TZ)
+        plotly::plot_ly( p$data,
+                         x = ~datetime,
+                         y = ~temperature,
+                         type = "scatter",
+                         mode = "lines",
+                         line = list(color ="black"),
+                         opacity = 0.65 ) %>%
+          plotly::config(displayModeBar = FALSE) %>%
+          plotly::layout( title = list(text = "Temperature"),
+                          xaxis = list(title = "Date", titlefont = list(size = 14.5)),
+                          yaxis = list(title = "Temperature (F)", titlefont = list(size = 14.5)) )
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
 }

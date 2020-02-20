@@ -12,53 +12,65 @@ server <- function(input, output, session) {
                      annual_sensors = reactive(annual_sensors()),
                      selected_sensor = reactive(selected_sensor()),
                      selected_community = reactive(selected_community()),
-                     dates = reactive(dates()) )
+                     dates = reactive(dates()),
+                     session = session )
 
   shiny::callModule( module = map_mod,
                      id = "global",
                      annual_sensors = reactive(annual_sensors()),
                      dates = reactive(dates()),
                      selected_sensor = reactive(selected_sensor()),
-                     selected_community = reactive(selected_community()) )
+                     selected_community = reactive(selected_community()),
+                     session = session )
 
   shiny::callModule( module = barplotly_mod,
                      id = "global",
                      sensor = reactive(sensor()),
-                     dates = reactive(dates()) )
+                     dates = reactive(dates()),
+                     session = session  )
 
   shiny::callModule( module = calendar_mod,
                      id = "global",
-                     annual_pat = reactive(annual_pat()) )
+                     annual_pat = reactive(annual_pat()),
+                     session = session  )
 
   shiny::callModule( module = raw_mod,
                      id = "global",
-                     pat = reactive(pat()) )
+                     pat = reactive(pat()),
+                     session = session  )
 
   shiny::callModule( module = pattern_mod,
                      id = "global",
                      sensor = reactive(sensor()),
-                     noaa = reactive(noaa()) )
+                     noaa = reactive(noaa()),
+                     session = session  )
 
   shiny::callModule( module = comparison_mod,
                      id = "global",
                      pat = reactive(pat()),
-                     sensor = reactive(sensor()) )
+                     sensor = reactive(sensor()),
+                     session = session  )
 
   shiny::callModule( module = video_mod,
                      id = "global",
                      selected_community = reactive(selected_community()),
-                     dates = reactive(dates()) )
+                     dates = reactive(dates()),
+                     session = session  )
 
   shiny::callModule( module = dataview_mod,
                      id = "global",
-                     pat = reactive(pat()) )
+                     pat = reactive(pat()),
+                     session = session  )
 
   shiny::callModule( module = latest_mod,
-                     id = "global" )
+                     id = "global",
+                     selected_sensor = reactive(selected_sensor()),
+                     session = session )
 
   shiny::callModule( module = help_mod,
                      id = "global",
-                     current_tab = reactive(current_tab()) )
+                     current_tab = reactive(current_tab()),
+                     session = session  )
 
   # ------ Reactive Expressions ------
   # Set Sensor Selection on sensor picker update
@@ -89,6 +101,7 @@ server <- function(input, output, session) {
         pat_load(label, sd, ed)
       }) %...!%
         (function(e) {
+          logger.error(e)
           return(NULL)
         })
     )
@@ -102,7 +115,11 @@ server <- function(input, output, session) {
         sensor(
           future({
             pat_createAirSensor(p)
-          }) %...!% (function(e) NULL)
+          }) %...!%
+            (function(e) {
+              logger.error(e)
+              return(NULL)
+          })
         )
       })
   })
@@ -128,10 +145,12 @@ server <- function(input, output, session) {
         future({
           setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
           rm_invalid(sensor_loadYear(datestamp = datestamp))
-        }) %...!% (function(e) NULL)
+        }) %...!%
+          (function(e) {
+            logger.error(e)
+            return(NULL)
+          })
       )
-      logger.trace('Set Annual Sensors')
-
     })
 
   # Set annual PAT
@@ -149,9 +168,12 @@ server <- function(input, output, session) {
         future({
           setArchiveBaseUrl("http://smoke.mazamascience.com/data/PurpleAir")
           pat_load(label, sd, ed)
-        }) %...!% (function(e) NULL)
+        }) %...!%
+          (function(e) {
+            logger.error(e)
+            return(NULL)
+          })
       )
-      logger.trace('Set Annual PAT')
     }
   )
 
@@ -169,7 +191,11 @@ server <- function(input, output, session) {
           noaa(
             future({
               shiny_getNOAA(s, sd, ed, tz = TZ)
-            }) %...!% (function(e) NULL)
+            }) %...!%
+              (function(e) {
+                logger.error(e)
+                return(NULL)
+              })
           )
         })
     }
@@ -366,5 +392,4 @@ server <- function(input, output, session) {
       if (input$navbar == "latest" ) off("global-lookback_picker", anim = T)
     }
   )
-
 }
