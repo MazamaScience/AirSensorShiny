@@ -31,7 +31,7 @@ barplotly_mod_ui <- function(id) {
         padding: 0 0 0 0;
         cursor: move;
         /* Fade out while not hovering */
-        opacity: 0.70;
+        opacity: 0.77;
         zoom: 0.9;
         transition: opacity 300ms 500ms;
       }
@@ -68,11 +68,11 @@ barplotly_mod <- function(input, output, session, sensor, dates) {
   # NOTE: Both events below run the JS code to determine if "dem" html is up or down.
   #       If a sensor is selected, and it is not already up, it is pushed up.
   #       If a community is selected, and it is already up, it is pushed down.
-  observeEvent(ignoreInit = TRUE, {input$sensor_picker},{
-    shinyjs::runjs("if(!$('#dem').hasClass('in')) {$('#collapse_btn').click();};")
-  })
-  observeEvent({input$community_picker},{
-    shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();};")
-  })
+  # observeEvent(ignoreInit = TRUE, {input$sensor_picker},{
+  #   shinyjs::runjs("if(!$('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+  # })
+  # observeEvent({input$community_picker},{
+  #   shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+  # })
 
 }
