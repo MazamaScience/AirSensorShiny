@@ -81,20 +81,20 @@ panel_mod_ui <- function(id) {
 #' @param output
 #' @param session
 #' @param active
-panel_mod <- function(input, output, session, annual_sensors, selected_sensor, selected_community) {
+panel_mod <- function(input, output, session, annual_sensors, selected_sensor, selected_community, dates) {
 
   # Handle Downloads
   output$download <- shiny::downloadHandler(
     filename = function() {
-      label <- input$sensor_picker
-      ed <- dates$ed
-      sd <- dates$sd
+      label <- selected_sensor()
+      ed <- dates()$ed
+      sd <- dates()$sd
       paste0(label,sd,"_",ed,".csv")
     },
     content = function(file) {
-      label <- input$sensor_picker
-      ed <- dates$ed
-      sd <- dates$sd
+      label <- selected_sensor()
+      ed <- dates()$ed
+      sd <- dates()$sd
       tryCatch(
         expr = {
           p <- AirSensor::pat_load(label, sd, ed)

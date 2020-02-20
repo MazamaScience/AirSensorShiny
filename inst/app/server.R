@@ -11,7 +11,8 @@ server <- function(input, output, session) {
                      id = "global",
                      annual_sensors = reactive(annual_sensors()),
                      selected_sensor = reactive(selected_sensor()),
-                     selected_community = reactive(selected_community()))
+                     selected_community = reactive(selected_community()),
+                     dates = reactive(dates()) )
 
   shiny::callModule( module = map_mod,
                      id = "global",
@@ -88,10 +89,6 @@ server <- function(input, output, session) {
         pat_load(label, sd, ed)
       }) %...!%
         (function(e) {
-          # logger.error(paste0( "\n Download PAT - ERROR:",
-          #                      "\n Input Selection: ", label,
-          #                      "\n Date Selection: ", sd, "-", ed ))
-          # shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();} else {$('#collapse_btn').click();};")
           return(NULL)
         })
     )
