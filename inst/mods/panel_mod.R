@@ -126,8 +126,10 @@ panel_mod <- function( input,
     handlerExpr = {
       if ( isTruthy(selected_sensor())) {
         shinyjs::runjs("if(!$('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+        shinyjs::enable("download")
       } else {
         shinyjs::runjs("if($('#dem').hasClass('in')) {$('#collapse_btn').click();};")
+        shinyjs::disable("download")
       }
     }
   )
