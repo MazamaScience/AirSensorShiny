@@ -66,8 +66,10 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
                                    color = '#4F5755',
                                    fillColor = '#EABA5E',
                                    fillOpacity = 1,
-                                   radius = 9, opacity = 0.95,
-                                   weight = 2, layerId  = 'selected')    # Update the selector input with the selected() reactive $id component
+                                   radius = 9,
+                                   opacity = 0.95,
+                                   weight = 3,
+                                   layerId  = 'selected' )    # Update the selector input with the selected() reactive $id component
       updateSelectInput(session, inputId = 'sensor_picker', selected = selected_marker()$id)
 
     }
@@ -90,8 +92,9 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
                                        fillColor = '#EABA5E',
                                        fillOpacity = 1,
                                        radius = 9,
-                                       opacity = 1,
-                                       weight = 2, layerId = 'selected')
+                                       opacity = 0.95,
+                                       weight = 3,
+                                       layerId = 'selected' )
         }) %...!%
         (function(e){
           logger.error(e)
@@ -169,8 +172,10 @@ map_mod <- function(input, output, session, annual_sensors, dates, selected_sens
                                            color = '#4F5755',
                                            fillColor = '#EABA5E',
                                            fillOpacity = 1,
-                                           radius = 9, opacity = 0.95,
-                                           weight = 2, layerId  = 'selected') %>%
+                                           radius = 9,
+                                           opacity = 0.95,
+                                           weight = 3,
+                                           layerId  = 'selected' ) %>%
                 leaflet::setView( lng = map_state$center[1],
                                   lat = map_state$center[2],
                                   zoom = map_state$zoom )

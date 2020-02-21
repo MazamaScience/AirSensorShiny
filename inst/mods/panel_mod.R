@@ -45,9 +45,9 @@ panel_mod_ui <- function(id) {
                    "7 Days" = 7,
                    "15 Days" = 15,
                    "30 Days" = 30 ),
-      justified = T,
+      justified = TRUE,
       direction = "vertical",
-      individual = F,
+      individual = FALSE,
       checkIcon = list(
         yes = tags$i(class = "fa fa-check",
                      style = "color: #008cba"))

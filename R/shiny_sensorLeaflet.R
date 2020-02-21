@@ -130,38 +130,47 @@ shiny_sensorLeaflet <- function(
                                  domain = range(colorBins),
                                  bins = colorBins)
 
+  valid_mean_pm25 <- mean_pm25[!is.nan(mean_pm25)]
+  invalid_mean_pm25 <- mean_pm25[is.nan(mean_pm25)]
+
   # Assign colors
-  cols <- colorFunc(mean_pm25)
+  valid_cols <- colorFunc(valid_mean_pm25)
+  invalid_cols <- colorFunc(invalid_mean_pm25)
 
   # ----- Create the SPDF ------------------------------------------------------
 
-  SPDF <-
-    sp::SpatialPointsDataFrame(
-      data = as.data.frame(sensor$meta),
-      coords = cbind(
-        sensor$meta$longitude,
-        sensor$meta$latitude
-      )
-    )
-
-  # ----- Create the map -------------------------------------------------------
-
-  map <-
-    leaflet::leaflet(SPDF, padding = 0, ) %>%
-    leaflet::setView(
-      lng=mean(lonRange),
-      lat=mean(latRange),
-      zoom=zoom
-    ) %>%
+  map <- leaflet::leaflet(padding = 0) %>%
     leaflet::addProviderTiles(providerTiles) %>%
+    leaflet::setView(
+      lng = mean(lonRange),
+      lat = mean(latRange),
+      zoom = zoom
+    ) %>%
     leaflet::addCircleMarkers(
+      data = sensor$meta[sensor$meta$monitorID %in% names(invalid_mean_pm25),],
+      lng = ~longitude,
+      lat = ~latitude,
       group = ~id2com(communityRegion),
-      radius=radius,
-      fillColor=cols,
-      fillOpacity=opacity,
-      color = "#FFF",
-      opacity = 1,
-      weight = 2,
+      radius = radius,
+      fillColor = invalid_cols,
+      fillOpacity = opacity*0.75,
+      color = "#FFFFFF",
+      opacity = 0.95,
+      weight = 3,
+      label = ~monitorID,
+      layerId = ~monitorID
+    ) %>%
+    leaflet::addCircleMarkers(
+      data = sensor$meta[sensor$meta$monitorID %in% names(valid_mean_pm25),],
+      lng = ~longitude,
+      lat = ~latitude,
+      group = ~id2com(communityRegion),
+      radius = radius,
+      fillColor = valid_cols,
+      fillOpacity = opacity,
+      color = "#FFFFFF",
+      opacity = 0.95,
+      weight = 3,
       label = ~monitorID,
       layerId = ~monitorID
     )
@@ -181,7 +190,7 @@ if ( FALSE ) {
   enddate <- MazamaCoreUtils::parseDatetime("2019-07-06",
                                             timezone = "America/Los_Angeles")
   startdate <- enddate - lubridate::ddays(3)
-  sensor = sensor_load(startdate = startdate, enddate = enddate)
+  sensor = AirSensor::sensor_loadYear(datestamp = 20190101)
   colorPalette <- NULL
   colorBins <- NULL
   radius <- 9
