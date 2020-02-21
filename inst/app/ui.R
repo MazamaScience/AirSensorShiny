@@ -40,7 +40,7 @@ ui <- function(request) {
               # ---- Overview Tab ----
               shiny::tabPanel(
                 title = tags$b("Overview"),
-                icon = shiny::icon("map-marked-alt"),
+                icon = shiny::icon("map-marked-alt",lib = "font-awesome"),
                 value = "overview",
                 tags$br(),
                 shiny::column(

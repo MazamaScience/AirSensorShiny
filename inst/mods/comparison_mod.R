@@ -60,11 +60,6 @@ comparison_mod <- function(input, output, session, pat, sensor, dates) {
   output$comparison_leaflet <- leaflet::renderLeaflet({
     sensor() %...>%
       (function(s) {
-        monitor_icon <- leaflet::awesomeIcons(
-          icon = 'certificate',
-          iconColor = 'white',
-          library = 'fa'
-        )
         dr <- range(s$data$datetime)
         nearby <- s$meta$pwfsl_closestMonitorID
         dist <- s$meta$pwfsl_closestDistance
@@ -88,8 +83,7 @@ comparison_mod <- function(input, output, session, pat, sensor, dates) {
                                      layerId = 'selected' ) %>%
           leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
                                       lat = mon$meta$latitude,
-                                      label = "Nearest Regulatory Monitor",
-                                      icon = monitor_icon )
+                                      label = "Nearest Regulatory Monitor" )
       }) %...!%
       (function(e) {
         logger.error(e)
