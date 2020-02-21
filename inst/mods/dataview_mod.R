@@ -18,6 +18,12 @@ dataview_mod_ui <- function(id) {
   )
 }
 
+#' Data View Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param pat a reactive pat promise object
 dataview_mod <- function(input, output, session, pat) {
 
   logger.trace("loaded data view module...")

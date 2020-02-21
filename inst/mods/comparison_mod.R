@@ -43,6 +43,13 @@ comparison_mod_ui <- function(id) {
   )
 }
 
+#' Comparison Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param pat a reactive pat promise object
+#' @param sensor a reactive sensor promise object
 comparison_mod <- function(input, output, session, pat, sensor) {
 
   logger.trace("loaded comparison module...")

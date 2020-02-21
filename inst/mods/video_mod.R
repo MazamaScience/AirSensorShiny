@@ -11,6 +11,13 @@ video_mod_ui <- function(id) {
   )
 }
 
+#' Animation Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param selected_community A reactive selected community object
+#' @param dates A reactive dates object
 video_mod <- function(input, output, session, selected_community, dates) {
 
   logger.trace("loaded video module...")

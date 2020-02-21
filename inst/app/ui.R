@@ -93,7 +93,7 @@ ui <- function(request) {
               ),
               # ---- Video tab ----
               shiny::tabPanel(
-                title = tags$b("Community Timelapse"),
+                title = tags$b("Timelapse"),
                 icon = shiny::icon("file-video"),
                 value = "anim",
                 tags$br(),

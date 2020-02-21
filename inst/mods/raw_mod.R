@@ -40,12 +40,12 @@ raw_mod_ui <- function(id) {
   )
 }
 
-#' TAB: Raw Data Module Logic
+#' Raw Data Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param active
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param pat A reactive pat promise object.
 raw_mod <- function(input, output, session, pat) {
 
   logger.trace("loaded raw data module...")

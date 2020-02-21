@@ -47,9 +47,16 @@ barplotly_mod_ui <- function(id) {
   )
 }
 
+#' Barplotly Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param sensor A reactive sensor promise object
+#' @param dates A reactive dates object
 barplotly_mod <- function(input, output, session, sensor, dates) {
 
-  logger.trace("loaded barplot module...")
+  logger.trace("loaded barplotly module...")
 
   #Plotly barplot output
   output$barplotly <- plotly::renderPlotly({

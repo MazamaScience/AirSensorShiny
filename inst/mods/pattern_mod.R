@@ -30,6 +30,13 @@ pattern_mod_ui <- function(id) {
   )
 }
 
+#' Daily Pattern Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session the shiny session
+#' @param sensor A reactive sensor promise object
+#' @param noaa A reactive nooa promise object
 pattern_mod <- function(input, output, session, sensor, noaa) {
 
   logger.trace("loaded daily patterns module...")

@@ -19,6 +19,12 @@ latest_mod_ui <- function(id) {
   )
 }
 
+#' Latest Data Module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param selected_sensor a reactive selected sensor object
 latest_mod <- function(input, output, session, selected_sensor) {
 
   logger.trace("loaded latest data module...")

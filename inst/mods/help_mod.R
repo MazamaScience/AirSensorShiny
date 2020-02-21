@@ -18,6 +18,12 @@ help_mod_ui <- function(id) {
   )
 }
 
+#' Help Panel module
+#'
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param current_tab a reactive current tab object
 help_mod <- function(input, output, session, current_tab) {
 
   logger.trace("loaded help module...")

@@ -75,12 +75,16 @@ panel_mod_ui <- function(id) {
   )
 }
 
-#' Sensor Panel Logic
+
+#' Panel Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param active
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session shiny session
+#' @param annual_sensors A reactive annual sensors object
+#' @param selected_sensor A reactive selected sensor object
+#' @param selected_community A reactive selected community object
+#' @param dates A reactive dates input
 panel_mod <- function( input,
                        output,
                        session,
@@ -119,6 +123,9 @@ panel_mod <- function( input,
     }
   )
 
+  # Check if the download button should be enabled
+  # Check if barplot should be shown
+  # Based on value of selected sensor
   observeEvent(
     ignoreInit = TRUE,
     ignoreNULL = TRUE,
@@ -134,6 +141,7 @@ panel_mod <- function( input,
     }
   )
 
+  # Update the sensor selection options based on selected community
   observeEvent({selected_community(); annual_sensors()}, {
     annual_sensors() %...>%
       (function(s) {
@@ -152,7 +160,11 @@ panel_mod <- function( input,
             selected = selected_sensor()
           )
         }
-      }) %...!% (function(e) NULL)
+      }) %...!%
+      (function(e) {
+        logger.error(e)
+        return(NULL)
+      })
   })
 
 }

@@ -11,12 +11,13 @@ calendar_mod_ui <- function(id) {
   )
 }
 
-#' TAB: Calendar Logic
+
+#' Calendar Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param active
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param annual_pat a reactive annual pat promise object
 calendar_mod <- function(input, output, session, annual_pat) {
 
   logger.trace("loaded calendar module...")

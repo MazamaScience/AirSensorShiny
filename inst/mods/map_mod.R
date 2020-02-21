@@ -1,12 +1,3 @@
-#' TAB: Overview User Interface
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
 map_mod_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
@@ -17,13 +8,23 @@ map_mod_ui <- function(id) {
 
 }
 
-#' TAB: Overview Logic
+
+#' Map Module
 #'
-#' @param input
-#' @param output
-#' @param session
-#' @param active
-map_mod <- function(input, output, session, annual_sensors, dates, selected_sensor, selected_community) {
+#' @param input reactive inputs
+#' @param output reactive outputs
+#' @param session a shiny session
+#' @param annual_sensors a reactive annual sensors promise object
+#' @param dates a reactive dates object
+#' @param selected_sensor a reactive selected sensor object
+#' @param selected_community a reactive selected community object
+map_mod <- function( input,
+                     output,
+                     session,
+                     annual_sensors,
+                     dates,
+                     selected_sensor,
+                     selected_community ) {
 
   logger.trace("loaded map module...")
 

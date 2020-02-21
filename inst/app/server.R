@@ -7,6 +7,8 @@ MazamaCoreUtils::logger.debug("----- server() ------")
 server <- function(input, output, session) {
 
   # ------ Module Call ------
+
+  # Panel Module
   shiny::callModule( module = panel_mod,
                      id = "global",
                      annual_sensors = reactive(annual_sensors()),
@@ -15,6 +17,7 @@ server <- function(input, output, session) {
                      dates = reactive(dates()),
                      session = session )
 
+  # Map Module
   shiny::callModule( module = map_mod,
                      id = "global",
                      annual_sensors = reactive(annual_sensors()),
@@ -23,50 +26,59 @@ server <- function(input, output, session) {
                      selected_community = reactive(selected_community()),
                      session = session )
 
+  # Barplotly Module
   shiny::callModule( module = barplotly_mod,
                      id = "global",
                      sensor = reactive(sensor()),
                      dates = reactive(dates()),
                      session = session  )
 
+  # Calendar Module
   shiny::callModule( module = calendar_mod,
                      id = "global",
                      annual_pat = reactive(annual_pat()),
                      session = session  )
 
+  # Raw Module
   shiny::callModule( module = raw_mod,
                      id = "global",
                      pat = reactive(pat()),
                      session = session  )
 
+  # Daily Pattern Module
   shiny::callModule( module = pattern_mod,
                      id = "global",
                      sensor = reactive(sensor()),
                      noaa = reactive(noaa()),
                      session = session  )
 
+  # Comparison Module
   shiny::callModule( module = comparison_mod,
                      id = "global",
                      pat = reactive(pat()),
                      sensor = reactive(sensor()),
                      session = session  )
 
+  # Animation Module
   shiny::callModule( module = video_mod,
                      id = "global",
                      selected_community = reactive(selected_community()),
                      dates = reactive(dates()),
                      session = session  )
 
+  # Data View Module
   shiny::callModule( module = dataview_mod,
                      id = "global",
                      pat = reactive(pat()),
                      session = session  )
 
+  # Latest Data Module
   shiny::callModule( module = latest_mod,
                      id = "global",
                      selected_sensor = reactive(selected_sensor()),
                      session = session )
 
+  # Help Module
   shiny::callModule( module = help_mod,
                      id = "global",
                      current_tab = reactive(current_tab()),
@@ -334,6 +346,11 @@ server <- function(input, output, session) {
       pat() %...>%
         (function(p) {
           if ( !pat_isPat(p) ) {
+            shinyWidgets::updatePickerInput(
+              session = session,
+              inputId = "global-sensor_picker",
+              selected = ""
+            )
             shinytoastr::toastr_warning( title = "Oops!",
                                          message = "Something wrent wrong. Please select a different sensor or date.",
                                          position = "bottom-left" )
