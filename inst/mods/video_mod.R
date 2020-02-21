@@ -25,7 +25,7 @@ video_mod <- function(input, output, session, selected_community, dates) {
   output$video <- shiny::renderUI({
     shiny::req(input$community_picker)
     if ( selected_community() != "all" ) {
-      ed <- dates()$ed
+      ed <- dates()$ed - lubridate::days(1) # NOTE: Subtract a day to use latest video!
       baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
       year    <- lubridate::year(ed)#strftime(ed, "%Y")
       mm      <- strftime(ed, "%m")
