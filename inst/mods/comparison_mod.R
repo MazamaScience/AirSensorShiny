@@ -50,7 +50,7 @@ comparison_mod_ui <- function(id) {
 #' @param session a shiny session
 #' @param pat a reactive pat promise object
 #' @param sensor a reactive sensor promise object
-comparison_mod <- function(input, output, session, pat, sensor) {
+comparison_mod <- function(input, output, session, pat, sensor, dates) {
 
   logger.trace("loaded comparison module...")
 
@@ -58,23 +58,38 @@ comparison_mod <- function(input, output, session, pat, sensor) {
   #       on this tab resets the sensor_picker and breaks the page.
   #       likely has to do with the the order or load
   output$comparison_leaflet <- leaflet::renderLeaflet({
-    shiny::req(input$sensor_picker)
     sensor() %...>%
       (function(s) {
+        monitor_icon <- leaflet::awesomeIcons(
+          icon = 'certificate',
+          iconColor = 'white',
+          library = 'fa'
+        )
         dr <- range(s$data$datetime)
         nearby <- s$meta$pwfsl_closestMonitorID
         dist <- s$meta$pwfsl_closestDistance
         mon <- PWFSLSmoke::monitor_load( monitorIDs = nearby,
                                          startdate = dr[1],
                                          enddate = dr[2] )
-        print(nearby)
-        shiny_sensorLeaflet(s) %>%
-          leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
-                                      lat = mon$meta$latitude,
-                                      label = "Nearest Regulatory Monitor" ) %>%
+        leaflet::leaflet(data = s$meta, padding = 0) %>%
           leaflet::addPolylines( lng = c(mon$meta$longitude,s$meta$longitude ),
                                  lat = c(mon$meta$latitude,s$meta$latitude),
-                                 label = paste0("Distance: ", signif(dist/1000, 2), " km") )
+                                 label = paste0("Distance: ", signif(dist/1000, 2), " km") ) %>%
+          leaflet::addProviderTiles(provider = "OpenStreetMap") %>%
+          leaflet::addCircleMarkers( lng = ~longitude,
+                                     lat = ~latitude,
+                                     label = ~monitorID,
+                                     color = '#4F5755',
+                                     fillColor = '#EABA5E',
+                                     fillOpacity = 1,
+                                     radius = 9,
+                                     opacity = 0.95,
+                                     weight = 3,
+                                     layerId = 'selected' ) %>%
+          leaflet::addAwesomeMarkers( lng = mon$meta$longitude,
+                                      lat = mon$meta$latitude,
+                                      label = "Nearest Regulatory Monitor",
+                                      icon = monitor_icon )
       }) %...!%
       (function(e) {
         logger.error(e)

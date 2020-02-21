@@ -57,6 +57,7 @@ server <- function(input, output, session) {
                      id = "global",
                      pat = reactive(pat()),
                      sensor = reactive(sensor()),
+                     dates = reactive(dates()),
                      session = session  )
 
   # Animation Module
