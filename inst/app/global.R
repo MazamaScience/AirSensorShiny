@@ -61,7 +61,7 @@ PAS <- AirSensor::pas_load()
 # Global Version
 # NOTE: Update this via the Makefile -- configure_app will keep all versions
 #       across docker, make, and app the same.
-VERSION <<- "0.9.7"
+VERSION <<- "0.9.8"
 
 TZ <- 'America/Los_Angeles'
 

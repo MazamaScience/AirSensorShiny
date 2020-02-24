@@ -28,8 +28,8 @@ video_mod <- function(input, output, session, selected_community, dates) {
       ed <- dates()$ed - lubridate::days(1) # NOTE: Subtract a day to use latest video!
       baseUrl <- "http://smoke.mazamascience.com/data/PurpleAir/videos/"
       year    <- lubridate::year(ed)#strftime(ed, "%Y")
-      mm      <- strftime(ed, "%m")
-      dd      <- strftime(ed, "%d")
+      mm      <- strftime(ed, "%m", tz = TZ)
+      dd      <- strftime(ed, "%d", tz = TZ)
       id    <- com2id(selected_community())
       url <- paste0(baseUrl, year, "/", id, "_", year, mm, dd, ".mp4" )
       tags$video(

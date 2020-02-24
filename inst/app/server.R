@@ -138,7 +138,7 @@ server <- function(input, output, session) {
   })
 
   # Set the selected year
-  year <- reactiveVal(lubridate::year(lubridate::now()))
+  year <- reactiveVal(lubridate::year(lubridate::now(tzone = TZ)))
   observe({
     if ( lubridate::year(dates()$ed) != year() ) {
       year(lubridate::year(dates()$ed))
